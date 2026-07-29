@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Đền Tổ Nghề Taxi Việt Nam</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Noto+Serif+SC:wght@400;700&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+:root{
+--gold:#c9a84c;
+--gold-light:#e8d48b;
+--gold-dark:#8b6914;
+--bronze:#cd7f32;
+--red:#8b1a1a;
+--red-light:#c0392b;
+--dark-brown:#2a1a0a;
+--wood:#3d2b1f;
+--glass-bg:rgba(30,15,5,0.75);
+--glass-border:rgba(201,168,76,0.4);
+}
+
+html,body{
+width:100%;height:100%;overflow:hidden;
+font-family:'Playfair Display','Noto Serif SC',serif;
+background:#000;
+color:var(--gold-light);
+}
+
+/* BACKGROUND IMAGES SLIDESHOW */
+.bg-slideshow{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+z-index:-10;
+}
+.bg-slide{
+position:absolute;
+top:0;left:0;
+width:100%;height:100%;
+object-fit:cover;
+opacity:0;
+transition:opacity 2s ease-in-out, transform 8s ease-out;
+transform:scale(1);
+}
+.bg-slide.active{
+opacity:1;
+transform:scale(1.08);}
+.bg-slide.zoom-in{
+transform:scale(1.15);
+}
+
+/* OVERLAY GRADIENT */
+.bg-overlay{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:linear-gradient(180deg,rgba(10,5,2,0.3) 0%,rgba(10,5,2,0.1) 50%,rgba(10,5,2,0.4) 100%);
+z-index:-9;
+pointer-events:none;
+}
+
+#app{
+position:fixed;top:0;left:0;width:100%;height:100%;
+z-index:1;display:flex;flex-direction:column;
+}
+
+/* HEADER */
+.header{
+text-align:center;
+padding:clamp(10px,2vw,14px) clamp(12px,3vw,20px) clamp(6px,1.5vw,10px);
+background:linear-gradient(180deg,rgba(20,10,2,0.92) 0%,rgba(20,10,2,0.4) 100%);
+border-bottom:1px solid rgba(201,168,76,0.3);
+flex-shrink:0;
+backdrop-filter:blur(8px);
+-webkit-backdrop-filter:blur(8px);
+}
+.header h1{
+font-size:clamp(14px,4vw,22px);
+color:var(--gold-light);
+text-shadow:0 0 20px rgba(201,168,76,0.6),0 2px 4px rgba(0,0,0,0.9);
+letter-spacing:clamp(1px,0.3vw,2px);
+font-weight:900;
+line-height:1.3;
+}
+.header p{
+font-size:clamp(9px,2.2vw,12px);
+color:rgba(232,212,139,0.8);
+margin-top:clamp(2px,0.5vw,4px);
+letter-spacing:1px;
+}
+
+/* MAIN CONTENT */
+.main-content{
+flex:1;overflow-y:auto;overflow-x:hidden;
+padding:clamp(8px,2vw,14px) clamp(10px,2.5vw,16px) clamp(80px,18vw,100px);
+scrollbar-width:thin;scrollbar-color:var(--gold-dark) transparent;
+}
+.main-content::-webkit-scrollbar{width:4px;}
+.main-content::-webkit-scrollbar-thumb{background:var(--gold-dark);border-radius:2px;}
+
+/* GLASS CARD */
+.glass-card{
+background:var(--glass-bg);
+border:1px solid var(--glass-border);
+border-radius:clamp(10px,2.5vw,14px);
+padding:clamp(12px,3vw,18px);
+margin-bottom:clamp(10px,2vw,14px);
+backdrop-filter:blur(12px);
+-webkit-backdrop-filter:blur(12px);
+box-shadow:0 4px 24px rgba(0,0,0,0.5),inset 0 1px 0 rgba(201,168,76,0.15);
+}
+.glass-card h3{
+color:var(--gold-light);
+font-size:clamp(13px,3.2vw,17px);
+margin-bottom:clamp(8px,2vw,12px);
+text-shadow:0 0 12px rgba(201,168,76,0.4);
+border-bottom:1px solid rgba(201,168,76,0.3);
+padding-bottom:clamp(4px,1vw,8px);
+letter-spacing:0.5px;
+}
+.glass-card p,.glass-card li{
+color:rgba(232,212,139,0.9);
+font-size:clamp(11px,2.6vw,14px);
+line-height:1.6;
+}
+
+/* BOTTOM MENU */
+.bottom-menu{
+position:fixed;bottom:0;left:0;right:0;
+background:linear-gradient(0deg,rgba(15,8,2,0.98) 0%,rgba(15,8,2,0.94) 100%);
+border-top:1px solid rgba(201,168,76,0.45);
+display:flex;overflow-x:auto;overflow-y:hidden;
+z-index:100;
+backdrop-filter:blur(16px);
+-webkit-backdrop-filter:blur(16px);
+scrollbar-width:none;
+padding:clamp(4px,1vw,6px) 0 clamp(6px,1.5vw,10px);
+}
+.bottom-menu::-webkit-scrollbar{display:none;}
+.menu-item{
+flex:0 0 auto;
+min-width:clamp(64px,18vw,80px);
+padding:clamp(6px,1.5vw,10px) clamp(4px,1vw,6px) clamp(8px,1.5vw,10px);
+text-align:center;
+cursor:pointer;transition:all 0.3s;
+border-right:1px solid rgba(201,168,76,0.12);
+position:relative;
+}
+.menu-item:last-child{border-right:none;}
+.menu-item.active{
+background:rgba(201,168,76,0.2);
+}
+.menu-item.active::before{
+content:'';position:absolute;top:0;left:20%;right:20%;
+height:2px;background:var(--gold);border-radius:0 0 2px 2px;
+box-shadow:0 0 10px rgba(201,168,76,0.7);
+}
+.menu-icon{
+font-size:clamp(18px,4.5vw,24px);
+display:block;margin-bottom:clamp(2px,0.5vw,4px);
+filter:drop-shadow(0 0 5px rgba(201,168,76,0.5));
+line-height:1;
+}
+.menu-label{
+font-size:clamp(8px,2vw,10px);
+color:rgba(232,212,139,0.85);
+letter-spacing:0.5px;
+display:block;
+line-height:1.2;
+}
+.menu-item.active .menu-label{color:var(--gold-light);font-weight:700;}
+
+/* PAGES */
+.page{display:none;animation:pageIn 0.5s ease;}
+.page.active{display:block;}
+@keyframes pageIn{
+from{opacity:0;transform:translateY(12px) scale(0.98);}
+to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+/* PAGE TRANSITION ZOOM */
+.page-zoom{
+animation:zoomTransition 0.6s ease-out;
+}
+@keyframes zoomTransition{
+0%{opacity:0;transform:scale(1.1);}
+100%{opacity:1;transform:scale(1);}
+}
+
+/* INCENSE */
+.incense-area{text-align:center;padding:clamp(16px,4vw,24px) clamp(8px,2vw,12px);}
+.incense-btn{
+background:linear-gradient(135deg,var(--gold-dark),var(--bronze));
+border:2px solid var(--gold);color:var(--gold-light);
+padding:clamp(12px,3vw,18px) clamp(28px,7vw,40px);
+font-size:clamp(14px,3.5vw,18px);
+font-family:inherit;
+border-radius:30px;
+cursor:pointer;
+transition:all 0.3s;
+text-shadow:0 1px 3px rgba(0,0,0,0.6);
+box-shadow:0 4px 24px rgba(201,168,76,0.4),inset 0 1px 0 rgba(255,255,255,0.25);
+letter-spacing:1px;
+font-weight:700;
+}
+.incense-btn:active{
+transform:scale(0.95);
+box-shadow:0 2px 12px rgba(201,168,76,0.25);
+}
+.incense-anim{
+display:none;
+position:fixed;top:0;left:0;width:100%;height:100%;
+z-index:50;pointer-events:none;
+}
+.incense-anim.show{display:block;}
+.smoke{
+position:absolute;
+width:clamp(4px,1vw,8px);height:clamp(4px,1vw,8px);
+background:radial-gradient(circle,rgba(255,255,255,0.8),transparent);
+border-radius:50%;
+animation:smokeRise 3s ease-out forwards;
+}
+@keyframes smokeRise{
+0%{opacity:1;transform:translateY(0) scale(1);}
+100%{opacity:0;transform:translateY(-240px) scale(5);}
+}
+.glow-effect{
+position:absolute;top:50%;left:50%;
+transform:translate(-50%,-50%);
+width:clamp(180px,45vw,260px);height:clamp(180px,45vw,260px);
+background:radial-gradient(circle,rgba(201,168,76,0.4),transparent);
+border-radius:50%;
+animation:glowPulse 2.5s ease-in-out;
+}
+@keyframes glowPulse{
+0%{opacity:0;transform:translate(-50%,-50%) scale(0.5);}
+50%{opacity:1;transform:translate(-50%,-50%) scale(1.3);}
+100%{opacity:0;transform:translate(-50%,-50%) scale(1.6);}
+}
+
+/* POPUP */
+.popup-overlay{
+display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,5,2,0.8);z-index:200;
+justify-content:center;align-items:center;
+padding:clamp(16px,4vw,24px);
+}
+.popup-overlay.show{display:flex;}
+.popup{
+background:var(--glass-bg);
+border:1px solid var(--glass-border);
+border-radius:16px;
+width:100%;max-width:500px;
+max-height:80vh;
+overflow-y:auto;
+backdrop-filter:blur(18px);
+-webkit-backdrop-filter:blur(18px);
+padding:clamp(16px,4vw,24px);
+animation:popupIn 0.4s ease;
+}
+@keyframes popupIn{
+from{opacity:0;transform:scale(0.9);}
+to{opacity:1;transform:scale(1);}
+}
+.popup h2{
+color:var(--gold-light);
+font-size:clamp(16px,4vw,20px);
+text-align:center;
+margin-bottom:clamp(12px,3vw,18px);
+text-shadow:0 0 18px rgba(201,168,76,0.5);
+}
+.popup-close{
+float:right;
+background:none;border:1px solid var(--gold);
+color:var(--gold);
+width:30px;height:30px;
+border-radius:50%;
+cursor:pointer;
+font-size:16px;
+display:flex;align-items:center;justify-content:center;
+}
+
+/* PRAYER */
+.prayer-text{
+color:rgba(232,212,139,0.95);
+font-size:clamp(12px,2.8vw,15px);
+line-height:1.8;
+white-space:pre-wrap;
+text-align:center;
+padding:clamp(8px,2vw,12px);
+}
+.prayer-history{margin-top:clamp(12px,3vw,18px);border-top:1px solid rgba(201,168,76,0.25);padding-top:clamp(10px,2.5vw,14px);}
+.prayer-history-item{background:rgba(201,168,76,0.1);
+border:1px solid rgba(201,168,76,0.2);
+border-radius:8px;
+padding:clamp(8px,2vw,12px);
+margin-bottom:clamp(6px,1.5vw,10px);
+font-size:clamp(10px,2.2vw,12px);
+color:rgba(232,212,139,0.8);
+}
+
+/* QUE */
+.que-result{text-align:center;padding:clamp(8px,2vw,12px);}
+.que-category{
+background:rgba(201,168,76,0.1);
+border:1px solid rgba(201,168,76,0.25);
+border-radius:10px;
+padding:clamp(10px,2.5vw,14px);
+margin-bottom:clamp(8px,2vw,12px);
+}
+.que-category h4{
+color:var(--gold);
+font-size:clamp(12px,3vw,15px);
+margin-bottom:clamp(4px,1vw,8px);
+}
+.que-category p{
+color:rgba(232,212,139,0.9);
+font-size:clamp(11px,2.5vw,13px);
+}
+.que-btn{
+background:linear-gradient(135deg,var(--gold-dark),var(--bronze));
+border:2px solid var(--gold);
+color:var(--gold-light);
+padding:clamp(10px,2.5vw,14px) clamp(24px,6vw,32px);
+font-size:clamp(13px,3vw,16px);
+font-family:inherit;
+border-radius:25px;
+cursor:pointer;
+margin-top:clamp(8px,2vw,12px);
+font-weight:700;
+}
+
+/* CALENDAR */
+.calendar-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,1.5vw,10px);}
+.calendar-item{
+background:rgba(201,168,76,0.08);
+border:1px solid rgba(201,168,76,0.2);
+border-radius:8px;
+padding:clamp(8px,2vw,12px);
+text-align:center;
+}
+.calendar-item .label{font-size:clamp(9px,2vw,11px);
+color:rgba(232,212,139,0.65);
+margin-bottom:clamp(2px,0.5vw,6px);
+}
+.calendar-item .value{
+font-size:clamp(12px,2.8vw,15px);
+color:var(--gold-light);
+font-weight:700;
+word-break:break-word;
+}
+.calendar-item.good .value{color:#7ec87e;}
+.calendar-item.bad .value{color:#e07070;}
+
+/* NEWS */
+.news-card{
+background:rgba(201,168,76,0.08);
+border:1px solid rgba(201,168,76,0.2);
+border-radius:10px;
+padding:clamp(10px,2.5vw,14px);
+margin-bottom:clamp(8px,2vw,12px);
+}
+.news-card h4{
+color:var(--gold-light);
+font-size:clamp(12px,2.8vw,14px);
+margin-bottom:clamp(4px,1vw,8px);
+line-height:1.4;
+}
+.news-card p{
+color:rgba(232,212,139,0.8);
+font-size:clamp(10px,2.2vw,12px);
+line-height:1.5;
+}
+.news-card .news-date{
+font-size:clamp(9px,2vw,10px);
+color:rgba(201,168,76,0.6);
+margin-top:clamp(4px,1vw,8px);
+}
+
+/* COMMUNITY */
+.community-post{
+background:rgba(201,168,76,0.08);
+border:1px solid rgba(201,168,76,0.2);
+border-radius:10px;
+padding:clamp(10px,2.5vw,14px);
+margin-bottom:clamp(8px,2vw,12px);
+}
+.community-post .post-author{
+color:var(--gold);
+font-size:clamp(11px,2.5vw,13px);
+font-weight:700;margin-bottom:clamp(4px,1vw,6px);
+}
+.community-post .post-content{
+color:rgba(232,212,139,0.9);
+font-size:clamp(11px,2.5vw,13px);
+line-height:1.5;
+margin-bottom:clamp(6px,1.5vw,10px);
+}
+.post-actions{display:flex;gap:clamp(12px,3vw,18px);flex-wrap:wrap;}
+.post-action{
+background:none;border:none;
+color:rgba(232,212,139,0.7);
+font-size:clamp(10px,2vw,12px);
+cursor:pointer;
+font-family:inherit;
+display:flex;align-items:center;gap:4px;
+padding:4px 0;
+}
+.post-action:active{color:var(--gold);}
+.post-action.liked{color:#e07070;}
+
+/* PROFILE */
+.profile-header{text-align:center;padding:clamp(14px,3.5vw,20px);}
+.profile-avatar{
+width:clamp(70px,18vw,90px);height:clamp(70px,18vw,90px);
+border-radius:50%;
+border:3px solid var(--gold);
+background:linear-gradient(135deg,var(--gold-dark),var(--bronze));
+display:flex;align-items:center;justify-content:center;
+margin:0 auto clamp(10px,2.5vw,14px);
+font-size:clamp(28px,7vw,36px);
+box-shadow:0 0 24px rgba(201,168,76,0.4);
+}
+.profile-name{
+color:var(--gold-light);
+font-size:clamp(16px,4vw,20px);
+font-weight:700;
+margin-bottom:clamp(4px,1vw,6px);
+}
+.profile-badge{
+display:inline-block;
+background:rgba(201,168,76,0.18);
+border:1px solid var(--gold);
+border-radius:20px;
+padding:clamp(4px,1vw,6px) clamp(12px,3vw,16px);
+font-size:clamp(10px,2.2vw,12px);
+color:var(--gold-light);
+margin-top:clamp(4px,1vw,8px);
+}
+.profile-stats{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,2vw,12px);margin-top:clamp(12px,3vw,18px);}.stat-item{
+background:rgba(201,168,76,0.08);
+border:1px solid rgba(201,168,76,0.2);
+border-radius:10px;
+padding:clamp(10px,2.5vw,14px);
+text-align:center;
+}
+.stat-item .stat-value{
+font-size:clamp(18px,4.5vw,24px);
+color:var(--gold-light);
+font-weight:900;
+}
+.stat-item .stat-label{
+font-size:clamp(9px,2vw,11px);
+color:rgba(232,212,139,0.65);
+margin-top:clamp(2px,0.5vw,6px);
+}
+
+/* MERIT */
+.merit-list{list-style:none;}
+.merit-list li{
+background:rgba(201,168,76,0.08);
+border:1px solid rgba(201,168,76,0.2);
+border-radius:8px;
+padding:clamp(8px,2vw,12px);
+margin-bottom:clamp(6px,1.5vw,10px);
+display:flex;
+justify-content:space-between;
+align-items:center;
+font-size:clamp(11px,2.4vw,13px);
+color:rgba(232,212,139,0.9);
+gap:8px;
+}
+.merit-points{color:var(--gold);font-weight:700;flex-shrink:0;}
+
+/* HOME */
+.home-welcome{text-align:center;padding:clamp(16px,4vw,24px) clamp(8px,2vw,12px);}
+.home-welcome h2{
+color:var(--gold-light);
+font-size:clamp(16px,4vw,22px);
+margin-bottom:clamp(6px,1.5vw,10px);
+text-shadow:0 0 24px rgba(201,168,76,0.5);
+}
+.home-welcome p{
+color:rgba(232,212,139,0.8);
+font-size:clamp(11px,2.5vw,14px);
+line-height:1.6;
+}
+.home-features{display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,1.5vw,10px);margin-top:clamp(12px,3vw,18px);}
+.feature-card{background:rgba(201,168,76,0.1);
+border:1px solid rgba(201,168,76,0.25);
+border-radius:10px;
+padding:clamp(12px,3vw,16px) clamp(8px,2vw,12px);
+text-align:center;
+cursor:pointer;
+transition:all 0.3s;
+}
+.feature-card:active{
+background:rgba(201,168,76,0.2);
+transform:scale(0.97);
+}
+.feature-card .feat-icon{
+font-size:clamp(22px,5.5vw,30px);
+margin-bottom:clamp(4px,1vw,8px);
+display:block;
+}
+.feature-card .feat-label{
+font-size:clamp(10px,2.2vw,12px);
+color:var(--gold-light);
+font-weight:600;
+}
+
+/* INPUT */
+.input-field{
+width:100%;
+margin-top:clamp(4px,1vw,8px);
+padding:clamp(8px,2vw,12px);
+background:rgba(201,168,76,0.1);
+border:1px solid rgba(201,168,76,0.35);
+border-radius:8px;
+color:var(--gold-light);
+font-family:inherit;
+font-size:clamp(12px,2.8vw,14px);
+outline:none;
+}
+.input-field:focus{border-color:var(--gold);box-shadow:0 0 10px rgba(201,168,76,0.4);}
+
+/* BADGES */
+.badge-item{
+background:rgba(201,168,76,0.12);
+border:1px solid rgba(201,168,76,0.35);
+border-radius:20px;
+padding:clamp(4px,1vw,6px) clamp(10px,2.5vw,14px);
+font-size:clamp(10px,2.2vw,12px);
+color:var(--gold-light);
+display:inline-block;
+margin:clamp(2px,0.5vw,4px);
+}
+/* ALTAR IMAGE FOR INCENSE PAGE */
+.altar-image{
+width:100%;
+border-radius:clamp(8px,2vw,12px);
+margin-bottom:clamp(12px,3vw,16px);
+border:2px solid rgba(201,168,76,0.3);
+box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
+
+@media(min-width:600px){
+.bottom-menu{justify-content:center;}
+.menu-item{min-width:clamp(76px,10vw,92px);}
+}
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND SLIDESHOW -->
+<div class="bg-slideshow" id="bgSlideshow">
+<img class="bg-slide active" src="assets/bg1.jpg" alt="Cổng Đền">
+<img class="bg-slide" src="assets/bg2.jpg" alt="Sân Đền">
+<img class="bg-slide" src="assets/bg3.jpg" alt="Đường Vào Đền">
+<img class="bg-slide" src="assets/bg4.jpg" alt="Bàn Thờ Tổ Nghề">
+<img class="bg-slide" src="assets/bg5.jpg" alt="Toàn Cảnh Đền">
+</div>
+<div class="bg-overlay"></div>
+
+<div id="app">
+
+<div class="header">
+<h1>🏛️ ĐỀN TỔ NGHỀ TAXI VIỆT NAM</h1>
+<p>Tổ Nghề Taxi Việt Nam · Tri Ân · Thành Kính · Bình An</p>
+</div>
+
+<div class="main-content" id="mainContent">
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+<div class="home-welcome">
+<h2>🙏 Kính Chào Quý Tài Xế</h2>
+<p>Chào mừng bạn đến với Đền Tổ Nghề Taxi Việt Nam.<br>Nơi linh thiêng cầu bình an, may mắn và tài lộc cho tất cả anh em tài xế trên mọi nẻo đường.</p>
+</div>
+<div class="home-features">
+<div class="feature-card" onclick="showPage('incense')">
+<span class="feat-icon">🕯️</span>
+<span class="feat-label">Dâng Hương</span>
+</div>
+<div class="feature-card" onclick="showPage('prayer')">
+<span class="feat-icon">📜</span>
+<span class="feat-label">Lời Khấn</span></div>
+<div class="feature-card" onclick="showPage('que')">
+<span class="feat-icon"></span>
+<span class="feat-label">Quẻ Hôm Nay</span>
+</div>
+<div class="feature-card" onclick="showPage('calendar')">
+<span class="feat-icon">📅</span>
+<span class="feat-label">Lịch Vạn Niên</span>
+</div>
+<div class="feature-card" onclick="showPage('news')">
+<span class="feat-icon">📰</span>
+<span class="feat-label">Tin Tức</span>
+</div>
+<div class="feature-card" onclick="showPage('community')">
+<span class="feat-icon"></span>
+<span class="feat-label">Cộng Đồng</span>
+</div>
+<div class="feature-card" onclick="showPage('merit')">
+<span class="feat-icon">🏆</span>
+<span class="feat-label">Công Đức</span>
+</div>
+<div class="feature-card" onclick="showPage('profile')">
+<span class="feat-icon">👤</span>
+<span class="feat-label">Hồ Sơ</span>
+</div>
+</div>
+<div class="glass-card" style="margin-top:clamp(12px,3vw,18px);text-align:center;">
+<h3>📿 Lời Dạy Tổ Nghề</h3>
+<p style="font-style:italic;color:rgba(232,212,139,0.9);">
+"Lái xe an toàn vạn dặm bình an<br>Phục vụ tận tâm vạn sự như ý<br>Đoàn kết - Kỷ luật - An toàn<br>Tận tâm - Chuyên nghiệp - Phát triển"
+</p>
+</div>
+</div>
+
+<!-- INCENSE -->
+<div class="page" id="page-incense">
+<div class="incense-area">
+<img class="altar-image" src="assets/bg4.jpg" alt="Bàn Thờ Tổ Nghề Taxi Việt Nam">
+<div class="glass-card">
+<h3>🕯️ Dâng Hương Cầu An</h3>
+<p style="margin-bottom:clamp(12px,3vw,18px);">Thành tâm dâng hương lên Tổ Nghề Taxi Việt Nam.<br>Cầu bình an, may mắn, tài lộc cho tất cả anh em tài xế.</p>
+<button class="incense-btn" onclick="doIncense()">🙏 DÂNG HƯƠNG</button>
+</div>
+<div class="glass-card">
+<h3>📊 Thống Kê</h3>
+<p>Tổng số lần dâng hương: <strong id="incenseCount" style="color:var(--gold);">0</strong></p>
+<p>Lần dâng hương gần nhất: <strong id="lastIncense" style="color:var(--gold);">Chưa có</strong></p>
+</div>
+</div>
+</div>
+<!-- PRAYER -->
+<div class="page" id="page-prayer">
+<div class="glass-card">
+<h3> Văn Khấn Tổ Nghề Taxi</h3>
+<div class="prayer-text" id="prayerText">Nam mô A Di Đà Phật!
+
+Con kính lạy Tổ Nghề Taxi Việt Nam.
+Con kính lạy chư vị Tiên linh,
+chư vị Thần linh phù hộ cho nghề lái xe.
+
+Hôm nay, ngày lành tháng tốt,
+con là: [Tên tài xế],
+hành nghề lái xe taxi tại [Địa phương].
+
+Con thành tâm dâng hương hoa,
+lễ vật, cầu xin Tổ Nghề phù hộ:
+
+🙏 Cầu BÌNH AN - Mỗi chuyến đi đều an toàn,
+mọi nẻo đường đều thuận lợi.
+
+🍀 Cầu MAY MẮN - Khách đông đường thoáng,
+doanh thu sung túc, tài lộc dồi dào.
+
+💰 Cầu TÀI LỘC - Công việc hanh thông,
+thu nhập ổn định, gia đình ấm no.
+
+Con xin hứa sẽ:
+- Lái xe an toàn, tuân thủ pháp luật
+- Phục vụ khách hàng tận tâm, chu đáo
+- Giữ gìn uy tín nghề nghiệp
+- Đoàn kết với anh em đồng nghiệp
+
+Cầu xin Tổ Nghề chứng giám và phù hộ.
+
+Nam mô A Di Đà Phật!</div>
+<button class="incense-btn" style="margin-top:clamp(10px,2.5vw,14px);font-size:clamp(12px,2.8vw,14px);padding:clamp(8px,2vw,12px) clamp(20px,5vw,28px);" onclick="savePrayer()">💾 Lưu Lời Khấn</button>
+</div>
+<div class="glass-card prayer-history">
+<h3>📋 Lịch Sử Lời Khấn</h3>
+<div id="prayerHistoryList">
+<p style="color:rgba(232,212,139,0.5);font-size:clamp(10px,2.2vw,12px);">Chưa có lời khấn nào được lưu.</p>
+</div>
+</div>
+</div>
+
+<!-- QUE -->
+<div class="page" id="page-que">
+<div class="glass-card">
+<h3>🎴 Quẻ Bói Hôm Nay</h3><div class="que-result" id="queResult">
+<p style="color:rgba(232,212,139,0.7);margin-bottom:clamp(12px,3vw,18px);">Nhấn nút để rút quẻ hôm nay</p>
+</div>
+<button class="que-btn" onclick="drawQue()">🎴 RÚT QUẺ</button>
+</div>
+</div>
+
+<!-- CALENDAR -->
+<div class="page" id="page-calendar">
+<div class="glass-card">
+<h3>📅 Lịch Vạn Niên Hôm Nay</h3>
+<div class="calendar-grid" id="calendarGrid"></div>
+</div>
+</div>
+
+<!-- NEWS -->
+<div class="page" id="page-news">
+<div class="glass-card">
+<h3>📰 Tin Tức Ngành Taxi</h3>
+<div id="newsList">
+<div class="news-card">
+<h4>🚖 Hội nghị Tổng kết Ngành Taxi 2026</h4>
+<p>Hội nghị tổng kết hoạt động ngành taxi toàn quốc diễn ra tại Hà Nội với sự tham gia của hơn 500 đại diện doanh nghiệp và tài xế.</p>
+<div class="news-date">📅 25/07/2026</div>
+</div>
+<div class="news-card">
+<h4>⛽ Giá xăng điều chỉnh giảm 500 đồng/lít</h4>
+<p>Từ ngày 28/7/2026, giá xăng E5 RON92 giảm 500 đồng/lít, giúp anh em tài xế giảm chi phí vận hành đáng kể.</p>
+<div class="news-date">📅 27/07/2026</div>
+</div>
+<div class="news-card">
+<h4>📱 Ứng dụng gọi taxi mới ra mắt tại TP.HCM</h4>
+<p>Nền tảng gọi taxi tích hợp AI giúp tối ưu lộ trình, giảm thời gian chờ đợi và tăng thu nhập cho tài xế.</p>
+<div class="news-date">📅 26/07/2026</div>
+</div>
+<div class="news-card">
+<h4>🏆 Vinh danh 100 tài xế tiêu biểu năm 2026</h4>
+<p>Chương trình vinh danh các tài xế có thành tích xuất sắc về an toàn giao thông và phục vụ khách hàng.</p>
+<div class="news-date">📅 24/07/2026</div>
+</div>
+<div class="news-card">
+<h4>🛣️ Mở thêm 3 tuyến đường mới kết nối sân bay</h4>
+<p>UBND TP.HCM phê duyệt mở 3 tuyến đường mới giúp rút ngắn thời gian di chuyển từ trung tâm đến sân bay Tân Sơn Nhất.</p>
+<div class="news-date">📅 23/07/2026</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- COMMUNITY --><div class="page" id="page-community">
+<div class="glass-card">
+<h3>👥 Cộng Đồng Tài Xế</h3>
+<div id="communityList">
+<div class="community-post">
+<div class="post-author"> Anh Hùng - Taxi Mai Linh</div>
+<div class="post-content">Hôm nay chạy ca đêm từ sân bay về quận 1, đường thoáng khách vui vẻ. Cầu Tổ Nghề phù hộ anh em luôn bình an! 🙏</div>
+<div class="post-actions">
+<button class="post-action" onclick="likePost(this)"><span>❤️</span> <span class="cnt">24</span></button>
+<button class="post-action" onclick="commentPost(this)"><span>💬</span> <span class="cnt">8</span></button>
+<button class="post-action" onclick="sharePost(this)"> Chia sẻ</button>
+</div>
+</div>
+<div class="community-post">
+<div class="post-author">🚕 Chị Lan - Taxi Vinasun</div>
+<div class="post-content">10 năm nghề taxi, chưa ever bị tai nạn. Bí quyết là luôn tuân thủ tốc độ và giữ tâm bình an khi lái xe. Chúc anh em mạnh khỏe! </div>
+<div class="post-actions">
+<button class="post-action" onclick="likePost(this)"><span>❤️</span> <span class="cnt">56</span></button>
+<button class="post-action" onclick="commentPost(this)"><span>💬</span> <span class="cnt">15</span></button>
+<button class="post-action" onclick="sharePost(this)">🔗 Chia sẻ</button>
+</div>
+</div>
+<div class="community-post">
+<div class="post-author">🚗 Anh Tuấn - Taxi Group</div>
+<div class="post-content">Sáng nay đón khách đoàn du lịch, tip được 500k. Cảm ơn Tổ Nghề phù hộ! Anh em ai có mẹo chạy doanh thu cao chia sẻ với nhé!</div>
+<div class="post-actions">
+<button class="post-action" onclick="likePost(this)"><span>❤️</span> <span class="cnt">42</span></button>
+<button class="post-action" onclick="commentPost(this)"><span></span> <span class="cnt">22</span></button>
+<button class="post-action" onclick="sharePost(this)">🔗 Chia sẻ</button>
+</div>
+</div>
+<div class="community-post">
+<div class="post-author">🚙 Anh Minh - Taxi Xanh</div>
+<div class="post-content">Vừa thay lốp mới, kiểm tra xe kỹ trước khi chạy ca. An toàn là trên hết anh em ơi! 🛞✅</div>
+<div class="post-actions">
+<button class="post-action" onclick="likePost(this)"><span>❤️</span> <span class="cnt">31</span></button>
+<button class="post-action" onclick="commentPost(this)"><span>💬</span> <span class="cnt">6</span></button>
+<button class="post-action" onclick="sharePost(this)">🔗 Chia sẻ</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- MERIT -->
+<div class="page" id="page-merit">
+<div class="glass-card">
+<h3>🏆 Bảng Công Đức</h3>
+<p style="margin-bottom:clamp(10px,2.5vw,14px);">Tổng điểm công đức của bạn: <strong id="totalMerit" style="color:var(--gold);font-size:clamp(16px,4vw,20px);">0</strong></p>
+<ul class="merit-list" id="meritList"><li><span>🕯️ Dâng hương lần đầu</span><span class="merit-points">+10</span></li>
+<li><span> Lưu lời khấn</span><span class="merit-points">+5</span></li>
+<li><span>🎴 Rút quẻ hàng ngày</span><span class="merit-points">+3</span></li>
+<li><span> Tham gia cộng đồng</span><span class="merit-points">+2</span></li>
+<li><span>❤️ Like bài viết</span><span class="merit-points">+1</span></li>
+</ul>
+</div>
+<div class="glass-card">
+<h3>🏅 Huy Hiệu Đạt Được</h3>
+<div id="badgesList" style="display:flex;flex-wrap:wrap;gap:clamp(4px,1vw,8px);margin-top:clamp(6px,1.5vw,10px);">
+<span class="badge-item">🌟 Tân Thủ</span>
+</div>
+</div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="page-profile">
+<div class="glass-card profile-header">
+<div class="profile-avatar">🚖</div>
+<div class="profile-name" id="profileName">Tài Xế Anonymous</div>
+<p style="color:rgba(232,212,139,0.7);font-size:clamp(10px,2.2vw,12px);">Tham gia từ: <span id="joinDate">29/07/2026</span></p>
+<div class="profile-badge" id="profileBadge">🌟 Tân Thủ</div>
+</div>
+<div class="profile-stats">
+<div class="stat-item">
+<div class="stat-value" id="statIncense">0</div>
+<div class="stat-label">Lần dâng hương</div>
+</div>
+<div class="stat-item">
+<div class="stat-value" id="statMerit">0</div>
+<div class="stat-label">Điểm công đức</div>
+</div>
+<div class="stat-item">
+<div class="stat-value" id="statPrayers">0</div>
+<div class="stat-label">Lời khấn đã lưu</div>
+</div>
+<div class="stat-item">
+<div class="stat-value" id="statDays">1</div>
+<div class="stat-label">Ngày tham gia</div>
+</div>
+</div>
+<div class="glass-card" style="margin-top:clamp(10px,2.5vw,14px);">
+<h3>⚙️ Cài Đặt</h3>
+<div style="margin-top:clamp(6px,1.5vw,10px);">
+<label style="color:rgba(232,212,139,0.8);font-size:clamp(10px,2.2vw,12px);">Tên hiển thị:</label>
+<input type="text" id="inputName" placeholder="Nhập tên của bạn" class="input-field" oninput="updateName(this.value)">
+</div>
+<div style="margin-top:clamp(10px,2.5vw,14px);">
+<button class="incense-btn" style="font-size:clamp(11px,2.5vw,13px);padding:clamp(6px,1.5vw,10px) clamp(16px,4vw,22px);" onclick="resetData()">🔄 Đặt Lại Dữ Liệu</button>
+</div></div>
+</div>
+
+</div>
+
+<div class="bottom-menu">
+<div class="menu-item active" onclick="showPage('home')">
+<span class="menu-icon">🏠</span>
+<span class="menu-label">Trang Chủ</span>
+</div>
+<div class="menu-item" onclick="showPage('incense')">
+<span class="menu-icon">🕯️</span>
+<span class="menu-label">Dâng Hương</span>
+</div>
+<div class="menu-item" onclick="showPage('prayer')">
+<span class="menu-icon">📜</span>
+<span class="menu-label">Lời Khấn</span>
+</div>
+<div class="menu-item" onclick="showPage('que')">
+<span class="menu-icon">🎴</span>
+<span class="menu-label">Quẻ</span>
+</div>
+<div class="menu-item" onclick="showPage('calendar')">
+<span class="menu-icon">📅</span>
+<span class="menu-label">Lịch</span>
+</div>
+<div class="menu-item" onclick="showPage('news')">
+<span class="menu-icon">📰</span>
+<span class="menu-label">Tin Tức</span>
+</div>
+<div class="menu-item" onclick="showPage('community')">
+<span class="menu-icon">👥</span>
+<span class="menu-label">Cộng Đồng</span>
+</div>
+<div class="menu-item" onclick="showPage('merit')">
+<span class="menu-icon">🏆</span>
+<span class="menu-label">Công Đức</span>
+</div>
+<div class="menu-item" onclick="showPage('profile')">
+<span class="menu-icon">👤</span>
+<span class="menu-label">Hồ Sơ</span>
+</div>
+</div>
+
+</div>
+
+<div class="incense-anim" id="incenseAnim"></div>
+
+<div class="popup-overlay" id="prayerPopup">
+<div class="popup"><button class="popup-close" onclick="closePopup('prayerPopup')">✕</button>
+<h2>📜 Lời Khấn Đã Lưu</h2>
+<div id="popupPrayerContent"></div>
+</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const STORAGE_KEY = 'denToNgheTaxi_v2';
+
+const defaultState = {
+incenseCount: 0,
+lastIncense: 'Chưa có',
+prayers: [],
+meritPoints: 0,
+userName: 'Tài Xế Anonymous',
+joinDate: '29/07/2026',
+queDrawnDate: '',
+likedPosts: []
+};
+
+let state = loadState();
+let currentBgIndex = 0;
+let bgInterval;
+
+const pageBgMap = {
+home: 4,
+incense: 3,
+prayer: 3,
+que: 2,
+calendar: 1,
+news: 2,
+community: 1,
+merit: 3,
+profile: 4
+};
+
+function loadState(){
+try{
+const raw = localStorage.getItem(STORAGE_KEY);
+if(raw){
+const parsed = JSON.parse(raw);
+return Object.assign({}, defaultState, parsed);
+}
+}catch(e){}
+return Object.assign({}, defaultState);
+}
+function saveState(){
+try{
+localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}catch(e){}
+}
+
+function addMerit(points){
+state.meritPoints = (state.meritPoints || 0) + points;
+saveState();
+updateUI();
+}
+
+function updateUI(){
+const el = (id) => document.getElementById(id);
+if(el('incenseCount')) el('incenseCount').textContent = state.incenseCount || 0;
+if(el('lastIncense')) el('lastIncense').textContent = state.lastIncense || 'Chưa có';
+if(el('profileName')) el('profileName').textContent = state.userName || 'Tài Xế Anonymous';
+if(el('inputName')) el('inputName').value = (state.userName === 'Tài Xế Anonymous') ? '' : state.userName;
+if(el('joinDate')) el('joinDate').textContent = state.joinDate;
+if(el('totalMerit')) el('totalMerit').textContent = state.meritPoints || 0;
+if(el('statIncense')) el('statIncense').textContent = state.incenseCount || 0;
+if(el('statMerit')) el('statMerit').textContent = state.meritPoints || 0;
+if(el('statPrayers')) el('statPrayers').textContent = (state.prayers || []).length;
+if(el('statDays')){
+try{
+const parts = (state.joinDate || '29/07/2026').split('/');
+const d = new Date(parts[2], parts[1]-1, parts[0]);
+const days = Math.max(1, Math.floor((new Date() - d) / (1000*60*60*24)) + 1);
+el('statDays').textContent = days;
+}catch(e){el('statDays').textContent = 1;}
+}
+updateBadges();
+updatePrayerHistory();
+}
+
+function updateBadges(){
+const badges = [];
+if((state.incenseCount || 0) >= 1) badges.push('🕯️ Tín Đồ');
+if((state.incenseCount || 0) >= 10) badges.push('🔥 Trung Thành');
+if((state.meritPoints || 0) >= 50) badges.push('⭐ Công Đức');
+if((state.meritPoints || 0) >= 100) badges.push('️ Hộ Pháp');
+if((state.prayers || []).length >= 5) badges.push(' Sùng Kính');
+if(badges.length === 0) badges.push('🌟 Tân Thủ');
+const list = document.getElementById('badgesList');
+if(list){
+list.innerHTML = badges.map(b => '<span class="badge-item">'+b+'</span>').join('');
+}
+const badge = document.getElementById('profileBadge');
+if(badge) badge.textContent = badges[badges.length-1];
+}
+function updatePrayerHistory(){
+const list = document.getElementById('prayerHistoryList');
+if(!list) return;
+const prayers = state.prayers || [];
+if(prayers.length === 0){
+list.innerHTML = '<p style="color:rgba(232,212,139,0.5);font-size:clamp(10px,2.2vw,12px);">Chưa có lời khấn nào được lưu.</p>';
+return;
+}
+list.innerHTML = prayers.map(p =>
+'<div class="prayer-history-item"><strong>📅 '+p.date+'</strong><br>'+escapeHtml(p.text)+'</div>'
+).join('');
+}
+
+function escapeHtml(str){
+if(!str) return '';
+return String(str).replace(/[&<>"']/g, s => ({'&':'&','<':'<','>':'>','"':'"',"'":'''}[s]));
+}
+
+// BACKGROUND SLIDESHOW
+function initSlideshow(){
+const slides = document.querySelectorAll('.bg-slide');
+if(slides.length === 0) return;
+bgInterval = setInterval(() => {
+slides[currentBgIndex].classList.remove('active');
+currentBgIndex = (currentBgIndex + 1) % slides.length;
+slides[currentBgIndex].classList.add('active');
+}, 6000);
+}
+
+function setBackgroundForPage(pageId){
+const slides = document.querySelectorAll('.bg-slide');
+if(slides.length === 0) return;
+const targetIndex = pageBgMap[pageId] || 0;
+slides.forEach((slide, idx) => {
+slide.classList.remove('active');
+if(idx === targetIndex){
+slide.classList.add('active');
+}
+});
+clearInterval(bgInterval);
+bgInterval = setInterval(() => {
+slides[currentBgIndex].classList.remove('active');
+currentBgIndex = (currentBgIndex + 1) % slides.length;
+slides[currentBgIndex].classList.add('active');
+}, 8000);
+}
+
+// NAVIGATION
+window.showPage = function(pageId){document.querySelectorAll('.page').forEach(p => {
+p.classList.remove('active');
+p.classList.remove('page-zoom');
+});
+document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+const page = document.getElementById('page-' + pageId);
+if(page){
+page.classList.add('active');
+setTimeout(() => page.classList.add('page-zoom'), 10);
+}
+const menuItems = document.querySelectorAll('.menu-item');
+const pageMap = ['home','incense','prayer','que','calendar','news','community','merit','profile'];
+const idx = pageMap.indexOf(pageId);
+if(idx >= 0 && menuItems[idx]) menuItems[idx].classList.add('active');
+const mc = document.getElementById('mainContent');
+if(mc) mc.scrollTop = 0;
+setBackgroundForPage(pageId);
+};
+
+// INCENSE
+window.doIncense = function(){
+const anim = document.getElementById('incenseAnim');
+if(!anim) return;
+anim.innerHTML = '';
+anim.classList.add('show');
+for(let i=0; i<35; i++){
+setTimeout(() => {
+const smoke = document.createElement('div');
+smoke.className = 'smoke';
+smoke.style.left = (30 + Math.random()*40) + '%';
+smoke.style.top = (40 + Math.random()*20) + '%';
+smoke.style.animationDelay = (Math.random()*0.5) + 's';
+anim.appendChild(smoke);
+}, i * 60);
+}
+const glow = document.createElement('div');
+glow.className = 'glow-effect';
+anim.appendChild(glow);
+try{
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+const osc = ctx.createOscillator();
+const gain = ctx.createGain();
+osc.connect(gain);
+gain.connect(ctx.destination);
+osc.frequency.value = 523.25;
+osc.type = 'sine';
+gain.gain.setValueAtTime(0.25, ctx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2.5);
+osc.start(ctx.currentTime);
+osc.stop(ctx.currentTime + 2.5);setTimeout(() => {
+const osc2 = ctx.createOscillator();
+const gain2 = ctx.createGain();
+osc2.connect(gain2);
+gain2.connect(ctx.destination);
+osc2.frequency.value = 659.25;
+osc2.type = 'sine';
+gain2.gain.setValueAtTime(0.2, ctx.currentTime);
+gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2);
+osc2.start(ctx.currentTime);
+osc2.stop(ctx.currentTime + 2);
+}, 300);
+}catch(e){}
+state.incenseCount = (state.incenseCount || 0) + 1;
+state.lastIncense = new Date().toLocaleString('vi-VN');
+addMerit(10);
+saveState();
+setTimeout(() => {
+anim.classList.remove('show');
+anim.innerHTML = '';
+}, 3500);
+};
+
+// PRAYER
+window.savePrayer = function(){
+const prayerEl = document.getElementById('prayerText');
+if(!prayerEl) return;
+const prayer = prayerEl.textContent.trim();
+const entry = {
+date: new Date().toLocaleString('vi-VN'),
+text: prayer.substring(0, 120) + (prayer.length > 120 ? '...' : '')
+};
+state.prayers = state.prayers || [];
+state.prayers.unshift(entry);
+if(state.prayers.length > 10) state.prayers = state.prayers.slice(0, 10);
+addMerit(5);
+saveState();
+updatePrayerHistory();
+alert('✅ Lời khấn đã được lưu thành công!');
+};
+
+// QUE
+window.drawQue = function(){
+const today = new Date().toDateString();
+if(state.queDrawnDate === today){
+alert('🔮 Bạn đã rút quẻ hôm nay rồi! Hãy quay lại vào ngày mai.');
+return;
+}
+const categories = [
+{name:'Công việc',icons:['📊','📈',''],texts:['Thuận lợi, khách đông đường thoáng','Cần kiên nhẫn, tránh nóng vội','Có quý nhân phù trợ, công việc hanh thông']},{name:'Tài lộc',icons:['💰','💎','🪙'],texts:['Tài lộc dồi dào, thu nhập tăng','Tiết kiệm chi phí, tránh đầu tư mạo hiểm','Có khoản thu bất ngờ từ khách hàng']},
+{name:'Sức khỏe',icons:['💪','❤️','🌿'],texts:['Sức khỏe ổn định, tinh thần minh mẫn','Chú ý nghỉ ngơi, đừng lái xe khi mệt mỏi','Tập thể dục nhẹ nhàng để giữ sức bền']},
+{name:'Gia đạo',icons:['🏠','👨‍👩‍👧','🕊️'],texts:['Gia đình hòa thuận, ấm no hạnh phúc','Dành thời gian trò chuyện với người thân','Mang niềm vui từ công việc về nhà']},
+{name:'May mắn',icons:['🍀','⭐','🌟'],texts:['Vận may đang đến, hãy nắm bắt cơ hội','Cẩn trọng trong quyết định, đừng vội vàng','Có tin vui bất ngờ trong tuần này']}
+];
+let html = '';
+categories.forEach(cat => {
+const idx = Math.floor(Math.random() * cat.texts.length);
+html += '<div class="que-category"><h4>'+cat.icons[idx]+' '+cat.name+'</h4><p>'+cat.texts[idx]+'</p></div>';
+});
+const result = document.getElementById('queResult');
+if(result) result.innerHTML = html;
+state.queDrawnDate = today;
+addMerit(3);
+saveState();
+};
+
+// CALENDAR
+function initCalendar(){
+const now = new Date();
+const day = now.getDate();
+const month = now.getMonth() + 1;
+const year = now.getFullYear();
+const weekday = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'][now.getDay()];
+const lunarData = getLunarDate(day, month, year);
+const canChi = getCanChi(year);
+const zodiac = getZodiac(year);
+const isGoodDay = (day + month) % 3 !== 0;
+const hourGood = ['Tý (23-1)','Sửu (1-3)','Dần (3-5)','Thìn (7-9)','Tỵ (9-11)','Ngọ (11-13)'];
+const hourBad = ['Mão (5-7)','Mùi (13-15)','Thân (15-17)','Tuất (19-21)'];
+const directions = ['Đông','Đông Nam','Nam','Tây Nam','Tây','Tây Bắc','Bắc','Đông Bắc'];
+const dirToday = directions[now.getDay() % 8];
+const ageConflict = getConflictZodiac(zodiac);
+const grid = document.getElementById('calendarGrid');
+if(!grid) return;
+grid.innerHTML =
+'<div class="calendar-item"><div class="label">Dương Lịch</div><div class="value">'+day+'/'+month+'/'+year+'</div></div>'+
+'<div class="calendar-item"><div class="label">Âm Lịch</div><div class="value">'+lunarData.day+' '+lunarData.month+'</div></div>'+
+'<div class="calendar-item"><div class="label">Ngày trong tuần</div><div class="value">'+weekday+'</div></div>'+
+'<div class="calendar-item"><div class="label">Can Chi</div><div class="value">'+canChi+'</div></div>'+
+'<div class="calendar-item"><div class="label">Con Giáp</div><div class="value">'+zodiac+'</div></div>'+
+'<div class="calendar-item '+(isGoodDay?'good':'bad')+'"><div class="label">Ngày</div><div class="value">'+(isGoodDay?'🟢 Tốt':'🔴 Xấu')+'</div></div>'+
+'<div class="calendar-item"><div class="label">Giờ Hoàng Đạo</div><div class="value" style="font-size:clamp(10px,2.2vw,12px);">'+hourGood.slice(0,3).join(', ')+'</div></div>'+
+'<div class="calendar-item"><div class="label">Giờ Hắc Đạo</div><div class="value" style="font-size:clamp(10px,2.2vw,12px);color:#e07070;">'+hourBad.slice(0,2).join(', ')+'</div></div>'+
+'<div class="calendar-item"><div class="label">Hướng Xuất Hành</div><div class="value">'+dirToday+'</div></div>'+
+'<div class="calendar-item"><div class="label">Tuổi Hợp</div><div class="value" style="font-size:clamp(10px,2.2vw,12px);">'+zodiac+'</div></div>'+
+'<div class="calendar-item"><div class="label">Tuổi Xung</div><div class="value" style="font-size:clamp(10px,2.2vw,12px);color:#e07070;">'+ageConflict+'</div></div>';
+}
+
+function getLunarDate(d,m,y){const lunarMonths = ['Giêng','Hai','Ba','Tư','Năm','Sáu','Bảy','Tám','Chín','Mười','Một','Chạp'];
+const lunarDays = ['Mùng 1','Mùng 2','Mùng 3','Mùng 4','Mùng 5','Mùng 6','Mùng 7','Mùng 8','Mùng 9','Mùng 10','11','12','13','14','Rằm','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30'];
+return {
+day: lunarDays[(d-1) % 30],
+month: lunarMonths[(m-1) % 12],
+year: y - 1984 + 1
+};
+}
+
+function getCanChi(year){
+const can = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý'];
+const chi = ['Tý','Sửu','Dần','Mão','Thìn','Tỵ','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi'];
+return can[year % 10] + ' ' + chi[year % 12];
+}
+
+function getZodiac(year){
+const z = ['Chuột','Trâu','Hổ','Mèo','Rồng','Rắn','Ngựa','Dê','Khỉ','Gà','Chó','Heo'];
+return z[year % 12];
+}
+
+function getConflictZodiac(z){
+const conflicts = {'Chuột':'Ngựa','Trâu':'Dê','Hổ':'Khỉ','Mèo':'Gà','Rồng':'Chó','Rắn':'Heo','Ngựa':'Chuột','Dê':'Trâu','Khỉ':'Hổ','Gà':'Mèo','Chó':'Rồng','Heo':'Rắn'};
+return conflicts[z] || 'Không xung';
+}
+
+// COMMUNITY
+window.likePost = function(btn){
+const cnt = btn.querySelector('.cnt');
+if(!cnt) return;
+let count = parseInt(cnt.textContent) || 0;
+const postId = btn.closest('.community-post').dataset.postId || Math.random().toString(36).substr(2,9);
+btn.closest('.community-post').dataset.postId = postId;
+state.likedPosts = state.likedPosts || [];
+if(!btn.classList.contains('liked')){
+count++;
+btn.classList.add('liked');
+if(state.likedPosts.indexOf(postId) === -1){
+state.likedPosts.push(postId);
+addMerit(1);
+}
+}else{
+count = Math.max(0, count - 1);
+btn.classList.remove('liked');
+state.likedPosts = state.likedPosts.filter(id => id !== postId);
+}
+cnt.textContent = count;
+saveState();
+};
+
+window.commentPost = function(btn){const comment = prompt(' Nhập bình luận của bạn:');
+if(comment && comment.trim()){
+const cnt = btn.querySelector('.cnt');
+if(cnt) cnt.textContent = (parseInt(cnt.textContent) || 0) + 1;
+addMerit(2);
+alert('✅ Bình luận đã được gửi!');
+}
+};
+
+window.sharePost = function(btn){
+if(navigator.share){
+navigator.share({title:'Đền Tổ Nghề Taxi Việt Nam',text:'Cầu bình an cho anh em tài xế!',url:window.location.href}).catch(()=>{});
+}else{
+alert('🔗 Link đã được sao chép!');
+}
+addMerit(2);
+};
+
+// PROFILE
+window.updateName = function(name){
+if(name && name.trim()){
+state.userName = name.trim();
+document.getElementById('profileName').textContent = state.userName;
+saveState();
+}
+};
+
+window.resetData = function(){
+if(confirm('⚠️ Bạn có chắc muốn đặt lại toàn bộ dữ liệu?')){
+try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+location.reload();
+}
+};
+
+window.closePopup = function(id){
+const el = document.getElementById(id);
+if(el) el.classList.remove('show');
+};
+
+// INIT
+document.addEventListener('DOMContentLoaded', () => {
+updateUI();
+initCalendar();
+initSlideshow();
+});
+
+})();
+</script>
+</body>
+</html>
