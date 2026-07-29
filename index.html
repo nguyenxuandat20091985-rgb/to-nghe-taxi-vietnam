@@ -556,11 +556,11 @@ box-shadow:0 4px 20px rgba(0,0,0,0.5);
 
 <!-- BACKGROUND SLIDESHOW -->
 <div class="bg-slideshow" id="bgSlideshow">
-<img class="bg-slide active" src="assets/bg1.jpg" alt="Cổng Đền">
-<img class="bg-slide" src="assets/bg2.jpg" alt="Sân Đền">
-<img class="bg-slide" src="assets/bg3.jpg" alt="Đường Vào Đền">
-<img class="bg-slide" src="assets/bg4.jpg" alt="Bàn Thờ Tổ Nghề">
-<img class="bg-slide" src="assets/bg5.jpg" alt="Toàn Cảnh Đền">
+<img class="bg-slide active" src="file_000000006f1c820b97cbae608af0a90b.png" alt="Cổng Đền">
+<img class="bg-slide" src="file_0000000026c481f88a62f93a56c39e12.png" alt="Sân Đền">
+<img class="bg-slide" src="file_00000000df1882078bc949c9cf3d4ce8.png" alt="Đường Vào Đền">
+<img class="bg-slide" src="file_00000000a7388207b70d09d479ef7582.png" alt="Bàn Thờ Tổ Nghề">
+<img class="bg-slide" src="file_00000000861c820785194fb2a1dbc970.png" alt="Toàn Cảnh Đền">
 </div>
 <div class="bg-overlay"></div>
 
@@ -588,7 +588,7 @@ box-shadow:0 4px 20px rgba(0,0,0,0.5);
 <span class="feat-icon">📜</span>
 <span class="feat-label">Lời Khấn</span></div>
 <div class="feature-card" onclick="showPage('que')">
-<span class="feat-icon"></span>
+<span class="feat-icon">🎴</span>
 <span class="feat-label">Quẻ Hôm Nay</span>
 </div>
 <div class="feature-card" onclick="showPage('calendar')">
@@ -600,7 +600,7 @@ box-shadow:0 4px 20px rgba(0,0,0,0.5);
 <span class="feat-label">Tin Tức</span>
 </div>
 <div class="feature-card" onclick="showPage('community')">
-<span class="feat-icon"></span>
+<span class="feat-icon">👥</span>
 <span class="feat-label">Cộng Đồng</span>
 </div>
 <div class="feature-card" onclick="showPage('merit')">
@@ -623,7 +623,7 @@ box-shadow:0 4px 20px rgba(0,0,0,0.5);
 <!-- INCENSE -->
 <div class="page" id="page-incense">
 <div class="incense-area">
-<img class="altar-image" src="assets/bg4.jpg" alt="Bàn Thờ Tổ Nghề Taxi Việt Nam">
+<img class="altar-image" src="file_00000000a7388207b70d09d479ef7582.png" alt="Bàn Thờ Tổ Nghề Taxi Việt Nam">
 <div class="glass-card">
 <h3>🕯️ Dâng Hương Cầu An</h3>
 <p style="margin-bottom:clamp(12px,3vw,18px);">Thành tâm dâng hương lên Tổ Nghề Taxi Việt Nam.<br>Cầu bình an, may mắn, tài lộc cho tất cả anh em tài xế.</p>
@@ -636,10 +636,11 @@ box-shadow:0 4px 20px rgba(0,0,0,0.5);
 </div>
 </div>
 </div>
+
 <!-- PRAYER -->
 <div class="page" id="page-prayer">
 <div class="glass-card">
-<h3> Văn Khấn Tổ Nghề Taxi</h3>
+<h3>📜 Văn Khấn Tổ Nghề Taxi</h3>
 <div class="prayer-text" id="prayerText">Nam mô A Di Đà Phật!
 
 Con kính lạy Tổ Nghề Taxi Việt Nam.
@@ -684,7 +685,8 @@ Nam mô A Di Đà Phật!</div>
 <!-- QUE -->
 <div class="page" id="page-que">
 <div class="glass-card">
-<h3>🎴 Quẻ Bói Hôm Nay</h3><div class="que-result" id="queResult">
+<h3>🎴 Quẻ Bói Hôm Nay</h3>
+<div class="que-result" id="queResult">
 <p style="color:rgba(232,212,139,0.7);margin-bottom:clamp(12px,3vw,18px);">Nhấn nút để rút quẻ hôm nay</p>
 </div>
 <button class="que-btn" onclick="drawQue()">🎴 RÚT QUẺ</button>
@@ -733,7 +735,8 @@ Nam mô A Di Đà Phật!</div>
 </div>
 </div>
 
-<!-- COMMUNITY --><div class="page" id="page-community">
+<!-- COMMUNITY -->
+<div class="page" id="page-community">
 <div class="glass-card">
 <h3>👥 Cộng Đồng Tài Xế</h3>
 <div id="communityList">
@@ -743,12 +746,12 @@ Nam mô A Di Đà Phật!</div>
 <div class="post-actions">
 <button class="post-action" onclick="likePost(this)"><span>❤️</span> <span class="cnt">24</span></button>
 <button class="post-action" onclick="commentPost(this)"><span>💬</span> <span class="cnt">8</span></button>
-<button class="post-action" onclick="sharePost(this)"> Chia sẻ</button>
+<button class="post-action" onclick="sharePost(this)">🔗 Chia sẻ</button>
 </div>
 </div>
 <div class="community-post">
 <div class="post-author">🚕 Chị Lan - Taxi Vinasun</div>
-<div class="post-content">10 năm nghề taxi, chưa ever bị tai nạn. Bí quyết là luôn tuân thủ tốc độ và giữ tâm bình an khi lái xe. Chúc anh em mạnh khỏe! </div>
+<div class="post-content">10 năm nghề taxi, chưa bao giờ bị tai nạn. Bí quyết là luôn tuân thủ tốc độ và giữ tâm bình an khi lái xe. Chúc anh em mạnh khỏe!</div>
 <div class="post-actions">
 <button class="post-action" onclick="likePost(this)"><span>❤️</span> <span class="cnt">56</span></button>
 <button class="post-action" onclick="commentPost(this)"><span>💬</span> <span class="cnt">15</span></button>
@@ -760,7 +763,7 @@ Nam mô A Di Đà Phật!</div>
 <div class="post-content">Sáng nay đón khách đoàn du lịch, tip được 500k. Cảm ơn Tổ Nghề phù hộ! Anh em ai có mẹo chạy doanh thu cao chia sẻ với nhé!</div>
 <div class="post-actions">
 <button class="post-action" onclick="likePost(this)"><span>❤️</span> <span class="cnt">42</span></button>
-<button class="post-action" onclick="commentPost(this)"><span></span> <span class="cnt">22</span></button>
+<button class="post-action" onclick="commentPost(this)"><span>💬</span> <span class="cnt">22</span></button>
 <button class="post-action" onclick="sharePost(this)">🔗 Chia sẻ</button>
 </div>
 </div>
@@ -782,10 +785,11 @@ Nam mô A Di Đà Phật!</div>
 <div class="glass-card">
 <h3>🏆 Bảng Công Đức</h3>
 <p style="margin-bottom:clamp(10px,2.5vw,14px);">Tổng điểm công đức của bạn: <strong id="totalMerit" style="color:var(--gold);font-size:clamp(16px,4vw,20px);">0</strong></p>
-<ul class="merit-list" id="meritList"><li><span>🕯️ Dâng hương lần đầu</span><span class="merit-points">+10</span></li>
-<li><span> Lưu lời khấn</span><span class="merit-points">+5</span></li>
+<ul class="merit-list" id="meritList">
+<li><span>🕯️ Dâng hương lần đầu</span><span class="merit-points">+10</span></li>
+<li><span>💾 Lưu lời khấn</span><span class="merit-points">+5</span></li>
 <li><span>🎴 Rút quẻ hàng ngày</span><span class="merit-points">+3</span></li>
-<li><span> Tham gia cộng đồng</span><span class="merit-points">+2</span></li>
+<li><span>👥 Tham gia cộng đồng</span><span class="merit-points">+2</span></li>
 <li><span>❤️ Like bài viết</span><span class="merit-points">+1</span></li>
 </ul>
 </div>
@@ -831,7 +835,8 @@ Nam mô A Di Đà Phật!</div>
 </div>
 <div style="margin-top:clamp(10px,2.5vw,14px);">
 <button class="incense-btn" style="font-size:clamp(11px,2.5vw,13px);padding:clamp(6px,1.5vw,10px) clamp(16px,4vw,22px);" onclick="resetData()">🔄 Đặt Lại Dữ Liệu</button>
-</div></div>
+</div>
+</div>
 </div>
 
 </div>
@@ -908,7 +913,7 @@ let currentBgIndex = 0;
 let bgInterval;
 
 const pageBgMap = {
-home: 4,
+home: 0,
 incense: 3,
 prayer: 3,
 que: 2,
@@ -916,7 +921,7 @@ calendar: 1,
 news: 2,
 community: 1,
 merit: 3,
-profile: 4
+profile: 0
 };
 
 function loadState(){
@@ -969,8 +974,8 @@ const badges = [];
 if((state.incenseCount || 0) >= 1) badges.push('🕯️ Tín Đồ');
 if((state.incenseCount || 0) >= 10) badges.push('🔥 Trung Thành');
 if((state.meritPoints || 0) >= 50) badges.push('⭐ Công Đức');
-if((state.meritPoints || 0) >= 100) badges.push('️ Hộ Pháp');
-if((state.prayers || []).length >= 5) badges.push(' Sùng Kính');
+if((state.meritPoints || 0) >= 100) badges.push('🛡️ Hộ Pháp');
+if((state.prayers || []).length >= 5) badges.push('📜 Sùng Kính');
 if(badges.length === 0) badges.push('🌟 Tân Thủ');
 const list = document.getElementById('badgesList');
 if(list){
@@ -979,6 +984,7 @@ list.innerHTML = badges.map(b => '<span class="badge-item">'+b+'</span>').join('
 const badge = document.getElementById('profileBadge');
 if(badge) badge.textContent = badges[badges.length-1];
 }
+
 function updatePrayerHistory(){
 const list = document.getElementById('prayerHistoryList');
 if(!list) return;
@@ -1027,7 +1033,8 @@ slides[currentBgIndex].classList.add('active');
 }
 
 // NAVIGATION
-window.showPage = function(pageId){document.querySelectorAll('.page').forEach(p => {
+window.showPage = function(pageId){
+document.querySelectorAll('.page').forEach(p => {
 p.classList.remove('active');
 p.classList.remove('page-zoom');
 });
@@ -1076,7 +1083,8 @@ osc.type = 'sine';
 gain.gain.setValueAtTime(0.25, ctx.currentTime);
 gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2.5);
 osc.start(ctx.currentTime);
-osc.stop(ctx.currentTime + 2.5);setTimeout(() => {
+osc.stop(ctx.currentTime + 2.5);
+setTimeout(() => {
 const osc2 = ctx.createOscillator();
 const gain2 = ctx.createGain();
 osc2.connect(gain2);
@@ -1125,7 +1133,8 @@ alert('🔮 Bạn đã rút quẻ hôm nay rồi! Hãy quay lại vào ngày mai
 return;
 }
 const categories = [
-{name:'Công việc',icons:['📊','📈',''],texts:['Thuận lợi, khách đông đường thoáng','Cần kiên nhẫn, tránh nóng vội','Có quý nhân phù trợ, công việc hanh thông']},{name:'Tài lộc',icons:['💰','💎','🪙'],texts:['Tài lộc dồi dào, thu nhập tăng','Tiết kiệm chi phí, tránh đầu tư mạo hiểm','Có khoản thu bất ngờ từ khách hàng']},
+{name:'Công việc',icons:['📊','📈','💼'],texts:['Thuận lợi, khách đông đường thoáng','Cần kiên nhẫn, tránh nóng vội','Có quý nhân phù trợ, công việc hanh thông']},
+{name:'Tài lộc',icons:['💰','💎','🪙'],texts:['Tài lộc dồi dào, thu nhập tăng','Tiết kiệm chi phí, tránh đầu tư mạo hiểm','Có khoản thu bất ngờ từ khách hàng']},
 {name:'Sức khỏe',icons:['💪','❤️','🌿'],texts:['Sức khỏe ổn định, tinh thần minh mẫn','Chú ý nghỉ ngơi, đừng lái xe khi mệt mỏi','Tập thể dục nhẹ nhàng để giữ sức bền']},
 {name:'Gia đạo',icons:['🏠','👨‍👩‍👧','🕊️'],texts:['Gia đình hòa thuận, ấm no hạnh phúc','Dành thời gian trò chuyện với người thân','Mang niềm vui từ công việc về nhà']},
 {name:'May mắn',icons:['🍀','⭐','🌟'],texts:['Vận may đang đến, hãy nắm bắt cơ hội','Cẩn trọng trong quyết định, đừng vội vàng','Có tin vui bất ngờ trong tuần này']}
@@ -1174,7 +1183,8 @@ grid.innerHTML =
 '<div class="calendar-item"><div class="label">Tuổi Xung</div><div class="value" style="font-size:clamp(10px,2.2vw,12px);color:#e07070;">'+ageConflict+'</div></div>';
 }
 
-function getLunarDate(d,m,y){const lunarMonths = ['Giêng','Hai','Ba','Tư','Năm','Sáu','Bảy','Tám','Chín','Mười','Một','Chạp'];
+function getLunarDate(d,m,y){
+const lunarMonths = ['Giêng','Hai','Ba','Tư','Năm','Sáu','Bảy','Tám','Chín','Mười','Một','Chạp'];
 const lunarDays = ['Mùng 1','Mùng 2','Mùng 3','Mùng 4','Mùng 5','Mùng 6','Mùng 7','Mùng 8','Mùng 9','Mùng 10','11','12','13','14','Rằm','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30'];
 return {
 day: lunarDays[(d-1) % 30],
@@ -1223,7 +1233,8 @@ cnt.textContent = count;
 saveState();
 };
 
-window.commentPost = function(btn){const comment = prompt(' Nhập bình luận của bạn:');
+window.commentPost = function(btn){
+const comment = prompt('💬 Nhập bình luận của bạn:');
 if(comment && comment.trim()){
 const cnt = btn.querySelector('.cnt');
 if(cnt) cnt.textContent = (parseInt(cnt.textContent) || 0) + 1;
