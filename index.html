@@ -290,6 +290,22 @@ line-height:1.8;
 white-space:pre-wrap;
 text-align:center;
 padding:clamp(8px,2vw,12px);
+outline:none;
+border:1px solid transparent;
+border-radius:8px;
+min-height:120px;
+transition:border-color 0.3s, box-shadow 0.3s;
+}
+.prayer-text:focus{
+border-color:rgba(201,168,76,0.5);
+box-shadow:0 0 12px rgba(201,168,76,0.25);
+background:rgba(201,168,76,0.05);
+}
+.prayer-hint{
+font-size:clamp(9px,2vw,11px);
+color:rgba(232,212,139,0.55);
+text-align:center;
+margin-bottom:clamp(6px,1.5vw,10px);
 }
 .prayer-history{margin-top:clamp(12px,3vw,18px);border-top:1px solid rgba(201,168,76,0.25);padding-top:clamp(10px,2.5vw,14px);}
 .prayer-history-item{background:rgba(201,168,76,0.1);
@@ -557,9 +573,9 @@ box-shadow:0 4px 20px rgba(0,0,0,0.5);
 <!-- BACKGROUND SLIDESHOW -->
 <div class="bg-slideshow" id="bgSlideshow">
 <img class="bg-slide active" src="file_000000006f1c820b97cbae608af0a90b.png" alt="Cổng Đền">
-<img class="bg-slide" src="file_0000000026c481f88a62f93a56c39e12.png" alt="Sân Đền">
-<img class="bg-slide" src="file_00000000df1882078bc949c9cf3d4ce8.png" alt="Đường Vào Đền">
-<img class="bg-slide" src="file_00000000a7388207b70d09d479ef7582.png" alt="Bàn Thờ Tổ Nghề">
+<img class="bg-slide" src="file_0000000026c481f88a62f93a56c39e12" alt="Sân Đền">
+<img class="bg-slide" src="file_00000000df1882078bc949c9cf3d4ce8" alt="Đường Vào Đền">
+<img class="bg-slide" src="file_00000000a7388207b70d09d479ef7582" alt="Bàn Thờ Tổ Nghề">
 <img class="bg-slide" src="file_00000000861c820785194fb2a1dbc970.png" alt="Toàn Cảnh Đền">
 </div>
 <div class="bg-overlay"></div>
@@ -623,7 +639,7 @@ box-shadow:0 4px 20px rgba(0,0,0,0.5);
 <!-- INCENSE -->
 <div class="page" id="page-incense">
 <div class="incense-area">
-<img class="altar-image" src="file_00000000a7388207b70d09d479ef7582.png" alt="Bàn Thờ Tổ Nghề Taxi Việt Nam">
+<img class="altar-image" src="file_00000000a7388207b70d09d479ef7582" alt="Bàn Thờ Tổ Nghề Taxi Việt Nam">
 <div class="glass-card">
 <h3>🕯️ Dâng Hương Cầu An</h3>
 <p style="margin-bottom:clamp(12px,3vw,18px);">Thành tâm dâng hương lên Tổ Nghề Taxi Việt Nam.<br>Cầu bình an, may mắn, tài lộc cho tất cả anh em tài xế.</p>
@@ -641,7 +657,8 @@ box-shadow:0 4px 20px rgba(0,0,0,0.5);
 <div class="page" id="page-prayer">
 <div class="glass-card">
 <h3>📜 Văn Khấn Tổ Nghề Taxi</h3>
-<div class="prayer-text" id="prayerText">Nam mô A Di Đà Phật!
+<p class="prayer-hint">✏️ Chạm vào văn khấn bên dưới để chỉnh sửa theo ý bạn</p>
+<div class="prayer-text" id="prayerText" contenteditable="true" spellcheck="false">Nam mô A Di Đà Phật!
 
 Con kính lạy Tổ Nghề Taxi Việt Nam.
 Con kính lạy chư vị Tiên linh,
@@ -903,7 +920,7 @@ lastIncense: 'Chưa có',
 prayers: [],
 meritPoints: 0,
 userName: 'Tài Xế Anonymous',
-joinDate: '29/07/2026',
+joinDate: '',
 queDrawnDate: '',
 likedPosts: []
 };
@@ -959,10 +976,14 @@ if(el('statMerit')) el('statMerit').textContent = state.meritPoints || 0;
 if(el('statPrayers')) el('statPrayers').textContent = (state.prayers || []).length;
 if(el('statDays')){
 try{
-const parts = (state.joinDate || '29/07/2026').split('/');
-const d = new Date(parts[2], parts[1]-1, parts[0]);
-const days = Math.max(1, Math.floor((new Date() - d) / (1000*60*60*24)) + 1);
-el('statDays').textContent = days;
+const parts = (state.joinDate || '').split('/');
+if(parts.length === 3){
+  const d = new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+  const days = Math.max(1, Math.floor((new Date() - d) / (1000*60*60*24)) + 1);
+  el('statDays').textContent = days;
+}else{
+  el('statDays').textContent = 1;
+}
 }catch(e){el('statDays').textContent = 1;}
 }
 updateBadges();
@@ -1000,7 +1021,12 @@ list.innerHTML = prayers.map(p =>
 
 function escapeHtml(str){
 if(!str) return '';
-return String(str).replace(/[&<>"']/g, s => ({'&':'&','<':'<','>':'>','"':'"',"'":'''}[s]));
+return String(str)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 }
 
 // BACKGROUND SLIDESHOW
@@ -1159,9 +1185,10 @@ const month = now.getMonth() + 1;
 const year = now.getFullYear();
 const weekday = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'][now.getDay()];
 const lunarData = getLunarDate(day, month, year);
-const canChi = getCanChi(year);
-const zodiac = getZodiac(year);
-const isGoodDay = (day + month) % 3 !== 0;
+const canChiYear = getCanChi(lunarData.year || year);
+const zodiac = getZodiac(lunarData.year || year);
+// Ngày hoàng đạo đơn giản theo Can Chi ngày (ước lượng)
+const isGoodDay = ((day + month + year) % 3) !== 0;
 const hourGood = ['Tý (23-1)','Sửu (1-3)','Dần (3-5)','Thìn (7-9)','Tỵ (9-11)','Ngọ (11-13)'];
 const hourBad = ['Mão (5-7)','Mùi (13-15)','Thân (15-17)','Tuất (19-21)'];
 const directions = ['Đông','Đông Nam','Nam','Tây Nam','Tây','Tây Bắc','Bắc','Đông Bắc'];
@@ -1172,8 +1199,8 @@ if(!grid) return;
 grid.innerHTML =
 '<div class="calendar-item"><div class="label">Dương Lịch</div><div class="value">'+day+'/'+month+'/'+year+'</div></div>'+
 '<div class="calendar-item"><div class="label">Âm Lịch</div><div class="value">'+lunarData.day+' '+lunarData.month+'</div></div>'+
+'<div class="calendar-item"><div class="label">Năm Âm</div><div class="value">'+canChiYear+'</div></div>'+
 '<div class="calendar-item"><div class="label">Ngày trong tuần</div><div class="value">'+weekday+'</div></div>'+
-'<div class="calendar-item"><div class="label">Can Chi</div><div class="value">'+canChi+'</div></div>'+
 '<div class="calendar-item"><div class="label">Con Giáp</div><div class="value">'+zodiac+'</div></div>'+
 '<div class="calendar-item '+(isGoodDay?'good':'bad')+'"><div class="label">Ngày</div><div class="value">'+(isGoodDay?'🟢 Tốt':'🔴 Xấu')+'</div></div>'+
 '<div class="calendar-item"><div class="label">Giờ Hoàng Đạo</div><div class="value" style="font-size:clamp(10px,2.2vw,12px);">'+hourGood.slice(0,3).join(', ')+'</div></div>'+
@@ -1183,30 +1210,159 @@ grid.innerHTML =
 '<div class="calendar-item"><div class="label">Tuổi Xung</div><div class="value" style="font-size:clamp(10px,2.2vw,12px);color:#e07070;">'+ageConflict+'</div></div>';
 }
 
-function getLunarDate(d,m,y){
-const lunarMonths = ['Giêng','Hai','Ba','Tư','Năm','Sáu','Bảy','Tám','Chín','Mười','Một','Chạp'];
-const lunarDays = ['Mùng 1','Mùng 2','Mùng 3','Mùng 4','Mùng 5','Mùng 6','Mùng 7','Mùng 8','Mùng 9','Mùng 10','11','12','13','14','Rằm','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30'];
-return {
-day: lunarDays[(d-1) % 30],
-month: lunarMonths[(m-1) % 12],
-year: y - 1984 + 1
-};
+/* ===== Lịch Âm Việt Nam (thuật toán chuẩn, khoảng 1900–2100) ===== */
+function jdFromDate(dd, mm, yy){
+  var a = Math.floor((14 - mm) / 12);
+  var y = yy + 4800 - a;
+  var m = mm + 12 * a - 3;
+  var jd = dd + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+  return jd;
+}
+
+function getNewMoonDay(k, timeZone){
+  var T = k / 1236.85;
+  var T2 = T * T;
+  var T3 = T2 * T;
+  var dr = Math.PI / 180;
+  var Jd1 = 2415020.75933 + 29.53058868 * k + 0.0001178 * T2 - 0.000000155 * T3;
+  Jd1 = Jd1 + 0.00033 * Math.sin((166.56 + 132.87 * T - 0.009173 * T2) * dr);
+  var M = 359.2242 + 29.10535608 * k - 0.0000333 * T2 - 0.00000347 * T3;
+  var Mpr = 306.0253 + 385.81691806 * k + 0.0107306 * T2 + 0.00001236 * T3;
+  var F = 21.2964 + 390.67050646 * k - 0.0016528 * T2 - 0.00000239 * T3;
+  var C1 = (0.1734 - 0.000393 * T) * Math.sin(M * dr) + 0.0021 * Math.sin(2 * dr * M);
+  C1 = C1 - 0.4068 * Math.sin(Mpr * dr) + 0.0161 * Math.sin(dr * 2 * Mpr);
+  C1 = C1 - 0.0004 * Math.sin(dr * 3 * Mpr);
+  C1 = C1 + 0.0104 * Math.sin(dr * 2 * F) - 0.0051 * Math.sin(dr * (M + Mpr));
+  C1 = C1 - 0.0074 * Math.sin(dr * (M - Mpr)) + 0.0004 * Math.sin(dr * (2 * F + M));
+  C1 = C1 - 0.0004 * Math.sin(dr * (2 * F - M)) - 0.0006 * Math.sin(dr * (2 * F + Mpr));
+  C1 = C1 + 0.0010 * Math.sin(dr * (2 * F - Mpr)) + 0.0005 * Math.sin(dr * (2 * Mpr + M));
+  var deltat;
+  if (T < -11) {
+    deltat = 0.001 + 0.000839 * T + 0.0002261 * T2 - 0.00000845 * T3 - 0.000000081 * T * T3;
+  } else {
+    deltat = -0.000278 + 0.000265 * T + 0.000262 * T2;
+  }
+  var JdNew = Jd1 + C1 - deltat;
+  return Math.floor(JdNew + 0.5 + timeZone / 24);
+}
+
+function getSunLongitude(jdn, timeZone){
+  var T = (jdn - 2451545.5 - timeZone / 24) / 36525;
+  var T2 = T * T;
+  var dr = Math.PI / 180;
+  var M = 357.52910 + 35999.05030 * T - 0.0001559 * T2 - 0.00000048 * T * T2;
+  var L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T2;
+  var DL = (1.914600 - 0.004817 * T - 0.000014 * T2) * Math.sin(dr * M);
+  DL = DL + (0.019993 - 0.000101 * T) * Math.sin(dr * 2 * M) + 0.000290 * Math.sin(dr * 3 * M);
+  var L = L0 + DL;
+  L = L * dr;
+  L = L - Math.PI * 2 * (Math.floor(L / (Math.PI * 2)));
+  return Math.floor(L / Math.PI * 6);
+}
+
+function getLunarMonth11(yy, timeZone){
+  var off = jdFromDate(31, 12, yy) - 2415021;
+  var k = Math.floor(off / 29.530588853);
+  var nm = getNewMoonDay(k, timeZone);
+  var sunLong = getSunLongitude(nm, timeZone);
+  if (sunLong >= 9) {
+    nm = getNewMoonDay(k - 1, timeZone);
+  }
+  return nm;
+}
+
+function getLeapMonthOffset(a11, timeZone){
+  var k = Math.floor((a11 - 2415021.076998695) / 29.530588853 + 0.5);
+  var last = 0;
+  var i = 1;
+  var arc = getSunLongitude(getNewMoonDay(k + i, timeZone), timeZone);
+  do {
+    last = arc;
+    i++;
+    arc = getSunLongitude(getNewMoonDay(k + i, timeZone), timeZone);
+  } while (arc !== last && i < 14);
+  return i - 1;
+}
+
+function convertSolar2Lunar(dd, mm, yy, timeZone){
+  var dayNumber = jdFromDate(dd, mm, yy);
+  var k = Math.floor((dayNumber - 2415021.076998695) / 29.530588853);
+  var monthStart = getNewMoonDay(k + 1, timeZone);
+  if (monthStart > dayNumber) {
+    monthStart = getNewMoonDay(k, timeZone);
+  }
+  var a11 = getLunarMonth11(yy, timeZone);
+  var b11 = a11;
+  var lunarYear;
+  if (a11 >= monthStart) {
+    lunarYear = yy;
+    a11 = getLunarMonth11(yy - 1, timeZone);
+  } else {
+    lunarYear = yy + 1;
+    b11 = getLunarMonth11(yy + 1, timeZone);
+  }
+  var lunarDay = dayNumber - monthStart + 1;
+  var diff = Math.floor((monthStart - a11) / 29);
+  var lunarLeap = 0;
+  var lunarMonth = diff + 11;
+  if (b11 - a11 > 365) {
+    var leapMonthDiff = getLeapMonthOffset(a11, timeZone);
+    if (diff >= leapMonthDiff) {
+      lunarMonth = diff + 10;
+      if (diff === leapMonthDiff) {
+        lunarLeap = 1;
+      }
+    }
+  }
+  if (lunarMonth > 12) {
+    lunarMonth = lunarMonth - 12;
+  }
+  if (lunarMonth >= 11 && diff < 4) {
+    lunarYear -= 1;
+  }
+  return { day: lunarDay, month: lunarMonth, year: lunarYear, leap: lunarLeap };
+}
+
+function getLunarDate(d, m, y){
+  var lunar = convertSolar2Lunar(d, m, y, 7); // GMT+7 Việt Nam
+  var lunarMonths = ['','Giêng','Hai','Ba','Tư','Năm','Sáu','Bảy','Tám','Chín','Mười','Một','Chạp'];
+  var dayStr;
+  if (lunar.day === 1) dayStr = 'Mùng 1';
+  else if (lunar.day === 15) dayStr = 'Rằm';
+  else if (lunar.day < 11) dayStr = 'Mùng ' + lunar.day;
+  else dayStr = String(lunar.day);
+  var monthStr = lunarMonths[lunar.month] || String(lunar.month);
+  if (lunar.leap) monthStr += ' (nhuận)';
+  return {
+    day: dayStr,
+    month: 'tháng ' + monthStr,
+    year: lunar.year,
+    rawDay: lunar.day,
+    rawMonth: lunar.month
+  };
 }
 
 function getCanChi(year){
-const can = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý'];
-const chi = ['Tý','Sửu','Dần','Mão','Thìn','Tỵ','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi'];
-return can[year % 10] + ' ' + chi[year % 12];
+  // 1984 = Giáp Tý (index 0)
+  var can = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý'];
+  var chi = ['Tý','Sửu','Dần','Mão','Thìn','Tỵ','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi'];
+  var offset = year - 1984;
+  return can[((offset % 10) + 10) % 10] + ' ' + chi[((offset % 12) + 12) % 12];
 }
 
 function getZodiac(year){
-const z = ['Chuột','Trâu','Hổ','Mèo','Rồng','Rắn','Ngựa','Dê','Khỉ','Gà','Chó','Heo'];
-return z[year % 12];
+  // 1984 = Chuột (Tý)
+  var z = ['Chuột','Trâu','Hổ','Mèo','Rồng','Rắn','Ngựa','Dê','Khỉ','Gà','Chó','Heo'];
+  var offset = year - 1984;
+  return z[((offset % 12) + 12) % 12];
 }
 
 function getConflictZodiac(z){
-const conflicts = {'Chuột':'Ngựa','Trâu':'Dê','Hổ':'Khỉ','Mèo':'Gà','Rồng':'Chó','Rắn':'Heo','Ngựa':'Chuột','Dê':'Trâu','Khỉ':'Hổ','Gà':'Mèo','Chó':'Rồng','Heo':'Rắn'};
-return conflicts[z] || 'Không xung';
+  var conflicts = {
+    'Chuột':'Ngựa','Trâu':'Dê','Hổ':'Khỉ','Mèo':'Gà','Rồng':'Chó','Rắn':'Heo',
+    'Ngựa':'Chuột','Dê':'Trâu','Khỉ':'Hổ','Gà':'Mèo','Chó':'Rồng','Heo':'Rắn'
+  };
+  return conflicts[z] || 'Không xung';
 }
 
 // COMMUNITY
@@ -1244,10 +1400,21 @@ alert('✅ Bình luận đã được gửi!');
 };
 
 window.sharePost = function(btn){
+const shareData = {
+  title: 'Đền Tổ Nghề Taxi Việt Nam',
+  text: 'Cầu bình an cho anh em tài xế!',
+  url: window.location.href
+};
 if(navigator.share){
-navigator.share({title:'Đền Tổ Nghề Taxi Việt Nam',text:'Cầu bình an cho anh em tài xế!',url:window.location.href}).catch(()=>{});
+  navigator.share(shareData).catch(()=>{});
+}else if(navigator.clipboard && navigator.clipboard.writeText){
+  navigator.clipboard.writeText(shareData.url).then(()=>{
+    alert('🔗 Link đã được sao chép!');
+  }).catch(()=>{
+    alert('🔗 Link: ' + shareData.url);
+  });
 }else{
-alert('🔗 Link đã được sao chép!');
+  alert('🔗 Link: ' + shareData.url);
 }
 addMerit(2);
 };
@@ -1275,6 +1442,14 @@ if(el) el.classList.remove('show');
 
 // INIT
 document.addEventListener('DOMContentLoaded', () => {
+// Gán ngày tham gia lần đầu nếu chưa có
+if(!state.joinDate){
+  const now = new Date();
+  state.joinDate = String(now.getDate()).padStart(2,'0') + '/' +
+                   String(now.getMonth()+1).padStart(2,'0') + '/' +
+                   now.getFullYear();
+  saveState();
+}
 updateUI();
 initCalendar();
 initSlideshow();
