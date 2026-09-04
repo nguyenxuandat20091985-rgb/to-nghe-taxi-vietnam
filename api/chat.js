@@ -1,7 +1,8 @@
 const DEFAULT_ALLOWED_ORIGINS = [
-  'https://nguyenxuandat20091985-rgb.github.io',
+  'https://to-nghe-taxi-vietnam.vercel.app',
+  'https://to-nghe-taxi-vietnam.firebaseapp.com',
   'https://to-nghe-taxi.web.app',
-  'https://to-nghe-taxi.firebaseapp.com'
+  'https://nguyenxuandat20091985-rgb.github.io'
 ];
 
 const SYSTEM_PROMPT = 'Bạn là AI tư vấn thân thiện tại Đền Tổ Nghề Taxi. Trả lời ngắn gọn, ấm áp bằng tiếng Việt, hỗ trợ tài xế về nghề nghiệp, an toàn giao thông, tâm lý, và lời khuyên bình an. Không đưa lời khuyên y tế, pháp lý hoặc tài chính chuyên sâu.';
