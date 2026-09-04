@@ -63,6 +63,12 @@ Bản hiện tại là frontend web. Dữ liệu cá nhân đang lưu bằng `lo
 
 AI hiện đang gọi trực tiếp Groq từ trình duyệt và người dùng phải tự nhập API Key. Không nên dùng cách này cho bản thương mại; khi phát hành chính thức cần chuyển khóa API vào backend hoặc serverless function.
 
+## Bảo mật AI
+
+Ô nhập API Key đã được gỡ khỏi giao diện và ứng dụng không còn lưu khóa trong `localStorage`. Frontend gọi endpoint `/api/chat`; file `api/chat.js` là proxy serverless tương thích Vercel và đọc khóa từ biến môi trường `GROQ_API_KEY` trên máy chủ.
+
+GitHub Pages chỉ chạy frontend tĩnh, nên muốn bật AI thật cần triển khai thư mục `api/` lên một dịch vụ serverless, đặt secret `GROQ_API_KEY` ở phần Environment Variables, sau đó đổi `AI_API_URL` trong `index.html` thành URL backend đó. Không commit API Key vào GitHub và nếu khóa cũ đã từng bị lộ thì cần thu hồi/tạo khóa mới tại Groq.
+
 Nội dung quẻ, lời chúc và tiện ích tâm linh chỉ mang tính tinh thần/giải trí, không thay thế tư vấn y tế, pháp lý, tài chính hoặc an toàn giao thông chuyên môn.
 
 ## Lộ trình đề xuất

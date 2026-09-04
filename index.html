@@ -1143,6 +1143,16 @@ font-weight:700;
 white-space:nowrap;
 }
 .ai-send-btn:active{transform:scale(0.95);}
+.ai-security-note{
+margin-bottom:clamp(8px,2vw,12px);
+padding:clamp(8px,2vw,10px);
+border:1px solid rgba(212,175,55,0.22);
+border-radius:10px;
+background:rgba(212,175,55,0.06);
+color:rgba(240,224,160,0.72);
+font-size:clamp(10px,2.2vw,12px);
+text-align:center;
+}
 .ai-key-row{
 margin-bottom:clamp(8px,2vw,12px);
 }
@@ -1668,10 +1678,8 @@ Nam mô A Di Đà Phật!</div>
 <div class="page" id="page-ai">
 <div class="glass-card">
 <h3>🤖 AI Tư Vấn Tài Xế</h3>
-<p style="font-size:clamp(10px,2.2vw,12px);color:rgba(232,212,139,0.7);margin-bottom:clamp(8px,2vw,12px);">Hỏi đáp về nghề taxi, lịch trình, bình an… (cần API key Groq miễn phí)</p>
-<div class="ai-key-row">
-<input type="password" id="groqApiKey" placeholder="Dán Groq API Key vào đây (lưu local)" onchange="saveGroqKey(this.value)" oninput="saveGroqKey(this.value)">
-</div>
+<p style="font-size:clamp(10px,2.2vw,12px);color:rgba(232,212,139,0.7);margin-bottom:clamp(8px,2vw,12px);">Hỏi đáp về nghề taxi, lịch trình, bình an…</p>
+<div class="ai-security-note">🔒 Kết nối AI được bảo vệ. Ứng dụng không yêu cầu anh nhập API Key.</div>
 <div class="ai-chat-wrap">
 <div class="ai-messages" id="aiMessages">
 <div class="ai-msg system">Xin chào! Em là AI hỗ trợ anh em tài xế tại Đền Tổ Nghề. Anh hỏi gì cũng được 🙏</div>
@@ -2439,16 +2447,10 @@ window.showBuaMayMan = function(){
   addMerit(2);
 };
 
-// ===== AI TƯ VẤN (Groq) =====
-const GROQ_KEY_STORAGE = 'denToNghe_groqKey';
-
-window.saveGroqKey = function(key){
-  try{ localStorage.setItem(GROQ_KEY_STORAGE, (key || '').trim()); }catch(e){}
-};
-
-function loadGroqKey(){
-  try{ return localStorage.getItem(GROQ_KEY_STORAGE) || ''; }catch(e){ return ''; }
-}
+// ===== AI TƯ VẤN =====
+// API key is intentionally never stored in this browser. The server-side
+// endpoint keeps GROQ_API_KEY in an environment variable.
+const AI_API_URL = '/api/chat';
 
 function appendAiMsg(text, role){
   const box = document.getElementById('aiMessages');
@@ -2468,46 +2470,33 @@ window.sendAiMessage = async function(){
   input.value = '';
   appendAiMsg(text, 'user');
 
-  const key = loadGroqKey() || (document.getElementById('groqApiKey') || {}).value || '';
-  if(!key){
-    appendAiMsg('⚠️ Chưa có API Key. Anh vào https://console.groq.com lấy key miễn phí, dán vào ô phía trên nhé.', 'system');
-    return;
-  }
-
   appendAiMsg('Đang suy nghĩ…', 'system');
   const box = document.getElementById('aiMessages');
   const loadingEl = box ? box.lastChild : null;
 
   try{
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const res = await fetch(AI_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + key
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          {role: 'system', content: 'Bạn là AI tư vấn thân thiện tại Đền Tổ Nghề Taxi. Trả lời ngắn gọn, ấm áp bằng tiếng Việt, hỗ trợ tài xế về nghề nghiệp, an toàn giao thông, tâm lý, và lời khuyên bình an. Không đưa lời khuyên y tế/pháp lý chuyên sâu.'},
-          {role: 'user', content: text}
-        ],
-        temperature: 0.7,
-        max_tokens: 600
+        message: text
       })
     });
     if(loadingEl) loadingEl.remove();
     if(!res.ok){
       const errText = await res.text().catch(()=>'');
-      appendAiMsg('❌ Lỗi API (' + res.status + '). Kiểm tra lại API Key hoặc thử lại sau.', 'system');
+      appendAiMsg('❌ Máy chủ AI chưa sẵn sàng hoặc đang bận. Anh thử lại sau nhé.', 'system');
       return;
     }
     const data = await res.json();
-    const reply = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || 'Không nhận được phản hồi.';
+    const reply = data.reply || 'Không nhận được phản hồi.';
     appendAiMsg(reply, 'bot');
     addMerit(1);
   }catch(e){
     if(loadingEl) loadingEl.remove();
-    appendAiMsg('❌ Không kết nối được. Kiểm tra mạng hoặc API Key.', 'system');
+    appendAiMsg('❌ Không kết nối được máy chủ AI. Anh thử lại sau nhé.', 'system');
   }
 };
 
@@ -2531,6 +2520,8 @@ function initHomeSparks(){
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+// Remove the legacy client-side API key saved by older versions.
+try{ localStorage.removeItem('denToNghe_groqKey'); }catch(e){}
 // Gán ngày tham gia lần đầu nếu chưa có
 if(!state.joinDate){
   const now = new Date();
@@ -2543,9 +2534,6 @@ updateUI();
 initCalendar();
 initSlideshow();
 initHomeSparks();
-// Load Groq key
-const gk = document.getElementById('groqApiKey');
-if(gk) gk.value = loadGroqKey();
 // Enable offline app-shell caching when served from HTTPS (GitHub Pages included).
 if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
   navigator.serviceWorker.register('./service-worker.js').catch(() => {});
