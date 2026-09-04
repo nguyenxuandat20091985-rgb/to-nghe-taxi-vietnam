@@ -1,0 +1,22 @@
+{
+  "name": "Đền Tổ Nghề Taxi Việt Nam",
+  "short_name": "Đền Tổ Nghề Taxi",
+  "description": "Không gian số tri ân nghề taxi Việt Nam, cầu bình an và kết nối cộng đồng tài xế.",
+  "lang": "vi-VN",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050301",
+  "theme_color": "#1a0e05",
+  "categories": ["lifestyle", "social"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

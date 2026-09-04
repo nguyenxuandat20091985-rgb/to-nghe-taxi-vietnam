@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Đền Tổ Nghề Taxi</title>
+<meta name="description" content="Không gian số tri ân nghề taxi Việt Nam, cầu bình an và kết nối cộng đồng tài xế.">
+<meta name="theme-color" content="#1a0e05">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Đền Tổ Nghề Taxi">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icons/icon.svg">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:wght@500;700;900&family=Be+Vietnam+Pro:wght@300;400;500;600&family=Noto+Sans:wght@400;500;600&display=swap');
 
@@ -1874,6 +1883,7 @@ function setBackgroundForPage(pageId){
 const slides = document.querySelectorAll('.bg-slide');
 if(slides.length === 0) return;
 const targetIndex = pageBgMap[pageId] || 0;
+currentBgIndex = targetIndex;
 slides.forEach((slide, idx) => {
 slide.classList.remove('active');
 if(idx === targetIndex){
@@ -2536,6 +2546,10 @@ initHomeSparks();
 // Load Groq key
 const gk = document.getElementById('groqApiKey');
 if(gk) gk.value = loadGroqKey();
+// Enable offline app-shell caching when served from HTTPS (GitHub Pages included).
+if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+  navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+}
 });
 
 })();

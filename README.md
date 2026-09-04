@@ -1,92 +1,75 @@
-# 🚖 TỔ NGHỀ TAXI VIỆT NAM
+# Đền Tổ Nghề Taxi Việt Nam
 
-> A Digital Community Honoring Vietnamese Taxi Drivers
+Ứng dụng web tri ân nghề taxi Việt Nam, hỗ trợ trải nghiệm dâng hương, lời khấn, quẻ, lịch, công đức và kết nối cộng đồng tài xế.
 
----
+## Mở app trực tiếp
 
-## 🌟 Vision
+[https://nguyenxuandat20091985-rgb.github.io/to-nghe-taxi-vietnam/](https://nguyenxuandat20091985-rgb.github.io/to-nghe-taxi-vietnam/)
 
-TỔ NGHỀ TAXI VIỆT NAM là một không gian số được xây dựng nhằm kết nối cộng đồng tài xế taxi trên toàn quốc.
+Ứng dụng đã được cấu hình GitHub Pages. Mỗi lần cập nhật vào nhánh `main`, GitHub Pages sẽ tự triển khai lại đường link trên.
 
-Ứng dụng mang đến trải nghiệm dâng hương, cầu bình an, cầu may mắn và gìn giữ giá trị văn hóa nghề nghiệp trong một không gian 3D trang nghiêm, hiện đại và sang trọng.
+## Tính năng hiện có
 
----
+- Trang chủ với không gian hình ảnh chủ đề nghề taxi.
+- Dâng hương, hiệu ứng khói, âm thanh và cộng điểm công đức.
+- Lưu lời khấn và lịch sử thao tác trên thiết bị.
+- Quẻ hằng ngày, lịch âm cơ bản, tin tức và cộng đồng dạng giao diện.
+- Hồ sơ, huy hiệu, công đức và các tiện ích tinh thần.
+- AI tư vấn thử nghiệm thông qua Groq API Key do người dùng tự nhập.
+- Giao diện responsive cho điện thoại và máy tính.
+- PWA: có manifest, biểu tượng app và bộ nhớ đệm offline app-shell.
 
-## 🎯 Mission
+## Cài lên màn hình điện thoại
 
-- Tri ân nghề taxi Việt Nam.
-- Kết nối cộng đồng tài xế.
-- Mang lại trải nghiệm dâng hương mỗi ngày.
-- Lan tỏa sự bình an, may mắn và tài lộc.
-- Xây dựng một cộng đồng văn minh và đoàn kết.
+### Android
 
----
+1. Mở link bằng Chrome.
+2. Chọn menu ba chấm.
+3. Chọn **Cài đặt ứng dụng** hoặc **Thêm vào màn hình chính**.
+4. Xác nhận cài đặt.
 
-## ✨ Core Features
+### iPhone
 
-- 🕯️ Dâng hương mỗi ngày.
-- 🙏 Cầu bình an.
-- 🍀 Cầu may mắn.
-- 💰 Cầu tài lộc.
-- 📅 Lịch sử dâng hương.
-- 🏅 Hệ thống huy hiệu.
-- 👥 Cộng đồng tài xế.
-- 🎁 Phúc lộc mỗi ngày.
+1. Mở link bằng Safari.
+2. Chọn nút **Chia sẻ**.
+3. Chọn **Thêm vào Màn hình chính**.
+4. Chọn **Thêm**.
 
----
+## Chạy trên máy tính để kiểm tra
 
-## 🎨 Design Philosophy
+Có thể mở trực tiếp `index.html`. Để kiểm tra đầy đủ PWA và service worker, nên dùng máy chủ HTTPS hoặc máy chủ local:
 
-Ứng dụng được thiết kế như một quảng trường biểu tượng dành cho nghề taxi Việt Nam.
+```bash
+python3 -m http.server 8080
+```
 
-Không gian mang phong cách:
+Sau đó mở `http://localhost:8080`.
 
-- Luxury
-- Cinematic
-- Spiritual
-- Vietnamese Culture
-- 3D Environment
-- Premium User Experience
+## Cấu trúc các file chính
 
----
+```text
+index.html              Giao diện và logic frontend hiện tại
+manifest.json           Cấu hình cài đặt PWA
+service-worker.js       Cache app-shell và hỗ trợ offline
+icons/icon.svg          Biểu tượng ứng dụng
+js/firebase-config.js   Cấu hình Firebase dự phòng cho giai đoạn backend
+app.py                  Bộ chạy Streamlit cũ, không cần cho GitHub Pages
+```
 
-## 💻 Technology
+## Ghi chú phát hành
 
-Frontend Only
+Bản hiện tại là frontend web. Dữ liệu cá nhân đang lưu bằng `localStorage`, vì vậy chưa đồng bộ giữa nhiều thiết bị. Phần cộng đồng, tin tức và Firebase cần backend/database trước khi sử dụng cho người dùng thật.
 
-- HTML5
-- CSS3
-- Vanilla JavaScript
+AI hiện đang gọi trực tiếp Groq từ trình duyệt và người dùng phải tự nhập API Key. Không nên dùng cách này cho bản thương mại; khi phát hành chính thức cần chuyển khóa API vào backend hoặc serverless function.
 
-Storage
+Nội dung quẻ, lời chúc và tiện ích tâm linh chỉ mang tính tinh thần/giải trí, không thay thế tư vấn y tế, pháp lý, tài chính hoặc an toàn giao thông chuyên môn.
 
-- LocalStorage
+## Lộ trình đề xuất
 
-No Backend
-
-No Framework
-
-Single File Architecture
-
-``app/index.html``
-
----
-
-## 📌 Roadmap
-
-- Phase 1 — Foundation
-- Phase 2 — UI / UX
-- Phase 3 — Animation
-- Phase 4 — Core Features
-- Phase 5 — Community
-- Phase 6 — Release
-
----
-
-## ❤️ Motto
-
-"Tri ân nghề - Bình an trên mọi nẻo đường."
-
----
+1. Hoàn thiện PWA và kiểm thử trên Android/iPhone.
+2. Kết nối Firebase Authentication và Firestore.
+3. Làm cộng đồng, quản trị nội dung và báo cáo bài viết.
+4. Chuyển AI sang backend bảo mật.
+5. Đóng gói Android bằng Capacitor sau khi bản web ổn định.
 
 © 2026 TỔ NGHỀ TAXI VIỆT NAM
