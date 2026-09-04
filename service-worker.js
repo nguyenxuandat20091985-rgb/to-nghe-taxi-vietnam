@@ -1,9 +1,10 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v1';
+const CACHE_NAME = 'den-to-nghe-taxi-v2';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
-  './icons/icon.svg'
+  './icons/icon-192.png',
+  './icons/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {

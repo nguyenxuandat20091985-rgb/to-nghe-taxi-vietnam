@@ -51,7 +51,8 @@ Sau đó mở `http://localhost:8080`.
 index.html              Giao diện và logic frontend hiện tại
 manifest.json           Cấu hình cài đặt PWA
 service-worker.js       Cache app-shell và hỗ trợ offline
-icons/icon.svg          Biểu tượng ứng dụng
+icons/icon-192.png      Biểu tượng ứng dụng cho màn hình nhỏ
+icons/icon-512.png      Biểu tượng ứng dụng cho màn hình lớn/PWA
 js/firebase-config.js   Cấu hình Firebase dự phòng cho giai đoạn backend
 app.py                  Bộ chạy Streamlit cũ, không cần cho GitHub Pages
 ```
