@@ -1,5 +1,26 @@
-const ALLOWED_ORIGIN = 'https://nguyenxuandat20091985-rgb.github.io';
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://nguyenxuandat20091985-rgb.github.io',
+  'https://to-nghe-taxi.web.app',
+  'https://to-nghe-taxi.firebaseapp.com'
+];
+
 const SYSTEM_PROMPT = 'Bạn là AI tư vấn thân thiện tại Đền Tổ Nghề Taxi. Trả lời ngắn gọn, ấm áp bằng tiếng Việt, hỗ trợ tài xế về nghề nghiệp, an toàn giao thông, tâm lý, và lời khuyên bình an. Không đưa lời khuyên y tế, pháp lý hoặc tài chính chuyên sâu.';
+
+function allowedOrigins() {
+  const configured = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((value) => value.trim()).filter(Boolean)
+    : [];
+  return configured.length ? configured : DEFAULT_ALLOWED_ORIGINS;
+}
+
+function setCors(res, origin) {
+  if (origin && allowedOrigins().includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
 
 function sendJson(res, status, body) {
   res.statusCode = status;
@@ -9,15 +30,14 @@ function sendJson(res, status, body) {
 }
 
 export default async function handler(req, res) {
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(204).end();
-  }
+  const origin = req.headers.origin || '';
+  setCors(res, origin);
 
-  res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+  if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return sendJson(res, 405, { error: 'Method not allowed' });
+  if (origin && !allowedOrigins().includes(origin)) {
+    return sendJson(res, 403, { error: 'Origin not allowed' });
+  }
   if (!process.env.GROQ_API_KEY) return sendJson(res, 503, { error: 'AI service is not configured' });
 
   const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
