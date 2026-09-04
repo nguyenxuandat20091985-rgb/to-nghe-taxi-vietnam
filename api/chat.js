@@ -5,6 +5,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
   'https://nguyenxuandat20091985-rgb.github.io'
 ];
 
+const DEFAULT_GROQ_MODEL = 'openai/gpt-oss-120b';
 const SYSTEM_PROMPT = 'Bạn là AI tư vấn thân thiện tại Đền Tổ Nghề Taxi. Trả lời ngắn gọn, ấm áp bằng tiếng Việt, hỗ trợ tài xế về nghề nghiệp, an toàn giao thông, tâm lý, và lời khuyên bình an. Không đưa lời khuyên y tế, pháp lý hoặc tài chính chuyên sâu.';
 
 function allowedOrigins() {
@@ -54,17 +55,23 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+        model: process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: message }
         ],
         temperature: 0.7,
-        max_tokens: 600
+        max_completion_tokens: 600
       })
     });
 
-    if (!upstream.ok) return sendJson(res, 502, { error: 'AI upstream request failed' });
+    if (!upstream.ok) {
+      return sendJson(res, 502, {
+        error: 'AI upstream request failed',
+        upstreamStatus: upstream.status
+      });
+    }
+
     const data = await upstream.json();
     const reply = data?.choices?.[0]?.message?.content;
     if (!reply) return sendJson(res, 502, { error: 'AI returned no response' });
