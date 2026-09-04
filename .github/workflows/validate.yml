@@ -1,0 +1,31 @@
+name: Validate web app
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate JSON configuration
+        run: |
+          python3 - <<'PY'
+          import json
+          for path in ['firebase.json', '.firebaserc']:
+              with open(path, encoding='utf-8') as f:
+                  json.load(f)
+              print(f'OK: {path}')
+          PY
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check api/chat.js
+          node --check js/firebase-bridge.js
+          node --check js/firebase-config.js
+          node --check service-worker.js
