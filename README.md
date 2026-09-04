@@ -1,97 +1,129 @@
 # Đền Tổ Nghề Taxi Việt Nam
 
-Ứng dụng web tri ân nghề taxi Việt Nam, hỗ trợ trải nghiệm dâng hương, lời khấn, quẻ, lịch, công đức và kết nối cộng đồng tài xế.
+Ứng dụng web/PWA tri ân nghề taxi Việt Nam, hỗ trợ dâng hương, lời khấn, quẻ, lịch, công đức, hồ sơ và kết nối cộng đồng tài xế.
 
-## Mở app trực tiếp
+## Trạng thái hiện tại
 
-[https://nguyenxuandat20091985-rgb.github.io/to-nghe-taxi-vietnam/](https://nguyenxuandat20091985-rgb.github.io/to-nghe-taxi-vietnam/)
+- Frontend chính: `index.html`, kiến trúc single-file, HTML/CSS/Vanilla JS.
+- Firebase Authentication: Anonymous Auth.
+- Firebase Firestore: lưu/đồng bộ `users/{uid}` theo tài khoản ẩn danh.
+- PWA: `manifest.json` + `service-worker.js`, có cache app-shell và fallback offline.
+- AI: frontend gọi `/api/chat`; khóa `GROQ_API_KEY` chỉ nằm ở serverless proxy, không nằm trong trình duyệt hay Git.
+- Firebase Hosting: đã có cấu hình production trong `firebase.json`.
+- API proxy `api/chat.js`: tương thích Vercel. Firebase Hosting không tự chạy thư mục `api/`; nếu cần AI trên cùng domain Firebase, chuyển proxy sang Cloud Functions/Cloud Run và thêm rewrite tương ứng.
 
-Ứng dụng đã được cấu hình GitHub Pages. Mỗi lần cập nhật vào nhánh `main`, GitHub Pages sẽ tự triển khai lại đường link trên.
+## Công nghệ
 
-## Tính năng hiện có
+- HTML5 / CSS3 / Vanilla JavaScript ES6+
+- Firebase Web SDK 10.12.2 (Auth + Firestore)
+- Firebase Hosting + Firestore Rules
+- PWA Service Worker
+- Vercel Serverless Function cho AI proxy
 
-- Trang chủ với không gian hình ảnh chủ đề nghề taxi.
-- Dâng hương, hiệu ứng khói, âm thanh và cộng điểm công đức.
-- Lưu lời khấn và lịch sử thao tác trên thiết bị.
-- Quẻ hằng ngày, lịch âm cơ bản, tin tức và cộng đồng dạng giao diện.
-- Hồ sơ, huy hiệu, công đức và các tiện ích tinh thần.
-- AI tư vấn thử nghiệm thông qua Groq API Key do người dùng tự nhập.
-- Giao diện responsive cho điện thoại và máy tính.
-- PWA: có manifest, biểu tượng app và bộ nhớ đệm offline app-shell.
+Firebase frontend config có thể xuất hiện trong mã client; đó là cấu hình nhận diện project, không phải secret. Bảo mật dữ liệu nằm ở Firestore Rules và bảo mật AI nằm ở biến môi trường của proxy.
 
-## Cài lên màn hình điện thoại
-
-### Android
-
-1. Mở link bằng Chrome.
-2. Chọn menu ba chấm.
-3. Chọn **Cài đặt ứng dụng** hoặc **Thêm vào màn hình chính**.
-4. Xác nhận cài đặt.
-
-### iPhone
-
-1. Mở link bằng Safari.
-2. Chọn nút **Chia sẻ**.
-3. Chọn **Thêm vào Màn hình chính**.
-4. Chọn **Thêm**.
-
-## Chạy trên máy tính để kiểm tra
-
-Có thể mở trực tiếp `index.html`. Để kiểm tra đầy đủ PWA và service worker, nên dùng máy chủ HTTPS hoặc máy chủ local:
+## Chạy local
 
 ```bash
 python3 -m http.server 8080
 ```
 
-Sau đó mở `http://localhost:8080`.
+Mở `http://localhost:8080`. PWA/service worker cần HTTPS hoặc localhost.
 
-## Cấu trúc các file chính
+## Firebase lần đầu
 
-```text
-index.html              Giao diện và logic frontend hiện tại
-manifest.json           Cấu hình cài đặt PWA
-service-worker.js       Cache app-shell và hỗ trợ offline
-icons/icon-192.png      Biểu tượng ứng dụng cho màn hình nhỏ
-icons/icon-512.png      Biểu tượng ứng dụng cho màn hình lớn/PWA
-js/firebase-config.js   Cấu hình Firebase dự phòng cho giai đoạn backend
-js/firebase-bridge.js   Đăng nhập ẩn danh và đồng bộ Firestore
-firestore.rules         Quyền truy cập dữ liệu theo từng tài khoản
-firebase.json           Cấu hình Firebase CLI
-app.py                  Bộ chạy Streamlit cũ, không cần cho GitHub Pages
-```
+Project mặc định: `to-nghe-taxi`.
 
-## Ghi chú phát hành
-
-Bản web vẫn lưu dữ liệu vào `localStorage` để chạy offline, đồng thời đã có lớp đồng bộ Firebase Firestore theo tài khoản ẩn danh. Bản này đồng bộ các phiên trên cùng trình duyệt/thiết bị; muốn đồng bộ chắc chắn giữa nhiều điện thoại cần bổ sung đăng nhập Google, email hoặc số điện thoại để giữ cùng một tài khoản.
-
-## Thiết lập Firebase lần đầu
-
-Trong Firebase Console của project `to-nghe-taxi`, cần bật **Authentication → Sign-in method → Anonymous** và tạo **Firestore Database**. Sau đó triển khai rules:
+1. Firebase Console → Authentication → Sign-in method → bật **Anonymous**.
+2. Tạo Firestore Database.
+3. Kiểm tra `js/firebase-config.js` đúng project.
+4. Đăng nhập Firebase CLI và triển khai rules/hosting:
 
 ```bash
 firebase login
 firebase use to-nghe-taxi
-firebase deploy --only firestore:rules
+firebase deploy --only hosting,firestore:rules
 ```
 
-File `js/firebase-config.js` chỉ chứa cấu hình nhận diện frontend do Firebase cung cấp; đây không phải secret. Quyền bảo vệ dữ liệu nằm trong `firestore.rules`, chỉ cho phép mỗi tài khoản đọc/ghi tài liệu `users/{uid}` của chính mình.
+Firebase Hosting cung cấp HTTPS và CDN; project này dùng thư mục gốc làm public root để giữ nguyên single-file architecture.
 
-AI hiện đang gọi trực tiếp Groq từ trình duyệt và người dùng phải tự nhập API Key. Không nên dùng cách này cho bản thương mại; khi phát hành chính thức cần chuyển khóa API vào backend hoặc serverless function.
+## AI proxy
 
-## Bảo mật AI
+`api/chat.js` nhận `POST /api/chat`, giới hạn message 2.000 ký tự và gửi request tới Groq bằng `process.env.GROQ_API_KEY`. Không đặt khóa trong `index.html`, `localStorage`, Firebase config hoặc GitHub.
 
-Ô nhập API Key đã được gỡ khỏi giao diện và ứng dụng không còn lưu khóa trong `localStorage`. Frontend gọi endpoint `/api/chat`; file `api/chat.js` là proxy serverless tương thích Vercel và đọc khóa từ biến môi trường `GROQ_API_KEY` trên máy chủ.
+Để chạy AI bằng Vercel:
 
-GitHub Pages chỉ chạy frontend tĩnh, nên muốn bật AI thật cần triển khai thư mục `api/` lên một dịch vụ serverless, đặt secret `GROQ_API_KEY` ở phần Environment Variables, sau đó đổi `AI_API_URL` trong `index.html` thành URL backend đó. Không commit API Key vào GitHub và nếu khóa cũ đã từng bị lộ thì cần thu hồi/tạo khóa mới tại Groq.
+```bash
+vercel
+vercel env add GROQ_API_KEY production
+```
 
-Nội dung quẻ, lời chúc và tiện ích tâm linh chỉ mang tính tinh thần/giải trí, không thay thế tư vấn y tế, pháp lý, tài chính hoặc an toàn giao thông chuyên môn.
+Sau khi triển khai, nếu frontend được host cùng Vercel thì `/api/chat` hoạt động trực tiếp. Nếu frontend được host riêng trên Firebase Hosting, cần đặt `AI_API_URL` thành URL proxy Vercel hoặc chuyển proxy vào Firebase Functions/Cloud Run; không đưa secret vào frontend.
 
-## Lộ trình đề xuất
+## PWA / offline
 
-1. Hoàn thiện PWA và kiểm thử trên Android/iPhone.
-2. Kết nối Firebase Authentication và Firestore.
-3. Làm cộng đồng, quản trị nội dung và báo cáo bài viết.
-4. Chuyển AI sang backend bảo mật.
-5. Đóng gói Android bằng Capacitor sau khi bản web ổn định.
+Service worker cache app-shell gồm `index.html`, manifest và icon. Request GET được cache sau khi tải thành công; khi mất mạng, app ưu tiên bản cache và fallback về `index.html`. Service worker được đăng ký từ `index.html` khi chạy trên HTTPS/localhost.
+
+## Bảo mật Firestore
+
+`firestore.rules` chỉ cho phép tài khoản đã xác thực đọc/ghi tài liệu `users/{uid}` của chính mình; mọi đường dẫn khác mặc định bị từ chối. Không lưu API key hoặc dữ liệu bí mật vào Firestore.
+
+## Cấu trúc chính
+
+```text
+index.html
+manifest.json
+service-worker.js
+js/firebase-config.js
+js/firebase-bridge.js
+firestore.rules
+firebase.json
+.firebaserc
+api/chat.js
+docs/
+```
+
+## Roadmap phát hành
+
+### Phase 1 — Core
+
+- [x] Single-file responsive web app
+- [x] Dâng hương, lời khấn, công đức, hồ sơ
+
+### Phase 2 — Data
+
+- [x] Firebase Anonymous Auth
+- [x] Firestore state sync
+- [x] Firestore security rules
+
+### Phase 3 — PWA
+
+- [x] Manifest
+- [x] Service worker
+- [x] Offline app-shell
+
+### Phase 4 — AI
+
+- [x] Server-side proxy architecture
+- [x] Không lưu API key ở client
+- [ ] Production proxy deployment + smoke test
+
+### Phase 5 — Community
+
+- [ ] Dữ liệu bài viết/community thực trên Firestore
+- [ ] Báo cáo nội dung và moderation
+- [ ] Tài khoản bền vững (Google/email/phone) để đồng bộ đa thiết bị
+
+### Phase 6 — Release
+
+- [ ] Production domain
+- [ ] Android/iPhone install verification
+- [ ] Firebase Hosting production deploy
+- [ ] AI endpoint production smoke test
+- [ ] Backup/monitoring và quy trình rollback
+
+## Ghi chú
+
+Nội dung quẻ, lời chúc và tiện ích tâm linh mang tính tinh thần/giải trí, không thay thế tư vấn y tế, pháp lý, tài chính hoặc an toàn giao thông chuyên môn.
 
 © 2026 TỔ NGHỀ TAXI VIỆT NAM
