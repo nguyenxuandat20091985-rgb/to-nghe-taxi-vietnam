@@ -1,0 +1,14 @@
+# Secrets / local environment
+.env
+.env.*
+!.env.example
+.firebase/
+.firebase-debug.log
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Dependencies / local tooling
+node_modules/
+.vercel/
+.DS_Store
