@@ -3,10 +3,6 @@ import { getAuth, onAuthStateChanged, signInAnonymously } from 'https://www.gsta
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import firebaseConfig from './firebase-config.js';
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
 function statePayload(state) {
   return {
     incenseCount: Number(state.incenseCount || 0),
@@ -23,7 +19,7 @@ function statePayload(state) {
   };
 }
 
-function waitForUser() {
+function waitForUser(auth) {
   return new Promise((resolve, reject) => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       unsubscribe();
@@ -33,21 +29,35 @@ function waitForUser() {
   });
 }
 
-const user = await signInAnonymously(auth).then(() => waitForUser());
-const stateRef = doc(db, 'users', user.uid);
+async function initializeFirebaseBridge() {
+  try {
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    await signInAnonymously(auth);
+    const user = await waitForUser(auth);
+    const stateRef = doc(db, 'users', user.uid);
 
-window.firebaseBridge = {
-  uid: user.uid,
-  async loadUserState() {
-    const snapshot = await getDoc(stateRef);
-    return snapshot.exists() ? snapshot.data().appState || null : null;
-  },
-  async saveUserState(state) {
-    await setDoc(stateRef, {
-      appState: statePayload(state),
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+    window.firebaseBridge = {
+      uid: user.uid,
+      async loadUserState() {
+        const snapshot = await getDoc(stateRef);
+        return snapshot.exists() ? snapshot.data().appState || null : null;
+      },
+      async saveUserState(state) {
+        await setDoc(stateRef, {
+          appState: statePayload(state),
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      }
+    };
+
+    window.dispatchEvent(new CustomEvent('firebase-ready'));
+  } catch (error) {
+    // Firebase is an enhancement layer; the local app must remain usable if
+    // Auth/Firestore is unavailable (offline, blocked network, or bad config).
+    console.warn('[Firebase] Initialization unavailable; using local state.', error);
   }
-};
+}
 
-window.dispatchEvent(new CustomEvent('firebase-ready'));
+initializeFirebaseBridge();
