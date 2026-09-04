@@ -11,7 +11,7 @@ function allowedOrigins() {
   const configured = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map((value) => value.trim()).filter(Boolean)
     : [];
-  return configured.length ? configured : DEFAULT_ALLOWED_ORIGINS;
+  return [...new Set([...DEFAULT_ALLOWED_ORIGINS, ...configured])];
 }
 
 function setCors(res, origin) {
