@@ -1,273 +1,165 @@
 # TECHNICAL ARCHITECTURE
 
-Version: 1.0
-
-Project:
-TỔ NGHỀ TAXI VIỆT NAM
-
----
-
-# ARCHITECTURE PHILOSOPHY
-
-Ứng dụng được thiết kế theo nguyên tắc:
-
-Single File Application.
-
-Toàn bộ ứng dụng chạy trong duy nhất:
-
-app/index.html
-
-Không Backend.
-
-Không Framework.
-
-Không Build Tool.
-
-Không Node.js.
-
-Không NPM.
-
-Không CDN bắt buộc.
-
-Có thể chạy offline sau khi tải.
+Version: 2.0  
+Project: TỔ NGHỀ TAXI VIỆT NAM  
+Status: Production preparation
 
 ---
 
-# TECHNOLOGY STACK
+## 1. ARCHITECTURE
 
-HTML5
+Ứng dụng giữ kiến trúc frontend single-file nhưng đã có backend services managed:
 
-CSS3
+```text
+Browser / PWA
+   │
+   ├── index.html (HTML + CSS + Vanilla JS)
+   │
+   ├── Firebase Web SDK
+   │      ├── Anonymous Auth
+   │      └── Firestore
+   │
+   └── POST /api/chat
+          │
+          └── Serverless proxy
+                 └── Groq API
+```
 
-Vanilla JavaScript (ES6+)
+Firebase Hosting phục vụ static frontend. `api/chat.js` là serverless proxy tương thích Vercel; Firebase Hosting không thực thi file `api/` như một function.
 
-SVG
+## 2. TECHNOLOGY STACK
 
-Canvas (nếu cần)
+- HTML5
+- CSS3
+- Vanilla JavaScript ES6+
+- Firebase Web SDK 10.12.2
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Hosting
+- Service Worker / PWA
+- Vercel Serverless Function cho AI proxy
+- LocalStorage làm offline/client fallback
 
-Web Audio API (nếu cần)
+## 3. PROJECT STRUCTURE
 
-LocalStorage
-
----
-
-# PROJECT STRUCTURE
-
-Repository
-
-README.md
-
+```text
+index.html
+manifest.json
+service-worker.js
+js/firebase-config.js
+js/firebase-bridge.js
+firestore.rules
+firebase.json
+.firebaserc
+api/chat.js
 docs/
+```
 
-app/
+Không cần framework hoặc build tool cho frontend hiện tại.
 
-app/index.html
+## 4. FIREBASE INITIALIZATION
 
-Không tạo thêm file chạy nào khác.
+`js/firebase-config.js` chứa Firebase Web App configuration. Các giá trị như `apiKey`, `projectId`, `appId` là thông tin nhận diện client và không thay thế Security Rules.
 
----
+`js/firebase-bridge.js`:
 
-# HTML STRUCTURE
+1. Khởi tạo Firebase App.
+2. Khởi tạo Auth và Firestore.
+3. Đăng nhập Anonymous.
+4. Lấy UID.
+5. Đọc/ghi `users/{uid}`.
+6. Phát event `firebase-ready` để frontend đồng bộ state.
 
-index.html bao gồm:
+Firestore chỉ được phép truy cập tài liệu có UID trùng `request.auth.uid`.
 
-<head>
+## 5. DATA FLOW
 
-- Meta
-- SEO
-- Open Graph
-- Theme Color
-- Manifest (chuẩn bị cho PWA)
-- Structured Data (nếu cần)
+Frontend duy trì state hiện tại trong bộ nhớ và LocalStorage để trải nghiệm offline. Sau khi Firebase ready, state được load từ Firestore; các thay đổi được debounce và đồng bộ lên tài liệu người dùng.
 
-<body>
+Nếu Firebase tạm thời lỗi, app vẫn có thể sử dụng client state/LocalStorage cho các tính năng cục bộ. Không coi Firebase là nguồn duy nhất khiến UI phải chờ tải.
 
-- Splash Screen
-- Opening Cinematic
-- Sacred Plaza
-- Altar
-- Navigation
-- Dialog
-- Toast
-- Modal
-- Loading
-- Audio Layer
-- Particle Layer
+## 6. FIRESTORE SECURITY
 
----
+`firestore.rules` dùng deny-by-default:
 
-# CSS ARCHITECTURE
+- `users/{userId}`: read/write khi đã authenticated và UID khớp.
+- Mọi document/path khác: deny.
 
-Toàn bộ CSS đặt trong:
+Khi mở rộng Community, phải tạo collection/rules riêng với quyền tối thiểu cần thiết; không được mở `allow read, write: if true`.
 
-<style>
+## 7. AI PROXY SECURITY
 
-Chia rõ:
+Browser không nhận `GROQ_API_KEY`.
 
-1. Reset
+`api/chat.js`:
 
-2. Variables
+- Chỉ nhận POST và OPTIONS.
+- Kiểm tra origin/CORS.
+- Kiểm tra `GROQ_API_KEY` trên server.
+- Giới hạn message 1–2.000 ký tự.
+- Gọi Groq bằng Authorization Bearer từ environment variable.
+- Không cache AI response.
+- Không trả secret upstream về client.
 
-3. Typography
+Production nên bổ sung rate limiting/abuse protection ở lớp edge/serverless trước khi mở rộng quy mô.
 
-4. Layout
+## 8. HOSTING
 
-5. Components
+`firebase.json` dùng repository root làm Firebase Hosting public root vì `index.html` nằm ở root. Các file docs, rules, cấu hình và `api/` được loại khỏi static deploy.
 
-6. Animation
+Firebase Hosting cung cấp HTTPS/CDN cho frontend. Firebase hỗ trợ rewrite tới Cloud Functions/Cloud Run nếu sau này muốn đưa AI proxy về cùng domain.
 
-7. Responsive
+## 9. PWA / OFFLINE
 
-8. Utility
+`service-worker.js` cache app-shell (`index.html`, manifest, icons), cache các GET response sau khi tải thành công và fallback về cached `index.html` khi offline.
 
-Không viết CSS lặp.
+Service worker được đăng ký trên HTTPS hoặc localhost. `service-worker.js` dùng `Cache-Control: no-cache` trên Hosting để browser luôn kiểm tra phiên bản mới.
 
-Ưu tiên CSS Variables.
+## 10. PERFORMANCE
 
----
+- Mobile-first.
+- Hạn chế DOM/reflow không cần thiết.
+- Lazy initialization cho hiệu ứng nặng.
+- Debounce Firebase writes.
+- Cache app-shell để giảm thời gian mở app sau lần đầu.
+- Không block UI chờ Firebase hoặc AI.
 
-# JAVASCRIPT ARCHITECTURE
+## 11. ACCESSIBILITY
 
-Toàn bộ JavaScript đặt trong:
+- Nút và vùng chạm đủ lớn.
+- Nhãn rõ ràng cho thao tác chính.
+- Tương phản tốt.
+- Không phụ thuộc duy nhất vào animation/âm thanh để hiểu trạng thái.
 
-<script>
+## 12. DEPLOYMENT
 
-Tổ chức theo Module Pattern:
+Firebase:
 
-App
+```bash
+firebase login
+firebase use to-nghe-taxi
+firebase deploy --only hosting,firestore:rules
+```
 
-UI
+AI proxy Vercel:
 
-Animation
+```bash
+vercel
+vercel env add GROQ_API_KEY production
+```
 
-Audio
+Không commit `.env`, API key hoặc service-account credentials.
 
-Storage
+## 13. TESTING GATE
 
-Router
+Trước release phải kiểm tra:
 
-Effects
-
-Prayer
-
-Profile
-
-Community
-
-Utils
-
-Không dùng biến toàn cục nếu không cần.
-
----
-
-# DATA STORAGE
-
-Chỉ sử dụng LocalStorage.
-
-Ví dụ:
-
-- Lần đầu mở app
-- Số ngày dâng hương
-- Chuỗi ngày liên tiếp
-- Hồ sơ người dùng
-- Cài đặt giao diện
-- Bật/tắt âm thanh
-
-Không lưu dữ liệu nhạy cảm.
-
----
-
-# PERFORMANCE
-
-Mục tiêu:
-
-60 FPS
-
-Tối ưu cho Android.
-
-Tối ưu cho iPhone.
-
-Giảm số lần repaint.
-
-Giảm reflow.
-
-Không memory leak.
-
-Lazy khởi tạo các hiệu ứng nặng.
-
----
-
-# ACCESSIBILITY
-
-Nút lớn.
-
-Dễ bấm.
-
-Độ tương phản tốt.
-
-Có nhãn cho các thành phần chính.
-
----
-
-# OFFLINE
-
-Ứng dụng vẫn hoạt động khi mất mạng (trừ các chức năng trực tuyến trong tương lai).
-
-Chuẩn bị cấu trúc để sau này nâng cấp thành PWA.
-
----
-
-# SECURITY
-
-Không nhúng khóa API.
-
-Không thực thi mã từ nguồn không tin cậy.
-
-Kiểm tra dữ liệu trước khi lưu vào LocalStorage.
-
----
-
-# CODING STANDARDS
-
-Tên biến rõ nghĩa.
-
-Tên hàm theo động từ.
-
-Comment cho các phần quan trọng.
-
-Không lặp code.
-
-Tách logic theo từng module trong cùng file.
-
----
-
-# FUTURE EXPANSION
-
-Kiến trúc phải cho phép bổ sung:
-
-- Đăng nhập
-- Đồng bộ dữ liệu
-- Cộng đồng
-- Bản đồ
-- Tin tức
-- Thông báo
-- AI hỗ trợ
-- PWA
-- Ứng dụng đa ngôn ngữ
-
-Mà không cần viết lại toàn bộ mã nguồn.
-
----
-
-# FINAL PRINCIPLE
-
-Mọi AI hoặc lập trình viên tham gia dự án phải:
-
-- Tuân thủ PROJECT_CONSTITUTION.md
-- Tuân thủ PRD
-- Tuân thủ UI_UX_BIBLE.md
-- Tuân thủ ANIMATION_BIBLE.md
-- Tuân thủ DESIGN_SYSTEM.md
-- Tuân thủ TECHNICAL_ARCHITECTURE.md
-
-Không được tự ý thay đổi kiến trúc nếu chưa cập nhật tài liệu.
+1. Firebase Anonymous Auth tạo UID.
+2. Firestore read/write đúng UID.
+3. Firestore cross-UID bị từ chối.
+4. PWA service worker đăng ký.
+5. Offline mở được app-shell.
+6. AI proxy trả lỗi rõ ràng khi thiếu secret.
+7. AI proxy không nhận API key từ browser.
+8. Android/iPhone thao tác được các luồng chính.
+9. Production URL dùng HTTPS.
