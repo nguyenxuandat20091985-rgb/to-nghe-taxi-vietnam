@@ -13,6 +13,7 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
+<script type="module" src="./js/firebase-bridge.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:wght@500;700;900&family=Be+Vietnam+Pro:wght@300;400;500;600&family=Noto+Sans:wght@400;500;600&display=swap');
 
@@ -1762,6 +1763,8 @@ likedPosts: []
 let state = loadState();
 let currentBgIndex = 0;
 let bgInterval;
+let firebaseSyncTimer;
+let firebaseSyncInFlight = false;
 
 const pageBgMap = {
 home: 0,
@@ -1791,6 +1794,29 @@ function saveState(){
 try{
 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }catch(e){}
+clearTimeout(firebaseSyncTimer);
+firebaseSyncTimer = setTimeout(() => {
+  if(window.firebaseBridge && !firebaseSyncInFlight){
+    firebaseSyncInFlight = true;
+    window.firebaseBridge.saveUserState(state)
+      .catch(() => {})
+      .finally(() => { firebaseSyncInFlight = false; });
+  }
+}, 500);
+}
+
+async function loadFirebaseState(){
+  if(!window.firebaseBridge) return;
+  try{
+    const remoteState = await window.firebaseBridge.loadUserState();
+    if(remoteState){
+      state = Object.assign({}, defaultState, remoteState);
+      saveState();
+      updateUI();
+    }else{
+      await window.firebaseBridge.saveUserState(state);
+    }
+  }catch(e){}
 }
 
 function addMerit(points){
@@ -2523,6 +2549,8 @@ updateUI();
 initCalendar();
 initSlideshow();
 initHomeSparks();
+window.addEventListener('firebase-ready', loadFirebaseState, {once:true});
+if(window.firebaseBridge) loadFirebaseState();
 // Enable offline app-shell caching when served from HTTPS (GitHub Pages included).
 if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
   navigator.serviceWorker.register('./service-worker.js').catch(() => {});

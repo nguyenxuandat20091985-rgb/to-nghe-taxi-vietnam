@@ -54,12 +54,27 @@ service-worker.js       Cache app-shell và hỗ trợ offline
 icons/icon-192.png      Biểu tượng ứng dụng cho màn hình nhỏ
 icons/icon-512.png      Biểu tượng ứng dụng cho màn hình lớn/PWA
 js/firebase-config.js   Cấu hình Firebase dự phòng cho giai đoạn backend
+js/firebase-bridge.js   Đăng nhập ẩn danh và đồng bộ Firestore
+firestore.rules         Quyền truy cập dữ liệu theo từng tài khoản
+firebase.json           Cấu hình Firebase CLI
 app.py                  Bộ chạy Streamlit cũ, không cần cho GitHub Pages
 ```
 
 ## Ghi chú phát hành
 
-Bản hiện tại là frontend web. Dữ liệu cá nhân đang lưu bằng `localStorage`, vì vậy chưa đồng bộ giữa nhiều thiết bị. Phần cộng đồng, tin tức và Firebase cần backend/database trước khi sử dụng cho người dùng thật.
+Bản web vẫn lưu dữ liệu vào `localStorage` để chạy offline, đồng thời đã có lớp đồng bộ Firebase Firestore theo tài khoản ẩn danh. Bản này đồng bộ các phiên trên cùng trình duyệt/thiết bị; muốn đồng bộ chắc chắn giữa nhiều điện thoại cần bổ sung đăng nhập Google, email hoặc số điện thoại để giữ cùng một tài khoản.
+
+## Thiết lập Firebase lần đầu
+
+Trong Firebase Console của project `to-nghe-taxi`, cần bật **Authentication → Sign-in method → Anonymous** và tạo **Firestore Database**. Sau đó triển khai rules:
+
+```bash
+firebase login
+firebase use to-nghe-taxi
+firebase deploy --only firestore:rules
+```
+
+File `js/firebase-config.js` chỉ chứa cấu hình nhận diện frontend do Firebase cung cấp; đây không phải secret. Quyền bảo vệ dữ liệu nằm trong `firestore.rules`, chỉ cho phép mỗi tài khoản đọc/ghi tài liệu `users/{uid}` của chính mình.
 
 AI hiện đang gọi trực tiếp Groq từ trình duyệt và người dùng phải tự nhập API Key. Không nên dùng cách này cho bản thương mại; khi phát hành chính thức cần chuyển khóa API vào backend hoặc serverless function.
 
