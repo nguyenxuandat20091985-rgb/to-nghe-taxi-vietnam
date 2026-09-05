@@ -31,13 +31,23 @@ function statePayload(state) {
   };
 }
 
-function waitForUser(auth) {
+// Wait for Firebase Auth to restore its persisted session before creating an
+// anonymous user. This is critical after Google signInWithRedirect on mobile:
+// creating an anonymous user too early can hide the restored Google session.
+function waitForInitialAuthState(auth) {
   return new Promise((resolve, reject) => {
+    let settled = false;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (settled) return;
+      settled = true;
       unsubscribe();
-      if (user) resolve(user);
-      else reject(new Error('Firebase user unavailable'));
-    }, reject);
+      resolve(user || null);
+    }, (error) => {
+      if (settled) return;
+      settled = true;
+      unsubscribe();
+      reject(error);
+    });
   });
 }
 
@@ -47,10 +57,14 @@ async function initializeFirebaseBridge() {
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Preserve an existing Google session. Only create an anonymous session
-    // for first-time visitors who have no Firebase user yet.
-    if (!auth.currentUser) await signInAnonymously(auth);
-    const user = await waitForUser(auth);
+    // IMPORTANT: wait for persisted Google credentials first. Only visitors
+    // with no restored session receive an anonymous session.
+    let user = await waitForInitialAuthState(auth);
+    if (!user) {
+      user = await signInAnonymously(auth);
+      user = user.user;
+    }
+
     const stateRef = doc(db, 'users', user.uid);
 
     window.firebaseServices = { app, auth, db };
@@ -68,8 +82,6 @@ async function initializeFirebaseBridge() {
       }
     };
 
-    // Community is an enhancement module. A community-module failure must
-    // never disable the core app/Firebase state bridge.
     try {
       await import('./community.js');
     } catch (communityError) {
@@ -78,8 +90,6 @@ async function initializeFirebaseBridge() {
 
     window.dispatchEvent(new CustomEvent('firebase-ready'));
   } catch (error) {
-    // Firebase is an enhancement layer; the local app must remain usable if
-    // Auth/Firestore is unavailable (offline, blocked network, or bad config).
     console.warn('[Firebase] Initialization unavailable; using local state.', error);
   }
 }
