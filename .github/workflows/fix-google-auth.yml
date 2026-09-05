@@ -1,0 +1,117 @@
+name: Fix Google Auth
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    if: github.event.head_commit.message != 'fix: Google Auth anonymous linking and mobile fallback'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch community Google authentication
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('js/community.js')
+          text = path.read_text(encoding='utf-8')
+
+          old_import = """  GoogleAuthProvider,\n  signInWithPopup,\n  signInWithRedirect,\n  getRedirectResult,\n  onAuthStateChanged,"""
+          new_import = """  GoogleAuthProvider,\n  signInWithPopup,\n  signInWithRedirect,\n  signInWithCredential,\n  linkWithPopup,\n  linkWithRedirect,\n  getRedirectResult,\n  onAuthStateChanged,"""
+          if old_import not in text:
+              raise SystemExit('Expected Firebase Auth import block not found')
+          text = text.replace(old_import, new_import, 1)
+
+          old_fn = '''async function googleLogin() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  try {
+    return await signInWithPopup(auth, provider);
+  } catch (error) {
+    const fallbackCodes = new Set([
+      'auth/popup-blocked',
+      'auth/popup-closed-by-user',
+      'auth/cancelled-popup-request',
+      'auth/operation-not-supported-in-this-environment',
+    ]);
+    if (!fallbackCodes.has(error.code)) throw error;
+    await signInWithRedirect(auth, provider);
+    return null;
+  }
+}'''
+
+          new_fn = '''async function googleLogin() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+
+  // The app creates an anonymous Firebase session for visitors. When that
+  // session exists, Google must upgrade/link the SAME Firebase account rather
+  // than starting a second account with signInWithPopup(). This is the
+  // supported anonymous-to-Google flow and keeps the user's UID stable.
+  const current = auth.currentUser;
+  if (current?.isAnonymous) {
+    try {
+      return await linkWithPopup(current, provider);
+    } catch (error) {
+      if (error.code === 'auth/credential-already-in-use' && error.credential) {
+        return await signInWithCredential(auth, error.credential);
+      }
+
+      const fallbackCodes = new Set([
+        'auth/popup-blocked',
+        'auth/popup-closed-by-user',
+        'auth/cancelled-popup-request',
+        'auth/operation-not-supported-in-this-environment',
+      ]);
+      if (!fallbackCodes.has(error.code)) throw error;
+
+      // Mobile/in-app browsers can block OAuth popups. In that case use the
+      // matching anonymous-account redirect linker, not signInWithRedirect(),
+      // so the visitor is upgraded instead of losing the anonymous session.
+      await linkWithRedirect(current, provider);
+      return null;
+    }
+  }
+
+  try {
+    return await signInWithPopup(auth, provider);
+  } catch (error) {
+    const fallbackCodes = new Set([
+      'auth/popup-blocked',
+      'auth/popup-closed-by-user',
+      'auth/cancelled-popup-request',
+      'auth/operation-not-supported-in-this-environment',
+    ]);
+    if (!fallbackCodes.has(error.code)) throw error;
+    await signInWithRedirect(auth, provider);
+    return null;
+  }
+}'''
+
+          if old_fn not in text:
+              raise SystemExit('Expected googleLogin() function not found')
+          text = text.replace(old_fn, new_fn, 1)
+
+          path.write_text(text, encoding='utf-8')
+
+      - name: Commit patched authentication
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/community.js
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: Google Auth anonymous linking and mobile fallback"
+          git push origin HEAD:main
+
+      - name: Remove one-time fixer
+        if: success()
+        run: |
+          git rm .github/workflows/fix-google-auth.yml
+          git commit -m "chore: remove one-time auth fixer"
+          git push origin HEAD:main
