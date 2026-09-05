@@ -4,6 +4,7 @@
 import {
   GoogleAuthProvider,
   linkWithPopup,
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   onAuthStateChanged,
@@ -71,19 +72,26 @@ function loginModal(action = 'tương tác với cộng đồng') {
       <button class="community-google" id="community-google-login">G&nbsp;&nbsp; Đăng nhập bằng Google</button>
     </div>`;
   document.body.appendChild(modal);
+  
   modal.querySelector('.community-modal-close').onclick = () => modal.remove();
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-  modal.querySelector('#community-google-login').onclick = async () => {
-    const button = modal.querySelector('#community-google-login');
-    button.disabled = true;
-    button.textContent = 'Đang kết nối Google…';
+  
+  const googleBtn = modal.querySelector('#community-google-login');
+  googleBtn.onclick = async () => {
+    googleBtn.disabled = true;
+    googleBtn.textContent = 'Đang kết nối Google…';
     try {
-      await googleLogin();
+      const result = await googleLogin();
+      if (result) {
+        modal.remove();
+        renderCommunityUser();
+        notify('Đăng nhập Google thành công.', 'success');
+      }
     } catch (error) {
       console.error('[Community] Google sign-in failed', error);
-      button.disabled = false;
-      button.textContent = 'G  Đăng nhập bằng Google';
-      notify('Đăng nhập Google chưa thành công. Vui lòng thử lại.', 'error');
+      googleBtn.disabled = false;
+      googleBtn.textContent = 'G  Đăng nhập bằng Google';
+      notify('Đăng nhập chưa thành công. Vui lòng thử lại.', 'error');
     }
   };
 }
@@ -116,9 +124,18 @@ async function googleLogin() {
       if (error.code !== 'auth/credential-already-in-use') throw error;
     }
   }
-  // Chuyển hướng trực tiếp để tương thích hoàn toàn trên thiết bị di động
-  await signInWithRedirect(auth, provider);
-  return null;
+
+  try {
+    // Thử dùng popup trước
+    const result = await signInWithPopup(auth, provider);
+    await ensureUserProfile(result.user);
+    return result.user;
+  } catch (error) {
+    console.warn('[Community] Popup blocked or failed, fallback to redirect', error);
+    // Nếu popup bị chặn trên điện thoại, tự động chuyển sang dùng redirect
+    await signInWithRedirect(auth, provider);
+    return null;
+  }
 }
 
 async function toggleLike(postId) {
