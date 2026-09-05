@@ -1,3 +1,15 @@
+// Canonical production URL: keep the GitHub Pages entry point as a compatibility
+// alias while Vercel remains the single public application origin.
+if (window.location.hostname.endsWith('.github.io')) {
+  const githubPrefix = '/to-nghe-taxi-vietnam';
+  const remainingPath = window.location.pathname.startsWith(githubPrefix)
+    ? window.location.pathname.slice(githubPrefix.length)
+    : '';
+  window.location.replace(
+    `https://to-nghe-taxi-vietnam.vercel.app${remainingPath}${window.location.search}${window.location.hash}`
+  );
+}
+
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
