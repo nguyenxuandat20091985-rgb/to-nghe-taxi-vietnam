@@ -1,51 +1,35 @@
-// js/community.js - Phiên bản tối ưu đầy đủ tính năng đăng nhập và giao diện Cộng Đồng
-
+// js/community.js
 import { auth, db } from './firebase-init.js';
 import { 
   GoogleAuthProvider, 
   signInWithPopup, 
   signInWithRedirect, 
   linkWithPopup, 
-  onAuthStateChanged, 
-  signOut 
+  onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  query, 
-  orderBy, 
-  limit, 
-  serverTimestamp, 
   doc, 
   getDoc, 
   setDoc, 
-  updateDoc, 
-  arrayUnion, 
-  arrayRemove 
+  serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Hàm hiển thị thông báo toast
 function notify(message, type = 'success') {
-  const existingToast = document.querySelector('.community-toast');
-  if (existingToast) existingToast.remove();
+  const existing = document.querySelector('.community-toast');
+  if (existing) existing.remove();
 
   const toast = document.createElement('div');
   toast.className = `community-toast community-toast-${type}`;
   toast.textContent = message;
   document.body.appendChild(toast);
   
-  setTimeout(() => {
-    toast.classList.add('show');
-  }, 10);
-
+  setTimeout(() => toast.classList.add('show'), 10);
   setTimeout(() => {
     toast.classList.remove('show');
     setTimeout(() => toast.remove(), 300);
   }, 3000);
 }
 
-// Hàm chống lỗi HTML Injection
 function esc(str) {
   if (!str) return '';
   return String(str)
@@ -56,12 +40,6 @@ function esc(str) {
     .replace(/'/g, '&#039;');
 }
 
-// Kiểm tra user hiện tại
-function user() {
-  return auth.currentUser;
-}
-
-// Đảm bảo khởi tạo profile user trong Firestore
 async function ensureUserProfile(currentUser) {
   if (!currentUser) return;
   const userRef = doc(db, 'users', currentUser.uid);
@@ -77,7 +55,6 @@ async function ensureUserProfile(currentUser) {
   }
 }
 
-// Hàm xử lý đăng nhập Google (Hỗ trợ Popup + Redirect dự phòng)
 async function googleLogin() {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
@@ -89,32 +66,26 @@ async function googleLogin() {
       await ensureUserProfile(result.user);
       return result.user;
     } catch (error) {
-      console.warn('[Community] linkWithPopup error:', error);
       if (error.code !== 'auth/credential-already-in-use') throw error;
     }
   }
 
   try {
-    console.log('[Community] Đang gọi signInWithPopup...');
     const result = await signInWithPopup(auth, provider);
     await ensureUserProfile(result.user);
     notify('Đăng nhập Google thành công.', 'success');
     document.querySelector('#community-login-modal')?.remove();
     return result.user;
   } catch (error) {
-    console.error('[Community] signInWithPopup error:', error);
     try {
-      console.log('[Community] Chuyển sang signInWithRedirect dự phòng...');
       await signInWithRedirect(auth, provider);
     } catch (redirectError) {
-      console.error('[Community] redirect error:', redirectError);
       notify(`Lỗi đăng nhập: ${redirectError.message || redirectError.code}`, 'error');
       throw redirectError;
     }
   }
 }
 
-// Modal đăng nhập
 function loginModal(action = 'tương tác với cộng đồng') {
   document.querySelector('#community-login-modal')?.remove();
   const modal = document.createElement('div');
@@ -136,17 +107,16 @@ function loginModal(action = 'tương tác với cộng đồng') {
   const googleBtn = modal.querySelector('#community-google-login');
   googleBtn.onclick = async () => {
     googleBtn.disabled = true;
-    googleBtn.textContent = 'Đang xử lý đăng nhập...';
+    googleBtn.textContent = 'Đang xử lý...';
     try {
       await googleLogin();
-    } catch (error) {
+    } catch (e) {
       googleBtn.disabled = false;
       googleBtn.textContent = 'G  Đăng nhập bằng Google';
     }
   };
 }
 
-// Xây dựng giao diện bảng cộng đồng
 export function buildPanel() {
   const panel = document.createElement('div');
   panel.className = 'community-panel';
@@ -172,7 +142,7 @@ export function buildPanel() {
             <option value="Khác">Khác</option>
           </select>
           <label>Nội dung</label>
-          <textarea class="community-text" placeholder="Chia sẻ kinh nghiệm, thông tin đường phố, câu chuyện nghề..."></textarea>
+          <textarea class="community-text" placeholder="Chia sẻ kinh nghiệm, thông tin đường phố..."></textarea>
           <button class="community-submit-btn">Đăng bài</button>
         </div>
       </div>
@@ -182,16 +152,15 @@ export function buildPanel() {
           <button class="community-refresh-btn">Realtime</button>
         </div>
         <div class="community-feed-list">
-          <p class="community-empty">Chưa có bài viết. Hãy là người đầu tiên chia sẻ cùng anh em tài xế.</p>
+          <p class="community-empty">Chưa có bài viết. Hãy là người đầu tiên chia sẻ.</p>
         </div>
       </div>
     </div>
   `;
 
-  // Gắn sự kiện cho nút đăng nhập ở góc trên/khu vực đăng bài
   const loginBtn = panel.querySelector('.community-login-btn');
   loginBtn.onclick = async () => {
-    if (user()) {
+    if (auth.currentUser && !auth.currentUser.isAnonymous) {
       notify('Anh/chị đã đăng nhập.', 'success');
       return;
     }
@@ -199,13 +168,12 @@ export function buildPanel() {
     loginBtn.textContent = 'Đang chuyển hướng...';
     try {
       await googleLogin();
-    } catch (error) {
+    } catch (e) {
       loginBtn.disabled = false;
       loginBtn.textContent = 'Đăng nhập Google';
     }
   };
 
-  // Theo dõi trạng thái đăng nhập để cập nhật giao diện nút
   onAuthStateChanged(auth, (currentUser) => {
     const userInfo = panel.querySelector('.community-user-info');
     const formBox = panel.querySelector('.community-form');
@@ -214,7 +182,7 @@ export function buildPanel() {
       loginBtn.style.display = 'none';
       formBox.style.display = 'block';
     } else {
-      userInfo.innerHTML = `<span class="community-username">Khách</span><small>Đăng nhập để đăng bài & thả tim</small>`;
+      userInfo.innerHTML = `<span class="community-username">Khách</span><small>Đăng nhập để đăng bài</small>`;
       loginBtn.style.display = 'block';
       loginBtn.disabled = false;
       loginBtn.textContent = 'Đăng nhập Google';
