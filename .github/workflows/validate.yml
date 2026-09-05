@@ -28,4 +28,5 @@ jobs:
           node --check api/chat.js
           node --check js/firebase-bridge.js
           node --check js/firebase-config.js
+          node --check js/community.js
           node --check service-worker.js
