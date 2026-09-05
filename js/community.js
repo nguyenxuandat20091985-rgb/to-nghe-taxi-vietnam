@@ -4,7 +4,6 @@
 import {
   GoogleAuthProvider,
   linkWithPopup,
-  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   onAuthStateChanged,
@@ -55,7 +54,7 @@ function notify(message, type = 'info') {
   el.className = `community-toast ${type}`;
   el.textContent = message;
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), 3200);
+  setTimeout(() => el.remove(), 4000);
 }
 
 function loginModal(action = 'tương tác với cộng đồng') {
@@ -79,19 +78,21 @@ function loginModal(action = 'tương tác với cộng đồng') {
   const googleBtn = modal.querySelector('#community-google-login');
   googleBtn.onclick = async () => {
     googleBtn.disabled = true;
-    googleBtn.textContent = 'Đang kết nối Google…';
+    googleBtn.textContent = 'Đang chuyển hướng...';
     try {
-      const result = await googleLogin();
-      if (result) {
-        modal.remove();
-        renderCommunityUser();
-        notify('Đăng nhập Google thành công.', 'success');
-      }
+      await googleLogin();
     } catch (error) {
-      console.error('[Community] Google sign-in failed', error);
+      console.error('[Community] Google sign-in failed details:', error);
       googleBtn.disabled = false;
       googleBtn.textContent = 'G  Đăng nhập bằng Google';
-      notify('Đăng nhập chưa thành công. Vui lòng thử lại.', 'error');
+      
+      let errorMsg = 'Đăng nhập thất bại.';
+      if (error.code === 'auth/unauthorized-domain') {
+        errorMsg = 'Lỗi: Tên miền chưa được thêm vào Authorized domains trên Firebase Console.';
+      } else if (error.message) {
+        errorMsg = `Lỗi: ${error.message}`;
+      }
+      notify(errorMsg, 'error');
     }
   };
 }
@@ -114,6 +115,7 @@ async function ensureUserProfile(profile = {}) {
 async function googleLogin() {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
+  
   const anon = auth.currentUser?.isAnonymous ? auth.currentUser : null;
   if (anon) {
     try {
@@ -121,21 +123,15 @@ async function googleLogin() {
       await ensureUserProfile(result.user);
       return result.user;
     } catch (error) {
+      console.warn('[Community] linkWithPopup error:', error);
       if (error.code !== 'auth/credential-already-in-use') throw error;
     }
   }
 
-  try {
-    // Thử dùng popup trước
-    const result = await signInWithPopup(auth, provider);
-    await ensureUserProfile(result.user);
-    return result.user;
-  } catch (error) {
-    console.warn('[Community] Popup blocked or failed, fallback to redirect', error);
-    // Nếu popup bị chặn trên điện thoại, tự động chuyển sang dùng redirect
-    await signInWithRedirect(auth, provider);
-    return null;
-  }
+  // Sử dụng signInWithRedirect ổn định nhất cho thiết bị di động
+  console.log('[Community] Đang chuyển hướng sang trang đăng nhập Google...');
+  await signInWithRedirect(auth, provider);
+  return null;
 }
 
 async function toggleLike(postId) {
@@ -436,12 +432,17 @@ function interceptCommunityNavigation() {
 }
 
 onAuthStateChanged(auth, () => { renderCommunityUser(); renderPosts(); });
+
+// Xử lý kết quả trả về sau khi redirect từ trang Google Login thành công
 getRedirectResult(auth).then(async result => {
   if (result?.user) {
     await ensureUserProfile(result.user);
     notify('Đăng nhập Google thành công.', 'success');
   }
-}).catch(error => console.warn('[Community] redirect result', error));
+}).catch(error => {
+  console.error('[Community] redirect result error:', error);
+  notify(`Đăng nhập thất bại: ${error.message}`, 'error');
+});
 
 interceptCommunityNavigation();
 
