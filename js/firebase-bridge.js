@@ -51,6 +51,34 @@ function waitForInitialAuthState(auth) {
   });
 }
 
+function mountCommunityHomeLogin() {
+  const heading = document.querySelector('#page-community .glass-card h3');
+  if (!heading || heading.querySelector('.community-home-login')) return;
+
+  heading.classList.add('community-home-heading');
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'community-home-login';
+  button.textContent = 'Đăng nhập Google';
+  button.setAttribute('aria-label', 'Đăng nhập Google để đăng bài và thả tim');
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (window.driverCommunity?.login) {
+      window.driverCommunity.login();
+    }
+  });
+  heading.appendChild(button);
+}
+
+function scheduleCommunityHomeLogin() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mountCommunityHomeLogin, { once: true });
+  } else {
+    mountCommunityHomeLogin();
+  }
+}
+
 async function initializeFirebaseBridge() {
   try {
     const app = initializeApp(firebaseConfig);
@@ -88,9 +116,13 @@ async function initializeFirebaseBridge() {
       console.error('[Community] Module unavailable; core app remains usable.', communityError);
     }
 
+    scheduleCommunityHomeLogin();
     window.dispatchEvent(new CustomEvent('firebase-ready'));
   } catch (error) {
     console.warn('[Firebase] Initialization unavailable; using local state.', error);
+    // The button is still useful if the community module becomes available
+    // later, so schedule the DOM hook independently of Firebase readiness.
+    scheduleCommunityHomeLogin();
   }
 }
 
