@@ -1,12 +1,12 @@
-// Canonical production URL: keep the GitHub Pages entry point as a compatibility
-// alias while Vercel remains the single public application origin.
+// Canonical production URL: GitHub Pages is a compatibility alias;
+// Vercel short domain is the single public application origin.
 if (window.location.hostname.endsWith('.github.io')) {
   const githubPrefix = '/to-nghe-taxi-vietnam';
   const remainingPath = window.location.pathname.startsWith(githubPrefix)
     ? window.location.pathname.slice(githubPrefix.length)
     : '';
   window.location.replace(
-    `https://to-nghe-taxi-vietnam.vercel.app${remainingPath}${window.location.search}${window.location.hash}`
+    `https://to-nghe-taxi.vercel.app${remainingPath}${window.location.search}${window.location.hash}`
   );
 }
 
@@ -46,10 +46,14 @@ async function initializeFirebaseBridge() {
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    await signInAnonymously(auth);
+
+    // Preserve an existing Google session. Only create an anonymous session
+    // for first-time visitors who have no Firebase user yet.
+    if (!auth.currentUser) await signInAnonymously(auth);
     const user = await waitForUser(auth);
     const stateRef = doc(db, 'users', user.uid);
 
+    window.firebaseServices = { app, auth, db };
     window.firebaseBridge = {
       uid: user.uid,
       async loadUserState() {
@@ -63,6 +67,14 @@ async function initializeFirebaseBridge() {
         }, { merge: true });
       }
     };
+
+    // Community is an enhancement module. A community-module failure must
+    // never disable the core app/Firebase state bridge.
+    try {
+      await import('./community.js');
+    } catch (communityError) {
+      console.error('[Community] Module unavailable; core app remains usable.', communityError);
+    }
 
     window.dispatchEvent(new CustomEvent('firebase-ready'));
   } catch (error) {
