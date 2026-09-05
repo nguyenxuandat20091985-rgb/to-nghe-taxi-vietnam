@@ -31,9 +31,6 @@ function statePayload(state) {
   };
 }
 
-// Wait for Firebase Auth to restore its persisted session before creating an
-// anonymous user. This is critical after Google signInWithRedirect on mobile:
-// creating an anonymous user too early can hide the restored Google session.
 function waitForInitialAuthState(auth) {
   return new Promise((resolve, reject) => {
     let settled = false;
@@ -105,24 +102,32 @@ async function initializeFirebaseBridge() {
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // IMPORTANT: wait for persisted Google credentials first. Only visitors
-    // with no restored session receive an anonymous session.
-    let user = await waitForInitialAuthState(auth);
-    if (!user) {
-      user = await signInAnonymously(auth);
-      user = user.user;
-    }
-
-    const stateRef = doc(db, 'users', user.uid);
+    // IMPORTANT: expose Firebase services and load the Community module BEFORE
+    // creating an anonymous session. Otherwise Community's Google button sees
+    // an anonymous currentUser and can get stuck in the wrong OAuth flow.
+    // Visitors who use the rest of the app still receive an anonymous account
+    // lazily, only when cloud app-state persistence is actually requested.
+    const initialUser = await waitForInitialAuthState(auth);
 
     window.firebaseServices = { app, auth, db };
     window.firebaseBridge = {
-      uid: user.uid,
+      get uid() {
+        return auth.currentUser?.uid || null;
+      },
+      async ensureUser() {
+        if (auth.currentUser) return auth.currentUser;
+        const anonymousResult = await signInAnonymously(auth);
+        return anonymousResult.user;
+      },
       async loadUserState() {
+        const user = await this.ensureUser();
+        const stateRef = doc(db, 'users', user.uid);
         const snapshot = await getDoc(stateRef);
         return snapshot.exists() ? snapshot.data().appState || null : null;
       },
       async saveUserState(state) {
+        const user = await this.ensureUser();
+        const stateRef = doc(db, 'users', user.uid);
         await setDoc(stateRef, {
           appState: statePayload(state),
           updatedAt: serverTimestamp()
@@ -138,10 +143,15 @@ async function initializeFirebaseBridge() {
 
     scheduleCommunityHomeLogin();
     window.dispatchEvent(new CustomEvent('firebase-ready'));
+
+    // Keep the restored user observable for diagnostics without forcing a new
+    // anonymous account. A Google login can therefore start from a clean null
+    // auth state on a new visitor.
+    if (initialUser) {
+      console.info('[Firebase] Restored auth session:', initialUser.isAnonymous ? 'anonymous' : 'google/account');
+    }
   } catch (error) {
     console.warn('[Firebase] Initialization unavailable; using local state.', error);
-    // The button is still useful if the community module becomes available
-    // later, so schedule the DOM hook independently of Firebase readiness.
     scheduleCommunityHomeLogin();
   }
 }
