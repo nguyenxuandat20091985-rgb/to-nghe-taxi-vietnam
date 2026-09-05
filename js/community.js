@@ -1,0 +1,301 @@
+// Driver Community module for Tổ Nghề Taxi Việt Nam.
+// Loaded by firebase-bridge.js after Firebase Auth/Firestore are ready.
+
+import {
+  GoogleAuthProvider,
+  linkWithPopup,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  onAuthStateChanged,
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import {
+  collection,
+  doc,
+  getDoc,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  runTransaction,
+  serverTimestamp,
+  setDoc,
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const COMPANIES = ['Mai Linh', 'Vinasun', 'Xanh SM', 'Grab', 'Taxi Group', 'Khác'];
+const services = window.firebaseServices;
+if (!services) throw new Error('[Community] Firebase services unavailable');
+const { auth, db } = services;
+
+let panel = null;
+let unsubscribePosts = null;
+let currentPosts = [];
+
+const esc = (value = '') => String(value)
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#039;');
+
+const fmtDate = (timestamp) => {
+  if (!timestamp?.toDate) return 'Vừa đăng';
+  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(timestamp.toDate());
+};
+
+function user() { return auth.currentUser && !auth.currentUser.isAnonymous ? auth.currentUser : null; }
+
+function notify(message, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `community-toast ${type}`;
+  el.textContent = message;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+function loginModal(action = 'tương tác với cộng đồng') {
+  document.querySelector('#community-login-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'community-login-modal';
+  modal.className = 'community-modal-backdrop';
+  modal.innerHTML = `
+    <div class="community-modal" role="dialog" aria-modal="true" aria-label="Đăng nhập">
+      <button class="community-modal-close" aria-label="Đóng">×</button>
+      <div class="community-seal">🚕</div>
+      <h3>Đăng nhập tài xế</h3>
+      <p>Vui lòng đăng nhập Google để ${esc(action)}.</p>
+      <button class="community-google" id="community-google-login">G&nbsp;&nbsp; Đăng nhập bằng Google</button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.querySelector('.community-modal-close').onclick = () => modal.remove();
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  modal.querySelector('#community-google-login').onclick = async () => {
+    const button = modal.querySelector('#community-google-login');
+    button.disabled = true;
+    button.textContent = 'Đang kết nối Google…';
+    try {
+      const result = await googleLogin();
+      if (result) {
+        modal.remove();
+        renderCommunityUser();
+        notify('Đăng nhập Google thành công.', 'success');
+      }
+    } catch (error) {
+      console.error('[Community] Google sign-in failed', error);
+      button.disabled = false;
+      button.textContent = 'G  Đăng nhập bằng Google';
+      notify('Đăng nhập Google chưa thành công. Vui lòng thử lại.', 'error');
+    }
+  };
+}
+
+async function ensureUserProfile(profile = {}) {
+  const u = user();
+  if (!u) return null;
+  const ref = doc(db, 'users', u.uid);
+  const snap = await getDoc(ref);
+  const data = {
+    displayName: profile.displayName ?? u.displayName ?? 'Tài xế',
+    photoURL: profile.photoURL ?? u.photoURL ?? '',
+    company: profile.company ?? (snap.exists() ? snap.data().company || 'Khác' : 'Khác'),
+  };
+  if (!snap.exists()) data.createdAt = serverTimestamp();
+  await setDoc(ref, data, { merge: true });
+  return data;
+}
+
+async function googleLogin() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  const anon = auth.currentUser?.isAnonymous ? auth.currentUser : null;
+  if (anon) {
+    try {
+      const result = await linkWithPopup(anon, provider);
+      await ensureUserProfile(result.user);
+      return result.user;
+    } catch (error) {
+      if (error.code !== 'auth/credential-already-in-use') throw error;
+    }
+  }
+  try {
+    const result = await signInWithPopup(auth, provider);
+    await ensureUserProfile(result.user);
+    return result.user;
+  } catch (error) {
+    if (['auth/popup-blocked', 'auth/popup-closed-by-user', 'auth/operation-not-supported-in-this-environment'].includes(error.code)) {
+      await signInWithRedirect(auth, provider);
+      return null;
+    }
+    throw error;
+  }
+}
+
+async function toggleLike(postId) {
+  const u = user();
+  if (!u) { loginModal('thả tim bài viết'); return; }
+  const ref = doc(db, 'posts', postId);
+  try {
+    await runTransaction(db, async tx => {
+      const snap = await tx.get(ref);
+      if (!snap.exists()) throw new Error('Bài viết không còn tồn tại');
+      const data = snap.data();
+      const likedBy = Array.isArray(data.likedBy) ? [...data.likedBy] : [];
+      const index = likedBy.indexOf(u.uid);
+      if (index >= 0) likedBy.splice(index, 1);
+      else likedBy.push(u.uid);
+      tx.update(ref, { likedBy, likesCount: likedBy.length });
+    });
+  } catch (error) {
+    console.error('[Community] like failed', error);
+    notify('Không thể cập nhật lượt thích. Vui lòng thử lại.', 'error');
+  }
+}
+
+async function submitPost(event) {
+  event.preventDefault();
+  const u = user();
+  if (!u) { loginModal('đăng bài'); return; }
+  const form = event.currentTarget;
+  const company = form.company.value;
+  const content = form.content.value.trim();
+  if (!content) return notify('Anh/chị hãy nhập nội dung bài viết.', 'error');
+  if (content.length > 2000) return notify('Nội dung tối đa 2.000 ký tự.', 'error');
+  const submit = form.querySelector('button[type="submit"]');
+  submit.disabled = true;
+  try {
+    const profile = await ensureUserProfile({ company });
+    const postRef = doc(collection(db, 'posts'));
+    await setDoc(postRef, {
+      authorId: u.uid,
+      authorName: profile?.displayName || u.displayName || 'Tài xế',
+      authorPhoto: profile?.photoURL || u.photoURL || '',
+      company,
+      content,
+      createdAt: serverTimestamp(),
+      likesCount: 0,
+      likedBy: [],
+    });
+    form.reset();
+    form.company.value = company;
+    notify('Đã đăng bài lên Cộng Đồng Tài Xế.', 'success');
+  } catch (error) {
+    console.error('[Community] post failed', error);
+    notify('Đăng bài thất bại. Hãy kiểm tra kết nối Firebase.', 'error');
+  } finally { submit.disabled = false; }
+}
+
+function renderCommunityUser() {
+  if (!panel) return;
+  const u = user();
+  const name = u?.displayName || 'Khách';
+  const avatar = u?.photoURL ? `<img src="${esc(u.photoURL)}" alt="">` : '<span>🚕</span>';
+  const profile = panel.querySelector('.community-user');
+  if (profile) profile.innerHTML = u
+    ? `${avatar}<div><strong>${esc(name)}</strong><small>Đã đăng nhập Google</small></div>`
+    : `<span>👤</span><div><strong>Khách</strong><small>Đăng nhập để đăng bài & thả tim</small></div>`;
+  const form = panel.querySelector('.community-composer');
+  if (form) form.classList.toggle('is-locked', !u);
+}
+
+function renderPosts() {
+  if (!panel) return;
+  const list = panel.querySelector('.community-posts');
+  if (!list) return;
+  if (!currentPosts.length) {
+    list.innerHTML = '<div class="community-empty">Chưa có bài viết. Hãy là người đầu tiên chia sẻ cùng anh em tài xế.</div>';
+    return;
+  }
+  const uid = user()?.uid;
+  list.innerHTML = currentPosts.map(({ id, data }) => {
+    const liked = uid && Array.isArray(data.likedBy) && data.likedBy.includes(uid);
+    const avatar = data.authorPhoto ? `<img src="${esc(data.authorPhoto)}" alt="">` : '<span>🚕</span>';
+    return `<article class="community-post" data-post-id="${esc(id)}">
+      <header><div class="community-avatar">${avatar}</div><div class="community-author"><strong>${esc(data.authorName || 'Tài xế')}</strong><span>${esc(data.company || 'Khác')} · ${fmtDate(data.createdAt)}</span></div></header>
+      <p>${esc(data.content || '').replaceAll('\n', '<br>')}</p>
+      <button class="community-like ${liked ? 'liked' : ''}" data-like="${esc(id)}" aria-label="${liked ? 'Bỏ thích' : 'Thả tim'}">${liked ? '♥' : '♡'} <span>${Number(data.likesCount || 0)}</span></button>
+    </article>`;
+  }).join('');
+  list.querySelectorAll('[data-like]').forEach(btn => btn.addEventListener('click', () => toggleLike(btn.dataset.like)));
+}
+
+function buildPanel() {
+  const companies = COMPANIES.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  panel = document.createElement('section');
+  panel.id = 'community-panel';
+  panel.innerHTML = `
+    <div class="community-shell">
+      <div class="community-topbar">
+        <button class="community-back" aria-label="Đóng Cộng Đồng">←</button>
+        <div><small>TỔ NGHỀ TAXI VIỆT NAM</small><h2>🚕 Cộng Đồng Tài Xế</h2></div>
+        <div class="community-user"><span>👤</span><div><strong>Khách</strong><small>Đăng nhập để đăng bài & thả tim</small></div></div>
+      </div>
+      <div class="community-scroll">
+        <div class="community-composer">
+          <div class="community-composer-title"><span>Chia sẻ cùng anh em</span><button class="community-login-btn">Đăng nhập Google</button></div>
+          <form class="community-form">
+            <label>Hãng xe<select name="company" required>${companies}</select></label>
+            <label>Nội dung<textarea name="content" maxlength="2000" rows="4" placeholder="Chia sẻ kinh nghiệm, thông tin đường phố, câu chuyện nghề…" required></textarea></label>
+            <button type="submit" class="community-submit">Đăng bài</button>
+          </form>
+        </div>
+        <div class="community-feed-title"><strong>Bài viết mới nhất</strong><span>Realtime</span></div>
+        <div class="community-posts"><div class="community-empty">Đang tải cộng đồng…</div></div>
+      </div>
+    </div>`;
+  document.body.appendChild(panel);
+  panel.querySelector('.community-back').onclick = closeCommunity;
+  panel.querySelector('.community-login-btn').onclick = () => user() ? notify('Anh/chị đã đăng nhập.', 'success') : loginModal('đăng bài và thả tim');
+  panel.querySelector('.community-form').addEventListener('submit', submitPost);
+  renderCommunityUser();
+}
+
+function openCommunity() {
+  if (panel) { renderCommunityUser(); renderPosts(); return; }
+  buildPanel();
+  const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(50));
+  unsubscribePosts = onSnapshot(q, snap => {
+    currentPosts = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+    renderPosts();
+  }, error => {
+    console.error('[Community] realtime listener failed', error);
+    panel.querySelector('.community-posts').innerHTML = '<div class="community-empty error">Không thể tải dữ liệu cộng đồng. Vui lòng kiểm tra Firestore Rules.</div>';
+  });
+}
+
+function closeCommunity() {
+  unsubscribePosts?.();
+  unsubscribePosts = null;
+  panel?.remove();
+  panel = null;
+  currentPosts = [];
+}
+
+const communityStyles = `
+#community-panel{position:fixed;inset:0;z-index:99999;background:#050301;color:#f0e0a0;font-family:Arial,sans-serif}
+.community-shell{height:100%;display:flex;flex-direction:column;background:radial-gradient(circle at top,#2a1908 0,#090604 38%,#050301 100%)}
+.community-topbar{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(212,175,55,.3);background:rgba(15,8,2,.96);backdrop-filter:blur(12px)}
+.community-back{width:42px;height:42px;border:1px solid #8b6914;border-radius:12px;background:#1b0e03;color:#f0e0a0;font-size:24px}.community-topbar h2{margin:2px 0;font-size:18px}.community-topbar small{display:block;color:#c9a45a;font-size:10px}.community-user{margin-left:auto;display:flex;align-items:center;gap:8px;max-width:190px}.community-user img,.community-avatar img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid #c9a45a}.community-user>span,.community-avatar>span{width:36px;height:36px;display:grid;place-items:center;border:1px solid #8b6914;border-radius:50%;background:#211006}.community-user strong,.community-user small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.community-user strong{font-size:12px}.community-user small{font-size:9px;color:#aa955e}.community-scroll{flex:1;overflow:auto;padding:14px 12px 40px}.community-composer,.community-post{border:1px solid rgba(212,175,55,.28);border-radius:16px;background:rgba(38,20,7,.78);box-shadow:0 8px 30px rgba(0,0,0,.25)}.community-composer{padding:14px;margin-bottom:18px}.community-composer-title,.community-feed-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-weight:700}.community-login-btn,.community-submit{border:1px solid #c9a45a;border-radius:10px;background:#d4af37;color:#170c02;font-weight:800;padding:9px 12px}.community-form label{display:block;font-size:11px;color:#d6bf82;margin-top:10px}.community-form select,.community-form textarea{width:100%;box-sizing:border-box;margin-top:6px;padding:11px;border:1px solid #70551a;border-radius:10px;background:#100903;color:#f4e5b3;font:inherit}.community-form textarea{resize:vertical;min-height:90px}.community-submit{width:100%;margin-top:10px}.community-composer.is-locked .community-form{opacity:.75}.community-feed-title{padding:0 2px;color:#e7d18d}.community-feed-title span{font-size:10px;color:#8fd3a0;border:1px solid #386548;padding:4px 7px;border-radius:20px}.community-post{padding:14px;margin-bottom:12px}.community-post header{display:flex;align-items:center;gap:9px}.community-author strong,.community-author span{display:block}.community-author strong{font-size:13px;color:#f3df9d}.community-author span{font-size:10px;color:#a99870;margin-top:2px}.community-post p{font-size:13px;line-height:1.55;color:#f5ecd2;white-space:normal;margin:12px 0}.community-like{border:0;background:transparent;color:#bda86d;font-size:14px;padding:5px 0}.community-like.liked{color:#ffcf4a}.community-empty{text-align:center;padding:32px 15px;border:1px dashed #5d4718;border-radius:14px;color:#9f8b5e}.community-empty.error{color:#e6a6a6}.community-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:100001;max-width:90%;padding:11px 15px;border:1px solid #8b6914;border-radius:12px;background:#211006;color:#f5e6b4;box-shadow:0 10px 30px #000}.community-toast.success{border-color:#5c9a6d}.community-toast.error{border-color:#a75b5b}.community-modal-backdrop{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.76);display:grid;place-items:center;padding:20px}.community-modal{position:relative;width:min(390px,100%);box-sizing:border-box;padding:24px;border:1px solid #9c771e;border-radius:18px;background:linear-gradient(160deg,#2b1707,#0c0703);text-align:center;box-shadow:0 20px 60px #000}.community-modal h3{margin:8px 0;color:#f1db93}.community-modal p{color:#cbb98a;font-size:13px;line-height:1.5}.community-modal-close{position:absolute;right:10px;top:8px;border:0;background:none;color:#d6bf82;font-size:25px}.community-seal{font-size:34px}.community-google{width:100%;padding:12px;border-radius:11px;border:1px solid #aaa;background:#fff;color:#222;font-weight:700}
+`;
+const style = document.createElement('style'); style.textContent = communityStyles; document.head.appendChild(style);
+
+function interceptCommunityNavigation() {
+  document.addEventListener('click', event => {
+    const target = event.target.closest('button,a,[role="button"]');
+    if (!target) return;
+    const text = (target.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    if (!text.includes('cộng đồng')) return;
+    event.preventDefault(); event.stopPropagation();
+    openCommunity();
+  }, true);
+}
+
+onAuthStateChanged(auth, () => { renderCommunityUser(); renderPosts(); });
+getRedirectResult(auth).then(async result => {
+  if (result?.user) {
+    await ensureUserProfile(result.user);
+    notify('Đăng nhập Google thành công.', 'success');
+  }
+}).catch(error => console.warn('[Community] redirect result', error));
+
+interceptCommunityNavigation();
+window.driverCommunity = { open: openCommunity, close: closeCommunity, login: () => loginModal('đăng bài và thả tim') };
