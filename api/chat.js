@@ -5,8 +5,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
   'https://nguyenxuandat20091985-rgb.github.io'
 ];
 
-// Keep the model fixed in production so a stale GROQ_MODEL environment
-// variable cannot silently select a retired/unsupported model.
+// Pin an active production model. A stale GROQ_MODEL environment variable
+// must not be able to select a retired/unsupported model.
 const GROQ_MODEL = 'openai/gpt-oss-120b';
 const SYSTEM_PROMPT = 'Bạn là AI tư vấn thân thiện tại Đền Tổ Nghề Taxi. Trả lời ngắn gọn, ấm áp bằng tiếng Việt, hỗ trợ tài xế về nghề nghiệp, an toàn giao thông, tâm lý, và lời khuyên bình an. Không đưa lời khuyên y tế, pháp lý hoặc tài chính chuyên sâu.';
 
@@ -17,31 +17,6 @@ function allowedOrigins() {
   return [...new Set([...DEFAULT_ALLOWED_ORIGINS, ...configured])];
 }
 
-function isSameOrigin(req, origin) {
-  if (!origin) return true;
-  try {
-    const originUrl = new URL(origin);
-    const requestHost = String(req.headers.host || '').split(':')[0].toLowerCase();
-    return originUrl.protocol === 'https:' && originUrl.hostname.toLowerCase() === requestHost;
-  } catch {
-    return false;
-  }
-}
-
-function isAllowedOrigin(req, origin) {
-  if (!origin) return true;
-  return isSameOrigin(req, origin) || allowedOrigins().includes(origin);
-}
-
-function setCors(res, origin) {
-  if (origin && isAllowedOrigin({ headers: { host: new URL(origin).host } }, origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
-
 function sendJson(res, status, body) {
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -49,29 +24,25 @@ function sendJson(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
-export default async function handler(req, res) {
-  const origin = req.headers.origin || '';
-
-  // CORS is needed only for cross-origin callers. Same-origin requests from
-  // the current Vercel deployment are always accepted, including preview
-  // aliases, without opening the API to arbitrary Vercel projects.
-  let originAllowed = false;
-  try {
-    originAllowed = isAllowedOrigin(req, origin);
-  } catch {
-    originAllowed = false;
-  }
-
-  if (origin && originAllowed) {
+function setCors(res, origin) {
+  // CORS is a browser response policy, not authentication. The API must not
+  // reject POSTs solely because Origin is absent or because a Vercel alias is
+  // used. Same-origin requests do not need CORS; approved cross-origin sites
+  // receive the response header below.
+  if (origin && allowedOrigins().includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary', 'Origin');
   }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
+export default async function handler(req, res) {
+  const origin = req.headers.origin || '';
+  setCors(res, origin);
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return sendJson(res, 405, { error: 'Method not allowed' });
-  if (!originAllowed) return sendJson(res, 403, { error: 'Origin not allowed' });
   if (!process.env.GROQ_API_KEY) return sendJson(res, 503, { error: 'AI service is not configured' });
 
   const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
