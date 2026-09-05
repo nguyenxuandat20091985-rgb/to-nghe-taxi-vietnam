@@ -190,7 +190,7 @@ async function submitPost(event) {
   } finally { submit.disabled = false; }
 }
 
-// KHU VỰC QUẢN LÝ BÌNH LUẬN (BOTTOM SHEET)
+// KHU VỰC BÌNH LUẬN (BOTTOM SHEET)
 function openComments(postId) {
   activeCommentPostId = postId;
   document.querySelector('#community-comments-modal')?.remove();
@@ -219,7 +219,6 @@ function openComments(postId) {
   modal.addEventListener('click', e => { if (e.target === modal) closeComments(); });
   modal.querySelector('#comment-submit-form').onsubmit = handleAddComment;
 
-  // Realtime Listener cho Bình luận
   const qComments = query(collection(db, 'posts', postId, 'comments'), orderBy('createdAt', 'asc'));
   unsubscribeComments = onSnapshot(qComments, snapshot => {
     const container = document.getElementById('comments-list-container');
@@ -293,7 +292,7 @@ function renderCommunityUser() {
   if (!panel) return;
   const u = user();
   const name = u?.displayName || 'Khách';
-  const avatar = u?.photoURL ? `<img src="${esc(u.photoURL)}" alt="">` : '<span>🚕</span>';
+  const avatar = u?.photoURL ? `<img src="${esc(u.photoURL)}" alt="">` : '<span>👤</span>';
   const profile = panel.querySelector('.community-user');
   if (profile) profile.innerHTML = u
     ? `${avatar}<div><strong>${esc(name)}</strong><small>Đã đăng nhập Google</small></div>`
@@ -387,7 +386,7 @@ const communityStyles = `
 .community-shell{height:100%;display:flex;flex-direction:column;background:radial-gradient(circle at top,#2a1908 0,#090604 38%,#050301 100%)}
 .community-topbar{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(212,175,55,.3);background:rgba(15,8,2,.96);backdrop-filter:blur(12px)}
 .community-back{width:42px;height:42px;border:1px solid #8b6914;border-radius:12px;background:#1b0e03;color:#f0e0a0;font-size:24px}.community-topbar h2{margin:2px 0;font-size:18px}.community-topbar small{display:block;color:#c9a45a;font-size:10px}.community-user{margin-left:auto;display:flex;align-items:center;gap:8px;max-width:190px}.community-user img,.community-avatar img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid #c9a45a}.community-user>span,.community-avatar>span{width:36px;height:36px;display:grid;place-items:center;border:1px solid #8b6914;border-radius:50%;background:#211006}.community-user strong,.community-user small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.community-user strong{font-size:12px}.community-user small{font-size:9px;color:#aa955e}.community-scroll{flex:1;overflow:auto;padding:14px 12px 40px}.community-composer,.community-post{border:1px solid rgba(212,175,55,.28);border-radius:16px;background:rgba(38,20,7,.78);box-shadow:0 8px 30px rgba(0,0,0,.25)}.community-composer{padding:14px;margin-bottom:18px}.community-composer-title,.community-feed-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-weight:700}.community-login-btn,.community-submit{border:1px solid #c9a45a;border-radius:10px;background:#d4af37;color:#170c02;font-weight:800;padding:9px 12px}.community-form label{display:block;font-size:11px;color:#d6bf82;margin-top:10px}.community-form select,.community-form textarea{width:100%;box-sizing:border-box;margin-top:6px;padding:11px;border:1px solid #70551a;border-radius:10px;background:#100903;color:#f4e5b3;font:inherit}.community-form textarea{resize:vertical;min-height:90px}.community-submit{width:100%;margin-top:10px}.community-composer.is-locked .community-form{opacity:.75}.community-feed-title{padding:0 2px;color:#e7d18d}.community-feed-title span{font-size:10px;color:#8fd3a0;border:1px solid #386548;padding:4px 7px;border-radius:20px}.community-post{padding:14px;margin-bottom:12px}.community-post header{display:flex;align-items:center;gap:9px}.community-author strong,.community-author span{display:block}.community-author strong{font-size:13px;color:#f3df9d}.community-author span{font-size:10px;color:#a99870;margin-top:2px}.community-post p{font-size:13px;line-height:1.55;color:#f5ecd2;white-space:normal;margin:12px 0}
-.community-post-footer{display:flex;align-items:center;gap:16px;border-t:1px solid rgba(212,175,55,.15);padding-top:10px;margin-top:10px}
+.community-post-footer{display:flex;align-items:center;gap:16px;border-top:1px solid rgba(212,175,55,.15);padding-top:10px;margin-top:10px}
 .community-like,.community-comment-btn{border:0;background:transparent;color:#bda86d;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:5px;padding:4px 0}
 .community-like.liked{color:#ffcf4a}
 .community-empty{text-align:center;padding:32px 15px;border:1px dashed #5d4718;border-radius:14px;color:#9f8b5e}.community-empty.error{color:#e6a6a6}.community-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:100001;max-width:90%;padding:11px 15px;border:1px solid #8b6914;border-radius:12px;background:#211006;color:#f5e6b4;box-shadow:0 10px 30px #000}.community-toast.success{border-color:#5c9a6d}.community-toast.error{border-color:#a75b5b}.community-modal-backdrop{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.76);display:grid;place-items:center;padding:20px}.community-modal{position:relative;width:min(390px,100%);box-sizing:border-box;padding:24px;border:1px solid #9c771e;border-radius:18px;background:linear-gradient(160deg,#2b1707,#0c0703);text-align:center;box-shadow:0 20px 60px #000}.community-modal h3{margin:8px 0;color:#f1db93}.community-modal p{color:#cbb98a;font-size:13px;line-height:1.5}.community-modal-close{position:absolute;right:10px;top:8px;border:0;background:none;color:#d6bf82;font-size:25px}.community-seal{font-size:34px}.community-google{width:100%;padding:12px;border-radius:11px;border:1px solid #aaa;background:#fff;color:#222;font-weight:700}
@@ -408,16 +407,28 @@ const communityStyles = `
 .community-sheet-form input{flex:1;padding:10px 12px;border:1px solid #5a4518;border-radius:10px;background:#150d05;color:#fff;font-size:13px;outline:none}
 .community-sheet-form button{padding:10px 16px;border:0;border-radius:10px;background:#d4af37;color:#000;font-weight:bold;cursor:pointer}
 `;
-const style = document.createElement('style'); style.textContent = communityStyles; document.head.appendChild(style);
 
+const style = document.createElement('style'); 
+style.textContent = communityStyles; 
+document.head.appendChild(style);
+
+// BẮT SỰ KIỆN CLICK VÀO NÚT CỘNG ĐỒNG Ở MENU ĐÁY
 function interceptCommunityNavigation() {
   document.addEventListener('click', event => {
-    const target = event.target.closest('button,a,[role="button"]');
+    const target = event.target.closest('button, a, div, li, span, [role="button"]');
     if (!target) return;
+    if (target.closest('#community-panel')) return;
+
     const text = (target.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
-    if (!text.includes('cộng đồng')) return;
-    event.preventDefault(); event.stopPropagation();
-    openCommunity();
+    const isCommunity = text.includes('cộng đồng') || 
+                        target.id?.toLowerCase().includes('community') || 
+                        target.getAttribute('data-tab')?.toLowerCase().includes('community');
+
+    if (isCommunity) {
+      event.preventDefault();
+      event.stopPropagation();
+      openCommunity();
+    }
   }, true);
 }
 
@@ -430,4 +441,5 @@ getRedirectResult(auth).then(async result => {
 }).catch(error => console.warn('[Community] redirect result', error));
 
 interceptCommunityNavigation();
+
 window.driverCommunity = { open: openCommunity, close: closeCommunity, login: () => loginModal('đăng bài và thả tim') };
