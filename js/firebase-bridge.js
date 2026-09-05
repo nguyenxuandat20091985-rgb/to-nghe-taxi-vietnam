@@ -56,11 +56,31 @@ function mountCommunityHomeLogin() {
   if (!heading || heading.querySelector('.community-home-login')) return;
 
   heading.classList.add('community-home-heading');
+  heading.style.display = 'flex';
+  heading.style.alignItems = 'center';
+  heading.style.justifyContent = 'space-between';
+  heading.style.gap = '10px';
+
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'community-home-login';
   button.textContent = 'Đăng nhập Google';
   button.setAttribute('aria-label', 'Đăng nhập Google để đăng bài và thả tim');
+  Object.assign(button.style, {
+    flex: '0 0 auto',
+    border: '1px solid #c9a45a',
+    borderRadius: '10px',
+    background: 'linear-gradient(145deg,#a67c1a 0%,#d4af37 50%,#e8c56a 100%)',
+    color: '#170c02',
+    fontFamily: "'Be Vietnam Pro', sans-serif",
+    fontSize: 'clamp(10px, 2.4vw, 13px)',
+    fontWeight: '800',
+    padding: '9px 12px',
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    boxShadow: '0 3px 14px rgba(212,175,55,.28)',
+    textShadow: 'none'
+  });
   button.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
