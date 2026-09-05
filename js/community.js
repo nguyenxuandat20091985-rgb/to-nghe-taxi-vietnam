@@ -4,7 +4,6 @@
 import {
   GoogleAuthProvider,
   linkWithPopup,
-  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   onAuthStateChanged,
@@ -79,12 +78,7 @@ function loginModal(action = 'tương tác với cộng đồng') {
     button.disabled = true;
     button.textContent = 'Đang kết nối Google…';
     try {
-      const result = await googleLogin();
-      if (result) {
-        modal.remove();
-        renderCommunityUser();
-        notify('Đăng nhập Google thành công.', 'success');
-      }
+      await googleLogin();
     } catch (error) {
       console.error('[Community] Google sign-in failed', error);
       button.disabled = false;
@@ -122,17 +116,9 @@ async function googleLogin() {
       if (error.code !== 'auth/credential-already-in-use') throw error;
     }
   }
-  try {
-    const result = await signInWithPopup(auth, provider);
-    await ensureUserProfile(result.user);
-    return result.user;
-  } catch (error) {
-    if (['auth/popup-blocked', 'auth/popup-closed-by-user', 'auth/operation-not-supported-in-this-environment'].includes(error.code)) {
-      await signInWithRedirect(auth, provider);
-      return null;
-    }
-    throw error;
-  }
+  // Chuyển hướng trực tiếp để tương thích hoàn toàn trên thiết bị di động
+  await signInWithRedirect(auth, provider);
+  return null;
 }
 
 async function toggleLike(postId) {
