@@ -3,7 +3,7 @@
 
 import {
   GoogleAuthProvider,
-  linkWithPopup,
+  linkWithRedirect,
   signInWithRedirect,
   getRedirectResult,
   onAuthStateChanged,
@@ -115,20 +115,22 @@ async function ensureUserProfile(profile = {}) {
 async function googleLogin() {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
-  
+
   const anon = auth.currentUser?.isAnonymous ? auth.currentUser : null;
   if (anon) {
     try {
-      const result = await linkWithPopup(anon, provider);
-      await ensureUserProfile(result.user);
-      return result.user;
+      // Mobile browsers are much more reliable with redirect than popup.
+      // Link the anonymous Firebase session to Google so existing app data is preserved.
+      await linkWithRedirect(anon, provider);
+      return null;
     } catch (error) {
-      console.warn('[Community] linkWithPopup error:', error);
+      console.warn('[Community] linkWithRedirect error:', error);
+      // If the Google credential already belongs to an existing account,
+      // sign into that account instead of failing the login flow.
       if (error.code !== 'auth/credential-already-in-use') throw error;
     }
   }
 
-  // Sử dụng signInWithRedirect ổn định nhất cho thiết bị di động
   console.log('[Community] Đang chuyển hướng sang trang đăng nhập Google...');
   await signInWithRedirect(auth, provider);
   return null;
@@ -242,6 +244,8 @@ function openComments(postId) {
     container.scrollTop = container.scrollHeight;
   }, err => {
     console.error('[Community] Load comments error', err);
+    const container = document.getElementById('comments-list-container');
+    if (container) container.innerHTML = '<div class="community-empty error">Không thể tải bình luận. Vui lòng thử lại.</div>';
   });
 }
 
@@ -298,6 +302,12 @@ function renderCommunityUser() {
     : `<span>👤</span><div><strong>Khách</strong><small>Đăng nhập để đăng bài & thả tim</small></div>`;
   const form = panel.querySelector('.community-composer');
   if (form) form.classList.toggle('is-locked', !u);
+  const loginButtons = panel.querySelectorAll('.community-login-btn, .community-top-login');
+  loginButtons.forEach(button => {
+    button.textContent = u ? '✓ Đã đăng nhập' : 'Đăng nhập Google';
+    button.disabled = false;
+    button.classList.toggle('is-signed-in', Boolean(u));
+  });
 }
 
 function renderPosts() {
@@ -335,7 +345,8 @@ function buildPanel() {
     <div class="community-shell">
       <div class="community-topbar">
         <button class="community-back" aria-label="Đóng Cộng Đồng">←</button>
-        <div><small>TỔ NGHỀ TAXI VIỆT NAM</small><h2>🚕 Cộng Đồng Tài Xế</h2></div>
+        <div class="community-heading"><small>TỔ NGHỀ TAXI VIỆT NAM</small><h2>🚕 Cộng Đồng Tài Xế</h2></div>
+        <button class="community-top-login" type="button">Đăng nhập Google</button>
         <div class="community-user"><span>👤</span><div><strong>Khách</strong><small>Đăng nhập để đăng bài & thả tim</small></div></div>
       </div>
       <div class="community-scroll">
@@ -353,7 +364,9 @@ function buildPanel() {
     </div>`;
   document.body.appendChild(panel);
   panel.querySelector('.community-back').onclick = closeCommunity;
-  panel.querySelector('.community-login-btn').onclick = () => user() ? notify('Anh/chị đã đăng nhập.', 'success') : loginModal('đăng bài và thả tim');
+  const loginAction = () => user() ? notify('Anh/chị đã đăng nhập.', 'success') : loginModal('đăng bài và thả tim');
+  panel.querySelector('.community-login-btn').onclick = loginAction;
+  panel.querySelector('.community-top-login').onclick = loginAction;
   panel.querySelector('.community-form').addEventListener('submit', submitPost);
   renderCommunityUser();
 }
@@ -367,7 +380,8 @@ function openCommunity() {
     renderPosts();
   }, error => {
     console.error('[Community] realtime listener failed', error);
-    panel.querySelector('.community-posts').innerHTML = '<div class="community-empty error">Không thể tải dữ liệu cộng đồng. Vui lòng kiểm tra Firestore Rules.</div>';
+    const list = panel?.querySelector('.community-posts');
+    if (list) list.innerHTML = '<div class="community-empty error">Không thể tải dữ liệu cộng đồng. Vui lòng kiểm tra Firestore Rules hoặc kết nối mạng.</div>';
   });
 }
 
@@ -384,7 +398,7 @@ const communityStyles = `
 #community-panel{position:fixed;inset:0;z-index:99999;background:#050301;color:#f0e0a0;font-family:Arial,sans-serif}
 .community-shell{height:100%;display:flex;flex-direction:column;background:radial-gradient(circle at top,#2a1908 0,#090604 38%,#050301 100%)}
 .community-topbar{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(212,175,55,.3);background:rgba(15,8,2,.96);backdrop-filter:blur(12px)}
-.community-back{width:42px;height:42px;border:1px solid #8b6914;border-radius:12px;background:#1b0e03;color:#f0e0a0;font-size:24px}.community-topbar h2{margin:2px 0;font-size:18px}.community-topbar small{display:block;color:#c9a45a;font-size:10px}.community-user{margin-left:auto;display:flex;align-items:center;gap:8px;max-width:190px}.community-user img,.community-avatar img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid #c9a45a}.community-user>span,.community-avatar>span{width:36px;height:36px;display:grid;place-items:center;border:1px solid #8b6914;border-radius:50%;background:#211006}.community-user strong,.community-user small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.community-user strong{font-size:12px}.community-user small{font-size:9px;color:#aa955e}.community-scroll{flex:1;overflow:auto;padding:14px 12px 40px}.community-composer,.community-post{border:1px solid rgba(212,175,55,.28);border-radius:16px;background:rgba(38,20,7,.78);box-shadow:0 8px 30px rgba(0,0,0,.25)}.community-composer{padding:14px;margin-bottom:18px}.community-composer-title,.community-feed-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-weight:700}.community-login-btn,.community-submit{border:1px solid #c9a45a;border-radius:10px;background:#d4af37;color:#170c02;font-weight:800;padding:9px 12px}.community-form label{display:block;font-size:11px;color:#d6bf82;margin-top:10px}.community-form select,.community-form textarea{width:100%;box-sizing:border-box;margin-top:6px;padding:11px;border:1px solid #70551a;border-radius:10px;background:#100903;color:#f4e5b3;font:inherit}.community-form textarea{resize:vertical;min-height:90px}.community-submit{width:100%;margin-top:10px}.community-composer.is-locked .community-form{opacity:.75}.community-feed-title{padding:0 2px;color:#e7d18d}.community-feed-title span{font-size:10px;color:#8fd3a0;border:1px solid #386548;padding:4px 7px;border-radius:20px}.community-post{padding:14px;margin-bottom:12px}.community-post header{display:flex;align-items:center;gap:9px}.community-author strong,.community-author span{display:block}.community-author strong{font-size:13px;color:#f3df9d}.community-author span{font-size:10px;color:#a99870;margin-top:2px}.community-post p{font-size:13px;line-height:1.55;color:#f5ecd2;white-space:normal;margin:12px 0}
+.community-back{width:42px;height:42px;border:1px solid #8b6914;border-radius:12px;background:#1b0e03;color:#f0e0a0;font-size:24px}.community-heading{min-width:0}.community-topbar h2{margin:2px 0;font-size:18px}.community-topbar small{display:block;color:#c9a45a;font-size:10px}.community-user{margin-left:auto;display:flex;align-items:center;gap:8px;max-width:190px}.community-user img,.community-avatar img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid #c9a45a}.community-user>span,.community-avatar>span{width:36px;height:36px;display:grid;place-items:center;border:1px solid #8b6914;border-radius:50%;background:#211006}.community-user strong,.community-user small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.community-user strong{font-size:12px}.community-user small{font-size:9px;color:#aa955e}.community-top-login{border:1px solid #c9a45a;border-radius:10px;background:#d4af37;color:#170c02;font-weight:800;padding:9px 11px;white-space:nowrap}.community-top-login.is-signed-in,.community-login-btn.is-signed-in{opacity:.78}.community-scroll{flex:1;overflow:auto;padding:14px 12px 40px}.community-composer,.community-post{border:1px solid rgba(212,175,55,.28);border-radius:16px;background:rgba(38,20,7,.78);box-shadow:0 8px 30px rgba(0,0,0,.25)}.community-composer{padding:14px;margin-bottom:18px}.community-composer-title,.community-feed-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-weight:700}.community-login-btn,.community-submit{border:1px solid #c9a45a;border-radius:10px;background:#d4af37;color:#170c02;font-weight:800;padding:9px 12px}.community-form label{display:block;font-size:11px;color:#d6bf82;margin-top:10px}.community-form select,.community-form textarea{width:100%;box-sizing:border-box;margin-top:6px;padding:11px;border:1px solid #70551a;border-radius:10px;background:#100903;color:#f4e5b3;font:inherit}.community-form textarea{resize:vertical;min-height:90px}.community-submit{width:100%;margin-top:10px}.community-composer.is-locked .community-form{opacity:.75}.community-feed-title{padding:0 2px;color:#e7d18d}.community-feed-title span{font-size:10px;color:#8fd3a0;border:1px solid #386548;padding:4px 7px;border-radius:20px}.community-post{padding:14px;margin-bottom:12px}.community-post header{display:flex;align-items:center;gap:9px}.community-author strong,.community-author span{display:block}.community-author strong{font-size:13px;color:#f3df9d}.community-author span{font-size:10px;color:#a99870;margin-top:2px}.community-post p{font-size:13px;line-height:1.55;color:#f5ecd2;white-space:normal;margin:12px 0}
 .community-post-footer{display:flex;align-items:center;gap:16px;border-top:1px solid rgba(212,175,55,.15);padding-top:10px;margin-top:10px}
 .community-like,.community-comment-btn{border:0;background:transparent;color:#bda86d;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:5px;padding:4px 0}
 .community-like.liked{color:#ffcf4a}
@@ -437,6 +451,7 @@ onAuthStateChanged(auth, () => { renderCommunityUser(); renderPosts(); });
 getRedirectResult(auth).then(async result => {
   if (result?.user) {
     await ensureUserProfile(result.user);
+    renderCommunityUser();
     notify('Đăng nhập Google thành công.', 'success');
   }
 }).catch(error => {
