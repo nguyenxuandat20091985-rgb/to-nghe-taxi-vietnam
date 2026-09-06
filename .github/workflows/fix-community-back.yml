@@ -1,0 +1,49 @@
+name: One-time community back fix
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, '[community-back-applied]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix Community back button
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('js/community.js')
+          s = p.read_text(encoding='utf-8')
+          old = "panel.querySelector('.tc-back').onclick = closeCommunity;"
+          new = """panel.querySelector('.tc-back').onclick = () => {
+            closeCommunity();
+            try {
+              if (typeof window.showPage === 'function') window.showPage('home');
+              else window.location.assign(window.location.origin + window.location.pathname);
+            } catch (error) {
+              console.warn('[Community] Could not return to home:', error);
+              window.location.assign(window.location.origin + window.location.pathname);
+            }
+          };"""
+          if old not in s:
+              raise SystemExit('Target community back handler was not found; aborting without changes.')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+          PY
+
+      - name: Commit fix and remove one-time workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/community.js
+          git rm .github/workflows/fix-community-back.yml
+          git commit -m "fix: community back returns home [community-back-applied]"
+          git push
