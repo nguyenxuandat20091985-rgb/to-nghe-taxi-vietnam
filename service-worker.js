@@ -1,4 +1,4 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v7-community';
+const CACHE_NAME = 'den-to-nghe-taxi-v8-community-zalo';
 const APP_SHELL = [
   './',
   './index.html',
