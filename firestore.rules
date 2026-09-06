@@ -71,25 +71,37 @@ service cloud.firestore {
       }
     }
 
-    // Legacy public group chat is no longer used by the UI. Keep it closed for new reads/writes.
+    // Phòng chung Tổ Nghề Taxi Việt Nam: chỉ tài khoản Google đã xác thực được tham gia.
     match /community_rooms/{roomId} {
-      allow read, write: if false;
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update: if signedIn();
+      allow delete: if signedIn();
+
       match /messages/{messageId} {
-        allow read, write: if false;
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.senderName is string
+          && request.resource.data.content is string
+          && request.resource.data.content.size() > 0
+          && request.resource.data.content.size() <= 1000;
+        allow delete: if signedIn() && resource.data.senderId == request.auth.uid;
       }
     }
 
-    // Private 1-to-1 driver conversations.
-    // A conversation is accessible only to the two UIDs stored in participantIds.
+    // Tin nhắn riêng 1-to-1. Chỉ hai UID nằm trong participantIds mới đọc/ghi được.
     match /direct_chats/{chatId} {
       allow read: if signedIn() && request.auth.uid in resource.data.participantIds;
       allow create: if signedIn()
         && request.resource.data.participantIds is list
         && request.resource.data.participantIds.size() == 2
+        && request.resource.data.participantIds[0] != request.resource.data.participantIds[1]
         && request.auth.uid in request.resource.data.participantIds;
       allow update: if signedIn()
         && request.auth.uid in resource.data.participantIds
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage', 'lastMessageAt']);
+        && request.resource.data.participantIds == resource.data.participantIds
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage', 'lastMessageAt', 'participantProfiles']);
       allow delete: if signedIn() && request.auth.uid in resource.data.participantIds;
 
       match /messages/{messageId} {
