@@ -147,6 +147,7 @@ async function initializeFirebaseBridge() {
     // composer/chat renderer to overwrite the new inbox.
     await import('./messenger-inbox-v3.js');
     await import('./messenger-chat-layout.js');
+    await import('./messenger-contacts.js');
     scheduleCommunityHomeLogin();
     window.dispatchEvent(new CustomEvent('firebase-ready'));
 
