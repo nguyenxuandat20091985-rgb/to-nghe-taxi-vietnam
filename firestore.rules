@@ -23,10 +23,7 @@ service cloud.firestore {
         && request.resource.data.likesCount == 0
         && request.resource.data.likedBy is list
         && request.resource.data.likedBy.size() == 0
-        && (
-          !('commentsCount' in request.resource.data)
-          || request.resource.data.commentsCount == 0
-        );
+        && request.resource.data.commentsCount == 0;
 
       allow update: if signedIn() && (
         (
@@ -35,8 +32,7 @@ service cloud.firestore {
         )
         ||
         (
-          request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['likesCount', 'likedBy'])
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'likedBy'])
           && request.resource.data.likedBy is list
           && request.resource.data.likesCount == request.resource.data.likedBy.size()
           && (
@@ -55,8 +51,7 @@ service cloud.firestore {
         )
         ||
         (
-          request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['commentsCount'])
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentsCount'])
           && request.resource.data.commentsCount is int
           && request.resource.data.commentsCount == resource.data.get('commentsCount', 0) + 1
         )
@@ -66,16 +61,29 @@ service cloud.firestore {
 
       match /comments/{commentId} {
         allow read: if true;
-
         allow create: if signedIn()
           && request.resource.data.authorId == request.auth.uid
           && request.resource.data.authorName is string
           && request.resource.data.content is string
           && request.resource.data.content.size() > 0
           && request.resource.data.content.size() <= 500;
+        allow delete: if signedIn() && resource.data.authorId == request.auth.uid;
+      }
+    }
 
-        allow delete: if signedIn()
-          && resource.data.authorId == request.auth.uid;
+    // Public driver group chat. Reading is public; writing requires Google auth.
+    match /community_rooms/{roomId} {
+      allow read: if true;
+      allow write: if false;
+      match /messages/{messageId} {
+        allow read: if true;
+        allow create: if signedIn()
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.authorName is string
+          && request.resource.data.content is string
+          && request.resource.data.content.size() > 0
+          && request.resource.data.content.size() <= 500;
+        allow delete: if signedIn() && resource.data.authorId == request.auth.uid;
       }
     }
 
