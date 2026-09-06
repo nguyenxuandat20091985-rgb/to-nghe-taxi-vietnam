@@ -144,6 +144,7 @@ async function initializeFirebaseBridge() {
 
     await import('./community.js');
     await import('./community-chat-upgrade.js');
+    await import('./messenger-inbox-v3.js');
     scheduleCommunityHomeLogin();
     window.dispatchEvent(new CustomEvent('firebase-ready'));
 
