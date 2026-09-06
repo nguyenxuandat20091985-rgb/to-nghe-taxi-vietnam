@@ -98,3 +98,59 @@ getRedirectResult(auth).then((result) => {
 onAuthStateChanged(auth, (user) => {
   window.dispatchEvent(new CustomEvent('firebase-auth-changed', { detail: user || null }));
 });
+
+// The main page historically routes "community" to a static placeholder.
+// The real Facebook/Zalo-style community is a separate overlay exposed by
+// community.js as window.driverCommunity. Intercept only that route and leave
+// every other page exactly as it was.
+function installCommunityRoute() {
+  if (typeof window.showPage !== 'function') return false;
+  if (window.showPage.__communityRoutePatched) return true;
+
+  const originalShowPage = window.showPage;
+  const pageMap = ['home','incense','prayer','que','calendar','news','community','merit','profile','exorcism','ai'];
+
+  window.showPage = function patchedShowPage(pageId) {
+    if (pageId === 'community') {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active', 'page-zoom'));
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      const items = document.querySelectorAll('.menu-item');
+      const idx = pageMap.indexOf('community');
+      if (idx >= 0 && items[idx]) items[idx].classList.add('active');
+
+      const open = () => {
+        if (window.driverCommunity?.open) {
+          window.driverCommunity.open();
+          return true;
+        }
+        return false;
+      };
+
+      if (!open()) {
+        let tries = 0;
+        const timer = setInterval(() => {
+          tries += 1;
+          if (open() || tries >= 50) clearInterval(timer);
+        }, 100);
+      }
+      return;
+    }
+    return originalShowPage(pageId);
+  };
+
+  window.showPage.__communityRoutePatched = true;
+  return true;
+}
+
+// showPage is declared by the legacy inline page script near the end of index.html.
+// Wait until the DOM is ready, then patch it; also keep a short retry window for slow devices.
+if (!installCommunityRoute()) {
+  window.addEventListener('DOMContentLoaded', () => {
+    if (installCommunityRoute()) return;
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries += 1;
+      if (installCommunityRoute() || tries >= 50) clearInterval(timer);
+    }, 100);
+  }, { once: true });
+}
