@@ -184,20 +184,53 @@ async function initializeFirebaseBridge() {
 initializeFirebaseBridge();
 
 // Route the legacy Community menu to the real Facebook/Zalo-style community.
+// Tin Tức now opens the user's AI news application.
+const NEWS_AI_URL = 'https://nguyenxuandat20091985-rgb.github.io/my-ai-bot/';
+
 function installCommunityRoute() {
   if (typeof window.showPage !== 'function') return false;
   if (window.showPage.__communityRoutePatched) return true;
   const originalShowPage = window.showPage;
   const pageMap = ['home','incense','prayer','que','calendar','news','community','merit','profile','exorcism','ai'];
+
+  const returnHome = () => {
+    // The community overlay intentionally clears the legacy page selection.
+    // Restore the real home page when the user presses its Back/Exit button.
+    try {
+      originalShowPage('home');
+    } catch (error) {
+      console.warn('[Community] Could not restore home page:', error);
+    }
+  };
+
   window.showPage = function patchedShowPage(pageId) {
+    if (pageId === 'news') {
+      window.location.assign(NEWS_AI_URL);
+      return;
+    }
+
     if (pageId === 'community') {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active', 'page-zoom'));
       document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
       const items = document.querySelectorAll('.menu-item');
       const idx = pageMap.indexOf('community');
       if (idx >= 0 && items[idx]) items[idx].classList.add('active');
+
       const open = () => {
         if (window.driverCommunity?.open) {
+          // Patch the community's Back/Exit exactly once so it returns to Home,
+          // instead of leaving the underlying page selection blank.
+          if (!window.driverCommunity.__homeReturnPatched) {
+            const originalClose = window.driverCommunity.close;
+            window.driverCommunity.close = () => {
+              try {
+                originalClose?.();
+              } finally {
+                returnHome();
+              }
+            };
+            window.driverCommunity.__homeReturnPatched = true;
+          }
           window.driverCommunity.open();
           return true;
         }
