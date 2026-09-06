@@ -18,6 +18,13 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 window.firebaseServices = { app, auth, db };
 
+// IMPORTANT: community.js must be loaded only after Firebase services exist.
+// The previous build only linked firebase-bridge.js from index.html, so the
+// Community module was never mounted and the screen stayed on "Đang tải...".
+import('./community.js').catch((error) => {
+  console.error('[Firebase] Community module failed to load:', error);
+});
+
 function statePayload(state) {
   return {
     incenseCount: Number(state.incenseCount || 0),
