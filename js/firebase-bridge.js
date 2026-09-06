@@ -4,6 +4,8 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getAuth,
   onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
@@ -18,9 +20,15 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 window.firebaseServices = { app, auth, db };
 
+// Explicitly keep Google sessions in browser local storage. This is important
+// on Android: the OAuth redirect can recreate the page, and without explicit
+// persistence the UI may briefly see a guest user again when the user posts.
+const authPersistenceReady = setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error('[Firebase] Could not enable local auth persistence:', error);
+  return null;
+});
+
 // IMPORTANT: community.js must be loaded only after Firebase services exist.
-// The previous build only linked firebase-bridge.js from index.html, so the
-// Community module was never mounted and the screen stayed on "Đang tải...".
 import('./community.js').catch((error) => {
   console.error('[Firebase] Community module failed to load:', error);
 });
@@ -43,15 +51,13 @@ function isMobileBrowser() {
 }
 
 async function googleLogin() {
+  await authPersistenceReady;
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
 
-  // Mobile Chrome is much more reliable with a full-page OAuth redirect than a popup.
-  if (isMobileBrowser()) {
-    await signInWithRedirect(auth, provider);
-    return null;
-  }
-
+  // Prefer popup on mobile so the user returns directly to the app with the
+  // Firebase session intact. If the browser blocks popups, use redirect as a
+  // safe fallback.
   try {
     return (await signInWithPopup(auth, provider)).user;
   } catch (error) {
@@ -62,7 +68,12 @@ async function googleLogin() {
       'auth/operation-not-supported-in-this-environment',
       'auth/internal-error'
     ]);
-    if (!fallback.has(error.code)) throw error;
+    if (!isMobileBrowser() && !fallback.has(error.code)) throw error;
+    if (!fallback.has(error.code) && isMobileBrowser()) {
+      console.warn('[Firebase] Mobile popup failed; falling back to redirect:', error);
+    } else if (!fallback.has(error.code)) {
+      throw error;
+    }
     await signInWithRedirect(auth, provider);
     return null;
   }
@@ -71,8 +82,10 @@ async function googleLogin() {
 window.firebaseBridge = {
   get uid() { return auth.currentUser?.uid || null; },
   get currentUser() { return auth.currentUser || null; },
+  authPersistenceReady,
   googleLogin,
   async ensureUser() {
+    await authPersistenceReady;
     if (auth.currentUser) return auth.currentUser;
     return (await signInAnonymously(auth)).user;
   },
@@ -87,8 +100,8 @@ window.firebaseBridge = {
   }
 };
 
-// Consume the OAuth redirect exactly once and notify the Community module.
-getRedirectResult(auth).then((result) => {
+// Consume the OAuth redirect only after persistence has been configured.
+authPersistenceReady.then(() => getRedirectResult(auth)).then((result) => {
   if (result?.user) window.dispatchEvent(new CustomEvent('google-auth-complete', { detail: result.user }));
 }).catch((error) => {
   console.error('[Firebase] Google redirect failed:', error);
