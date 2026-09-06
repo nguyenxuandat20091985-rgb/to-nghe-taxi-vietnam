@@ -28,12 +28,8 @@ async function googleLogin() {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
 
-  // Do not link Google to the anonymous state account here. A fresh Google
-  // sign-in is reliable on the public Vercel/GitHub Pages origins and avoids
-  // the anonymous-link race that previously made the button appear inert.
   try {
-    const credential = await signInWithPopup(auth, provider);
-    return credential.user;
+    return (await signInWithPopup(auth, provider)).user;
   } catch (error) {
     const fallback = new Set([
       'auth/popup-blocked',
@@ -68,8 +64,6 @@ window.firebaseBridge = {
   }
 };
 
-// Resolve an OAuth redirect as soon as the Firebase module loads. This is
-// required after signInWithRedirect() returns to the app.
 getRedirectResult(auth).then((result) => {
   if (result?.user) window.dispatchEvent(new CustomEvent('google-auth-complete', { detail: result.user }));
 }).catch((error) => {
@@ -82,8 +76,8 @@ onAuthStateChanged(auth, (user) => {
 });
 
 // The outer Community login control is intentionally independent from the
-// Community tab's internal composer. It survives navigation and is always a
-// real button receiving touch/click events.
+// Community tab's internal composer. Use a capture-phase touch/click handler
+// so navigation delegates cannot swallow the login action before it runs.
 function mountOuterLogin() {
   const host = document.querySelector('#page-community');
   if (!host || document.querySelector('#community-outer-google-login')) return;
@@ -96,24 +90,44 @@ function mountOuterLogin() {
   button.style.cssText = [
     'position:relative', 'z-index:2147483647', 'pointer-events:auto',
     'touch-action:manipulation', 'display:inline-flex', 'align-items:center',
-    'justify-content:center', 'min-height:42px', 'padding:10px 16px',
-    'margin:10px 0', 'border:1px solid #d4af37', 'border-radius:12px',
+    'justify-content:center', 'min-height:48px', 'padding:12px 20px',
+    'margin:10px 0', 'border:1px solid #d4af37', 'border-radius:14px',
     'background:#d4af37', 'color:#17100a', 'font-weight:800',
-    'cursor:pointer', 'user-select:none'
+    'font-size:16px', 'cursor:pointer', 'user-select:none'
   ].join(';');
 
-  const activate = (event) => {
+  button.addEventListener('click', (event) => {
     event.preventDefault();
-    event.stopPropagation();
+    event.stopImmediatePropagation();
     googleLogin().catch(error => {
       console.error('[Firebase] Google login:', error);
-      alert('Không thể mở Google. Vui lòng kiểm tra quyền đăng nhập Google trong Firebase.');
+      const code = error?.code || 'unknown';
+      const message = code === 'auth/unauthorized-domain'
+        ? 'Tên miền này chưa được thêm vào Authorized domains của Firebase.'
+        : `Không thể mở Google (${code}).`;
+      alert(message);
     });
-  };
-  button.addEventListener('pointerup', activate, { passive: false });
-  button.addEventListener('click', activate, { passive: false });
+  }, { passive: false });
+
   host.insertBefore(button, host.firstChild);
 }
+
+// Capture before any document-level navigation listener. This specifically
+// protects the outer login button from event interception by community.js.
+document.addEventListener('click', (event) => {
+  const target = event.target instanceof Element ? event.target.closest('#community-outer-google-login') : null;
+  if (!target || target.disabled) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  googleLogin().catch(error => {
+    console.error('[Firebase] Google login:', error);
+    const code = error?.code || 'unknown';
+    const message = code === 'auth/unauthorized-domain'
+      ? 'Tên miền này chưa được thêm vào Authorized domains của Firebase.'
+      : `Không thể mở Google (${code}).`;
+    alert(message);
+  });
+}, true);
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountOuterLogin, { once: true });
 else mountOuterLogin();
