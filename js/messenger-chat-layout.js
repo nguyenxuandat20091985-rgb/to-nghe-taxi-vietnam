@@ -1,11 +1,11 @@
 // Tổ Nghề Taxi Việt Nam — dedicated chat-tab layout.
 // Presentation/lifecycle only. Messenger v4 owns chat interactions.
-// IMPORTANT: do not observe class attributes here. The community tab itself
-// toggles `hidden` / `tc-chat-only`; watching those attributes and then
-// changing them again can create a hot MutationObserver loop on mobile.
+// No MutationObserver: community chat is a highly interactive DOM. Observing
+// mutations here can cause render feedback loops and freeze mobile browsers.
 (function () {
-  const STYLE_ID = 'tc-chat-only-layout-v5';
+  const STYLE_ID = 'tc-chat-only-layout-v6';
   let booted = false;
+  let scheduled = false;
 
   function installStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -27,16 +27,21 @@
   }
 
   function applyLayout() {
-    installStyles();
     const root = document.querySelector('#tc-community .tc-app');
     const view = document.querySelector('#tc-community .tc-chat-view');
     if (!root || !view) return;
     const active = !view.classList.contains('hidden');
-    // classList.toggle with a stable boolean is safe; unlike the old
-    // class-attribute MutationObserver, this function is never recursively
-    // triggered by its own mutation.
     root.classList.toggle('tc-chat-only', active);
     if (active) window.driverMessengerV3?.mount?.();
+  }
+
+  function scheduleApply() {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      applyLayout();
+    });
   }
 
   function interceptPostMessage(e) {
@@ -52,10 +57,15 @@
     });
   }
 
+  function handleCommunityTabClick(e) {
+    const target = e.target.closest?.('#tc-community button');
+    if (!target) return;
+    const text = (target.textContent || '').trim().toLowerCase();
+    if (text.includes('trò chuyện')) scheduleApply();
+  }
+
   function onCommunityChatActivated() {
-    // Defer one frame so the community renderer has finished toggling the chat
-    // view before Messenger mounts. This avoids competing DOM writes.
-    requestAnimationFrame(applyLayout);
+    scheduleApply();
   }
 
   function boot() {
@@ -63,12 +73,8 @@
     booted = true;
     installStyles();
     document.addEventListener('click', interceptPostMessage, true);
+    document.addEventListener('click', handleCommunityTabClick, false);
     window.addEventListener('community-chat-activated', onCommunityChatActivated);
-
-    // Only observe DOM insertion/removal, never class/attribute changes.
-    // This lets us detect the Community panel being created without a loop.
-    const observer = new MutationObserver(() => applyLayout());
-    observer.observe(document.body, { childList: true, subtree: true });
     applyLayout();
   }
 
