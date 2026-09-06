@@ -143,8 +143,10 @@ async function initializeFirebaseBridge() {
     };
 
     await import('./community.js');
-    await import('./community-chat-upgrade.js');
+    // v2 was superseded by messenger-inbox-v3; loading both caused the old
+    // composer/chat renderer to overwrite the new inbox.
     await import('./messenger-inbox-v3.js');
+    await import('./messenger-chat-layout.js');
     scheduleCommunityHomeLogin();
     window.dispatchEvent(new CustomEvent('firebase-ready'));
 
