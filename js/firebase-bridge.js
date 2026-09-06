@@ -1,14 +1,21 @@
 // Firebase bootstrap for Tổ Nghề Taxi Việt Nam.
-// Keep Google OAuth independent from the Anonymous app-state session.
+// Community Google login is handled here once, so the UI never has competing auth listeners.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  GoogleAuthProvider,
+  signInAnonymously,
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import firebaseConfig from './firebase-config.js';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-
 window.firebaseServices = { app, auth, db };
 
 function statePayload(state) {
@@ -24,9 +31,19 @@ function statePayload(state) {
   };
 }
 
+function isMobileBrowser() {
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.matchMedia?.('(pointer: coarse)').matches;
+}
+
 async function googleLogin() {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
+
+  // Mobile Chrome is much more reliable with a full-page OAuth redirect than a popup.
+  if (isMobileBrowser()) {
+    await signInWithRedirect(auth, provider);
+    return null;
+  }
 
   try {
     return (await signInWithPopup(auth, provider)).user;
@@ -50,7 +67,6 @@ window.firebaseBridge = {
   googleLogin,
   async ensureUser() {
     if (auth.currentUser) return auth.currentUser;
-    const { signInAnonymously } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
     return (await signInAnonymously(auth)).user;
   },
   async loadUserState() {
@@ -64,6 +80,7 @@ window.firebaseBridge = {
   }
 };
 
+// Consume the OAuth redirect exactly once and notify the Community module.
 getRedirectResult(auth).then((result) => {
   if (result?.user) window.dispatchEvent(new CustomEvent('google-auth-complete', { detail: result.user }));
 }).catch((error) => {
@@ -74,61 +91,3 @@ getRedirectResult(auth).then((result) => {
 onAuthStateChanged(auth, (user) => {
   window.dispatchEvent(new CustomEvent('firebase-auth-changed', { detail: user || null }));
 });
-
-// The outer Community login control is intentionally independent from the
-// Community tab's internal composer. Use a capture-phase touch/click handler
-// so navigation delegates cannot swallow the login action before it runs.
-function mountOuterLogin() {
-  const host = document.querySelector('#page-community');
-  if (!host || document.querySelector('#community-outer-google-login')) return;
-
-  const button = document.createElement('button');
-  button.id = 'community-outer-google-login';
-  button.type = 'button';
-  button.textContent = 'Đăng nhập Google';
-  button.setAttribute('aria-label', 'Đăng nhập Google');
-  button.style.cssText = [
-    'position:relative', 'z-index:2147483647', 'pointer-events:auto',
-    'touch-action:manipulation', 'display:inline-flex', 'align-items:center',
-    'justify-content:center', 'min-height:48px', 'padding:12px 20px',
-    'margin:10px 0', 'border:1px solid #d4af37', 'border-radius:14px',
-    'background:#d4af37', 'color:#17100a', 'font-weight:800',
-    'font-size:16px', 'cursor:pointer', 'user-select:none'
-  ].join(';');
-
-  button.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    googleLogin().catch(error => {
-      console.error('[Firebase] Google login:', error);
-      const code = error?.code || 'unknown';
-      const message = code === 'auth/unauthorized-domain'
-        ? 'Tên miền này chưa được thêm vào Authorized domains của Firebase.'
-        : `Không thể mở Google (${code}).`;
-      alert(message);
-    });
-  }, { passive: false });
-
-  host.insertBefore(button, host.firstChild);
-}
-
-// Capture before any document-level navigation listener. This specifically
-// protects the outer login button from event interception by community.js.
-document.addEventListener('click', (event) => {
-  const target = event.target instanceof Element ? event.target.closest('#community-outer-google-login') : null;
-  if (!target || target.disabled) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  googleLogin().catch(error => {
-    console.error('[Firebase] Google login:', error);
-    const code = error?.code || 'unknown';
-    const message = code === 'auth/unauthorized-domain'
-      ? 'Tên miền này chưa được thêm vào Authorized domains của Firebase.'
-      : `Không thể mở Google (${code}).`;
-    alert(message);
-  });
-}, true);
-
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountOuterLogin, { once: true });
-else mountOuterLogin();
-window.addEventListener('firebase-auth-changed', mountOuterLogin);
