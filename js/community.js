@@ -433,7 +433,16 @@ function buildPanel() {
       </main>
     </div>`;
   document.body.appendChild(panel);
-  panel.querySelector('.tc-back').onclick = closeCommunity;
+  panel.querySelector('.tc-back').onclick = () => {
+  closeCommunity();
+  try {
+    if (typeof window.showPage === 'function') window.showPage('home');
+    else window.location.assign(window.location.origin + window.location.pathname);
+  } catch (error) {
+    console.warn('[Community] Could not return to home:', error);
+    window.location.assign(window.location.origin + window.location.pathname);
+  }
+};
   panel.querySelector('.tc-account').onclick = () => currentUser() ? notify('Anh/chị đã đăng nhập Google.', 'success') : openLogin('tham gia Cộng Đồng');
   panel.querySelector('.tc-composer-login').onclick = () => currentUser() ? panel.querySelector('textarea')?.focus() : openLogin('đăng bài viết');
   panel.querySelector('#tc-post-form').onsubmit = submitPost;
