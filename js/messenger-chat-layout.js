@@ -29,8 +29,23 @@
     root.classList.toggle('tc-chat-only', active);
     if (active) window.driverMessengerV3?.mount?.();
   }
+  function interceptPostMessage(e) {
+    const btn = e.target.closest?.('#tc-community [data-message-user]');
+    if (!btn || !window.driverMessengerV3?.openPrivate) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    window.driverMessengerV3.activateChatTab?.();
+    window.driverMessengerV3.openPrivate({
+      uid: btn.dataset.messageUser,
+      name: btn.dataset.messageName,
+      photo: btn.dataset.messagePhoto
+    });
+  }
   function boot() {
     installStyles();
+    // Window capture runs before the v4 document-capture handler, so a feed's
+    // “Nhắn tin” button always opens the chat view instead of staying hidden.
+    window.addEventListener('click', interceptPostMessage, true);
     const observer = new MutationObserver(apply);
     observer.observe(document.body, { childList:true, subtree:true, attributes:true, attributeFilter:['class'] });
     apply();
