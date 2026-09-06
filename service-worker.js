@@ -1,4 +1,4 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v6';
+const CACHE_NAME = 'den-to-nghe-taxi-v7-community';
 const APP_SHELL = [
   './',
   './index.html',
@@ -19,9 +19,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
       .then((keys) => Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
       ))
       .then(() => self.clients.claim())
   );
@@ -29,10 +27,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-
   const requestUrl = new URL(event.request.url);
   if (requestUrl.origin !== self.location.origin) return;
-
   event.respondWith(
     fetch(event.request)
       .then((response) => {
@@ -42,8 +38,6 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       })
-      .catch(() => caches.match(event.request).then((cached) => {
-        return cached || caches.match('./index.html');
-      }))
+      .catch(() => caches.match(event.request).then((cached) => cached || caches.match('./index.html')))
   );
 });
