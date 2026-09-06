@@ -1,10 +1,15 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v10-messenger-fix';
+const CACHE_NAME = 'den-to-nghe-taxi-v11-chat-stability';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
   './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icons/icon-512.png',
+  './js/firebase-bridge.js',
+  './js/firebase-config.js',
+  './js/community.js',
+  './js/messenger-inbox-v3.js',
+  './js/messenger-chat-layout.js'
 ];
 
 self.addEventListener('install', (event) => {
