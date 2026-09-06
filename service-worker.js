@@ -1,4 +1,4 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v9-auth-fix';
+const CACHE_NAME = 'den-to-nghe-taxi-v10-messenger-fix';
 const APP_SHELL = [
   './',
   './index.html',
