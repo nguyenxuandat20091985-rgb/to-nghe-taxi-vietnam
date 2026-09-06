@@ -32,4 +32,5 @@ jobs:
           node --check js/community-chat-upgrade.js
           node --check js/messenger-inbox-v3.js
           node --check js/messenger-chat-layout.js
+          node --check js/messenger-contacts.js
           node --check service-worker.js
