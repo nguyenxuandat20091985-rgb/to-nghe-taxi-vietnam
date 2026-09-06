@@ -98,9 +98,6 @@ async function initializeFirebaseBridge() {
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-
-    // Configure persistence BEFORE restoring/starting Google authentication.
-    // This prevents the Android OAuth redirect from returning to a guest state.
     await setPersistence(auth, browserLocalPersistence);
     const initialUser = await waitForInitialAuthState(auth);
 
@@ -114,15 +111,12 @@ async function initializeFirebaseBridge() {
         provider.setCustomParameters({ prompt: 'select_account' });
         try {
           const result = await signInWithPopup(auth, provider);
-          // Do not close the UI until Firebase has actually installed the user.
           await waitForInitialAuthState(auth);
           return result.user;
         } catch (error) {
           const fallbackCodes = new Set([
-            'auth/popup-blocked',
-            'auth/popup-closed-by-user',
-            'auth/cancelled-popup-request',
-            'auth/operation-not-supported-in-this-environment',
+            'auth/popup-blocked', 'auth/popup-closed-by-user',
+            'auth/cancelled-popup-request', 'auth/operation-not-supported-in-this-environment',
             'auth/internal-error'
           ]);
           if (!fallbackCodes.has(error?.code)) throw error;
@@ -144,37 +138,24 @@ async function initializeFirebaseBridge() {
       async saveUserState(state) {
         const user = await this.ensureUser();
         const stateRef = doc(db, 'users', user.uid);
-        await setDoc(stateRef, {
-          appState: statePayload(state),
-          updatedAt: serverTimestamp()
-        }, { merge: true });
+        await setDoc(stateRef, { appState: statePayload(state), updatedAt: serverTimestamp() }, { merge: true });
       }
     };
 
-    // Community is loaded only after Firebase and the restored auth state exist.
     await import('./community.js');
+    await import('./community-chat-upgrade.js');
     scheduleCommunityHomeLogin();
     window.dispatchEvent(new CustomEvent('firebase-ready'));
 
-    // Consume OAuth redirect after persistence and Firebase services are ready.
     try {
       const redirectResult = await getRedirectResult(auth);
-      if (redirectResult?.user) {
-        window.dispatchEvent(new CustomEvent('google-auth-complete', { detail: redirectResult.user }));
-      }
+      if (redirectResult?.user) window.dispatchEvent(new CustomEvent('google-auth-complete', { detail: redirectResult.user }));
     } catch (error) {
       console.error('[Firebase] Google redirect failed:', error);
       window.dispatchEvent(new CustomEvent('google-auth-error', { detail: error }));
     }
-
-    // Keep the restored user observable without creating a new anonymous account.
-    if (initialUser) {
-      console.info('[Firebase] Restored auth session:', initialUser.isAnonymous ? 'anonymous' : 'google/account');
-    }
-
-    onAuthStateChanged(auth, (user) => {
-      window.dispatchEvent(new CustomEvent('firebase-auth-changed', { detail: user || null }));
-    });
+    if (initialUser) console.info('[Firebase] Restored auth session:', initialUser.isAnonymous ? 'anonymous' : 'google/account');
+    onAuthStateChanged(auth, (user) => window.dispatchEvent(new CustomEvent('firebase-auth-changed', { detail: user || null })));
   } catch (error) {
     console.warn('[Firebase] Initialization unavailable; using local state.', error);
     scheduleCommunityHomeLogin();
@@ -183,8 +164,6 @@ async function initializeFirebaseBridge() {
 
 initializeFirebaseBridge();
 
-// Route the legacy Community menu to the real Facebook/Zalo-style community.
-// Tin Tức now opens the user's AI news application.
 const NEWS_AI_URL = 'https://nguyenxuandat20091985-rgb.github.io/my-ai-bot/';
 
 function installCommunityRoute() {
@@ -192,57 +171,27 @@ function installCommunityRoute() {
   if (window.showPage.__communityRoutePatched) return true;
   const originalShowPage = window.showPage;
   const pageMap = ['home','incense','prayer','que','calendar','news','community','merit','profile','exorcism','ai'];
-
-  const returnHome = () => {
-    // The community overlay intentionally clears the legacy page selection.
-    // Restore the real home page when the user presses its Back/Exit button.
-    try {
-      originalShowPage('home');
-    } catch (error) {
-      console.warn('[Community] Could not restore home page:', error);
-    }
-  };
+  const returnHome = () => { try { originalShowPage('home'); } catch (error) { console.warn('[Community] Could not restore home page:', error); } };
 
   window.showPage = function patchedShowPage(pageId) {
-    if (pageId === 'news') {
-      window.location.assign(NEWS_AI_URL);
-      return;
-    }
-
+    if (pageId === 'news') { window.location.assign(NEWS_AI_URL); return; }
     if (pageId === 'community') {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active', 'page-zoom'));
       document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-      const items = document.querySelectorAll('.menu-item');
-      const idx = pageMap.indexOf('community');
+      const items = document.querySelectorAll('.menu-item'); const idx = pageMap.indexOf('community');
       if (idx >= 0 && items[idx]) items[idx].classList.add('active');
-
       const open = () => {
         if (window.driverCommunity?.open) {
-          // Patch the community's Back/Exit exactly once so it returns to Home,
-          // instead of leaving the underlying page selection blank.
           if (!window.driverCommunity.__homeReturnPatched) {
             const originalClose = window.driverCommunity.close;
-            window.driverCommunity.close = () => {
-              try {
-                originalClose?.();
-              } finally {
-                returnHome();
-              }
-            };
+            window.driverCommunity.close = () => { try { originalClose?.(); } finally { returnHome(); } };
             window.driverCommunity.__homeReturnPatched = true;
           }
-          window.driverCommunity.open();
-          return true;
+          window.driverCommunity.open(); return true;
         }
         return false;
       };
-      if (!open()) {
-        let tries = 0;
-        const timer = setInterval(() => {
-          tries += 1;
-          if (open() || tries >= 50) clearInterval(timer);
-        }, 100);
-      }
+      if (!open()) { let tries = 0; const timer = setInterval(() => { tries += 1; if (open() || tries >= 50) clearInterval(timer); }, 100); }
       return;
     }
     return originalShowPage(pageId);
@@ -255,9 +204,6 @@ if (!installCommunityRoute()) {
   window.addEventListener('DOMContentLoaded', () => {
     if (installCommunityRoute()) return;
     let tries = 0;
-    const timer = setInterval(() => {
-      tries += 1;
-      if (installCommunityRoute() || tries >= 50) clearInterval(timer);
-    }, 100);
+    const timer = setInterval(() => { tries += 1; if (installCommunityRoute() || tries >= 50) clearInterval(timer); }, 100);
   }, { once: true });
 }
