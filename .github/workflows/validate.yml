@@ -30,4 +30,6 @@ jobs:
           node --check js/firebase-config.js
           node --check js/community.js
           node --check js/community-chat-upgrade.js
+          node --check js/messenger-inbox-v3.js
+          node --check js/messenger-chat-layout.js
           node --check service-worker.js
