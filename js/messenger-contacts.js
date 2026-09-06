@@ -139,8 +139,8 @@ function boot(){
   styles();
   startDirectory();
 
-  // Chỉ chạy khi người dùng mở tab Trò chuyện; không quan sát toàn bộ DOM.
-  document.addEventListener('click',e=>{
+  // Window capture chạy trước handler capture của Messenger v4, nhưng không theo dõi DOM.
+  window.addEventListener('click',e=>{
     const mainTab=e.target.closest?.('#tc-community .tc-main-tab[data-tab="chat"]');
     const filterTab=e.target.closest?.('#tc-community .m4-tab[data-m4-filter]');
     if(mainTab || filterTab) window.setTimeout(installTab,0);
