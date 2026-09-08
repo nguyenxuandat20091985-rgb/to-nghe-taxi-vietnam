@@ -12,9 +12,74 @@ import firebaseConfig from './firebase-config.js';
 
 function statePayload(state) { return { incenseCount:Number(state.incenseCount||0), lastIncense:String(state.lastIncense||'Chưa có').slice(0,80), prayers:Array.isArray(state.prayers)?state.prayers.slice(0,10):[], meritPoints:Number(state.meritPoints||0), userName:String(state.userName||'').slice(0,80), joinDate:String(state.joinDate||'').slice(0,20), queDrawnDate:String(state.queDrawnDate||'').slice(0,40), likedPosts:Array.isArray(state.likedPosts)?state.likedPosts.slice(0,100):[] }; }
 function waitForAuth(auth) { return new Promise((resolve,reject)=>{ let done=false; const off=onAuthStateChanged(auth,u=>{if(done)return;done=true;off();resolve(u||null)},e=>{if(done)return;done=true;off();reject(e)}); }); }
-function mountLoginButton() { const heading=document.querySelector('#page-community .glass-card h3'); if(!heading||heading.querySelector('.community-home-login'))return; const b=document.createElement('button'); b.type='button';b.className='community-home-login';b.textContent='Đăng nhập Google';b.setAttribute('aria-label','Đăng nhập Google');Object.assign(b.style,{flex:'0 0 auto',border:'1px solid #c9a45a',borderRadius:'10px',background:'linear-gradient(145deg,#a67c1a,#d4af37,#e8c56a)',color:'#170c02',fontWeight:'800',padding:'9px 12px',whiteSpace:'nowrap',cursor:'pointer'});b.onclick=e=>{e.preventDefault();e.stopPropagation();window.firebaseBridge?.googleLogin?.().catch(err=>console.error('[Google Auth]',err));};heading.style.display='flex';heading.style.alignItems='center';heading.style.justifyContent='space-between';heading.style.gap='10px';heading.appendChild(b); }
+function mountLoginButton() {
+  const heading=document.querySelector('#page-community .glass-card h3');
+  if(!heading||heading.querySelector('.community-home-login'))return;
+  const b=document.createElement('button');
+  b.type='button'; b.className='community-home-login'; b.textContent='Đăng nhập Google'; b.setAttribute('aria-label','Đăng nhập Google');
+  Object.assign(b.style,{flex:'0 0 auto',border:'1px solid #c9a45a',borderRadius:'10px',background:'linear-gradient(145deg,#a67c1a,#d4af37,#e8c56a)',color:'#170c02',fontWeight:'800',padding:'9px 12px',whiteSpace:'nowrap',cursor:'pointer'});
+  b.onclick=e=>{e.preventDefault();e.stopPropagation();window.firebaseBridge?.googleLogin?.().catch(err=>{console.error('[Google Auth]',err);alert('Đăng nhập Google chưa thành công. Vui lòng thử lại.');});};
+  heading.style.display='flex'; heading.style.alignItems='center'; heading.style.justifyContent='space-between'; heading.style.gap='10px'; heading.appendChild(b);
+}
 function scheduleLogin(){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountLoginButton,{once:true});else mountLoginButton();}
-async function init(){try{const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);await setPersistence(auth,browserLocalPersistence);window.firebaseServices={app,auth,db};window.firebaseBridge={get uid(){return auth.currentUser?.uid||null},get currentUser(){return auth.currentUser||null},async googleLogin(){const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});try{const r=await signInWithPopup(auth,provider);return r.user}catch(e){if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/internal-error'].includes(e?.code)){await signInWithRedirect(auth,provider);return null}throw e}},async logout(){return signOut(auth)},async ensureUser(){const u=auth.currentUser;if(!u||u.isAnonymous)throw new Error('GOOGLE_LOGIN_REQUIRED');return u},async loadUserState(){const u=await this.ensureUser(),s=await getDoc(doc(db,'users',u.uid));return s.exists()?s.data().appState||null:null},async saveUserState(state){const u=await this.ensureUser();await setDoc(doc(db,'users',u.uid),{displayName:u.displayName||'',photoURL:u.photoURL||'',appState:statePayload(state),updatedAt:serverTimestamp()},{merge:true})}};await import('./community.js');await import('./messenger-inbox-v3.js');await import('./messenger-chat-layout.js');await import('./messenger-contacts.js');scheduleLogin();const rr=await getRedirectResult(auth).catch(e=>{console.error('[Firebase] redirect',e);return null});if(rr?.user)window.dispatchEvent(new CustomEvent('google-auth-complete',{detail:rr.user}));onAuthStateChanged(auth,u=>window.dispatchEvent(new CustomEvent('firebase-auth-changed',{detail:u||null})));window.dispatchEvent(new CustomEvent('firebase-ready'));}catch(e){console.error('[Firebase] initialization failed',e);scheduleLogin();window.dispatchEvent(new CustomEvent('firebase-error',{detail:e}));}}
+function mountAuthStatus(user) {
+  let el=document.querySelector('#google-auth-status');
+  if(!el){
+    el=document.createElement('div'); el.id='google-auth-status';
+    Object.assign(el.style,{position:'fixed',top:'8px',right:'8px',zIndex:'200',display:'flex',alignItems:'center',gap:'6px',maxWidth:'calc(100vw - 16px)'});
+    document.body.appendChild(el);
+  }
+  el.replaceChildren();
+  const b=document.createElement('button'); b.type='button';
+  Object.assign(b.style,{border:'1px solid rgba(212,175,55,.55)',borderRadius:'999px',background:'rgba(15,8,2,.88)',color:'#f0e0a0',padding:'6px 9px',fontSize:'11px',fontWeight:'700',cursor:'pointer',backdropFilter:'blur(8px)'});
+  if(user){
+    b.textContent=`✓ ${String(user.displayName||user.email||'Google').slice(0,22)}`;
+    b.title='Đã đăng nhập Google — nhấn để đăng xuất';
+    b.onclick=()=>window.firebaseBridge?.logout?.().catch(console.error);
+  } else {
+    b.textContent='Đăng nhập Google';
+    b.onclick=()=>window.firebaseBridge?.googleLogin?.().catch(err=>{console.error('[Google Auth]',err);alert('Đăng nhập Google chưa thành công. Vui lòng thử lại.');});
+  }
+  el.appendChild(b);
+}
+async function init(){
+  try{
+    const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+    await setPersistence(auth,browserLocalPersistence);
+    window.firebaseServices={app,auth,db};
+    window.firebaseBridge={
+      get uid(){return auth.currentUser?.uid||null},
+      get currentUser(){return auth.currentUser||null},
+      async googleLogin(){
+        const provider=new GoogleAuthProvider(); provider.setCustomParameters({prompt:'select_account'});
+        try{const r=await signInWithPopup(auth,provider);return r.user}catch(e){
+          if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/internal-error'].includes(e?.code)){await signInWithRedirect(auth,provider);return null}
+          throw e;
+        }
+      },
+      async logout(){return signOut(auth)},
+      async ensureUser(){const u=auth.currentUser;if(!u||u.isAnonymous)throw new Error('GOOGLE_LOGIN_REQUIRED');return u},
+      async loadUserState(){const u=await this.ensureUser(),s=await getDoc(doc(db,'users',u.uid));return s.exists()?s.data().appState||null:null},
+      async saveUserState(state){const u=await this.ensureUser();await setDoc(doc(db,'users',u.uid),{displayName:u.displayName||'',photoURL:u.photoURL||'',email:u.email||'',appState:statePayload(state),updatedAt:serverTimestamp()},{merge:true})}
+    };
+    await import('./community.js');
+    await import('./messenger-inbox-v3.js');
+    await import('./messenger-chat-layout.js');
+    await import('./messenger-contacts.js');
+    scheduleLogin();
+    const rr=await getRedirectResult(auth).catch(e=>{console.error('[Firebase] redirect',e);return null});
+    if(rr?.user)window.dispatchEvent(new CustomEvent('google-auth-complete',{detail:rr.user}));
+    onAuthStateChanged(auth,async u=>{
+      mountAuthStatus(u||null);
+      if(u&&!u.isAnonymous){
+        try{await setDoc(doc(db,'users',u.uid),{displayName:u.displayName||'',photoURL:u.photoURL||'',email:u.email||'',updatedAt:serverTimestamp()},{merge:true});}catch(e){console.error('[Firebase] user profile sync',e);}
+      }
+      window.dispatchEvent(new CustomEvent('firebase-auth-changed',{detail:u||null}));
+    });
+    window.dispatchEvent(new CustomEvent('firebase-ready'));
+    mountAuthStatus(auth.currentUser||null);
+  }catch(e){console.error('[Firebase] initialization failed',e);scheduleLogin();mountAuthStatus(null);window.dispatchEvent(new CustomEvent('firebase-error',{detail:e}));}
+}
 init();
 const NEWS_AI_URL='https://nguyenxuandat20091985-rgb.github.io/my-ai-bot/';
 function installCommunityRoute(){if(typeof window.showPage!=='function')return false;if(window.showPage.__communityRoutePatched)return true;const original=window.showPage,pageMap=['home','incense','prayer','que','calendar','news','community','merit','profile','exorcism','ai'];window.showPage=function(pageId){if(pageId==='news'){window.location.assign(NEWS_AI_URL);return}if(pageId==='community'){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active','page-zoom'));document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));const items=document.querySelectorAll('.menu-item'),i=pageMap.indexOf('community');if(i>=0&&items[i])items[i].classList.add('active');const open=()=>window.driverCommunity?.open?.();if(!open()){let n=0;const t=setInterval(()=>{if(open()||++n>=50)clearInterval(t)},100)}return}return original(pageId)};window.showPage.__communityRoutePatched=true;return true}
