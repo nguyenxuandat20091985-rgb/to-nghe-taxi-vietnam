@@ -7,7 +7,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if signedIn() && request.auth.uid == userId;
     }
 
     // Danh bạ tài xế: chỉ lưu dữ liệu hiển thị tối thiểu, không chứa appState.
@@ -129,6 +129,7 @@ service cloud.firestore {
           && request.resource.data.senderName is string
           && request.resource.data.content is string
           && request.resource.data.content.size() > 0
+          && request.resource.data.content.size() <= 1000
           && request.resource.data.readBy is list
           && request.resource.data.readBy.hasAny([request.auth.uid]);
         allow update: if signedIn()
