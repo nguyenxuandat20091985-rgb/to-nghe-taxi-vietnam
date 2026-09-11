@@ -1,23 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <radialGradient id="bg" cx="50%" cy="35%" r="75%">
-      <stop offset="0" stop-color="#5a3710"/>
-      <stop offset="0.55" stop-color="#1a0e05"/>
-      <stop offset="1" stop-color="#050301"/>
-    </radialGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fff1a8"/>
-      <stop offset="0.45" stop-color="#d4af37"/>
-      <stop offset="1" stop-color="#8b6914"/>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f0d78c"/>
+      <stop offset="100%" stop-color="#a67c1a"/>
     </linearGradient>
+    <radialGradient id="bg" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#0f2a18"/>
+      <stop offset="100%" stop-color="#050301"/>
+    </radialGradient>
   </defs>
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <circle cx="256" cy="256" r="178" fill="none" stroke="url(#gold)" stroke-width="18"/>
-  <path d="M122 322h268l-25-83c-5-17-20-29-38-29H185c-18 0-33 12-38 29z" fill="#d4af37" stroke="#fff1a8" stroke-width="8"/>
-  <path d="M145 250h222l-12-40c-4-14-17-24-32-24H189c-15 0-28 10-32 24z" fill="#8b1a1a" stroke="#fff1a8" stroke-width="7"/>
-  <path d="M180 186h152l-12-30c-4-10-13-17-24-17h-80c-11 0-20 7-24 17z" fill="#d4af37" stroke="#fff1a8" stroke-width="7"/>
-  <circle cx="171" cy="338" r="30" fill="#050301" stroke="#d4af37" stroke-width="10"/>
-  <circle cx="341" cy="338" r="30" fill="#050301" stroke="#d4af37" stroke-width="10"/>
-  <text x="256" y="244" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#fff1a8">TAXI</text>
-  <path d="M256 68v68M222 102h68" stroke="#fff1a8" stroke-width="10" stroke-linecap="round"/>
+  <rect width="512" height="512" fill="#050301"/>
+  <circle cx="256" cy="256" r="248" fill="url(#bg)" stroke="url(#g)" stroke-width="12"/>
+  <path d="M110 230 Q160 150 256 140 Q352 150 402 230" fill="#c0392b" stroke="#d4af37" stroke-width="6"/>
+  <path d="M130 230 L382 230 L360 200 L152 200 Z" fill="#a93226"/>
+  <path d="M148 200 Q200 155 256 150 Q312 155 364 200" fill="none" stroke="#f0d78c" stroke-width="8"/>
+  <circle cx="256" cy="145" r="12" fill="#f0d78c"/>
+  <rect x="150" y="230" width="28" height="110" fill="#8b1a1a" stroke="#d4af37" stroke-width="3"/>
+  <rect x="334" y="230" width="28" height="110" fill="#8b1a1a" stroke="#d4af37" stroke-width="3"/>
+  <path d="M190 340 Q190 250 256 245 Q322 250 322 340" fill="#0a1f12" stroke="#d4af37" stroke-width="5"/>
+  <path d="M256 300 l18 28 -18-10 -18 10 z" fill="#3d8b5a"/>
+  <path d="M256 290 l28 22 -28-6 -28 6 z" fill="#2e6b45"/>
+  <rect x="175" y="320" width="162" height="58" rx="12" fill="#d4af37"/>
+  <path d="M190 320 l20 -28 h92 l20 28" fill="#f0d78c"/>
+  <rect x="235" y="285" width="42" height="12" rx="3" fill="#1a0e05"/>
+  <rect x="245" y="278" width="22" height="8" fill="#f0d78c"/>
+  <circle cx="210" cy="382" r="16" fill="#1a0e05"/>
+  <circle cx="302" cy="382" r="16" fill="#1a0e05"/>
+  <circle cx="210" cy="382" r="6" fill="#555"/>
+  <circle cx="302" cy="382" r="6" fill="#555"/>
+  <path d="M256 430 l40 35 -40-14 -40 14 z" fill="#d4af37"/>
+  <path d="M256 420 l55 30 -55-8 -55 8 z" fill="#a67c1a"/>
 </svg>
