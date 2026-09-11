@@ -5,15 +5,14 @@ import {
   onSnapshot,
   query,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-
-const LOGO_URL = './assets/logo-to-nghe-64.png';
+import { LOGO_URL } from './logo-data.js';
 
 function esc(v = '') {
   return String(v)
-    .replaceAll('&', '&')
-    .replaceAll('<', '<')
-    .replaceAll('>', '>')
-    .replaceAll('"', '"')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
 }
 
