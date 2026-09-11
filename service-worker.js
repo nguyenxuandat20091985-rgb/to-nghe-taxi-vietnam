@@ -1,4 +1,4 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v14-official-logo';
+const CACHE_NAME = 'den-to-nghe-taxi-v15-smooth-chat';
 const APP_SHELL = [
   './',
   './index.html',
