@@ -1,10 +1,12 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v13-official-logo';
+const CACHE_NAME = 'den-to-nghe-taxi-v14-official-logo';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './icons/icon-192-maskable.png',
+  './icons/icon-512-maskable.png',
   './icons/apple-touch-icon.png',
   './icons/favicon-32.png',
   './js/firebase-bridge.js',
