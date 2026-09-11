@@ -1,3 +1,4 @@
+import { LOGO_URL } from './logo-data.js';
 // Auth UI + first-login onboarding for Google accounts
 const DRIVER_COMPANIES = [
   'Mai Linh', 'Vinasun', 'Xanh SM', 'Grab', 'Taxi Group', 'Lái xe công nghệ', 'Khác',
@@ -8,7 +9,6 @@ function injectAuthStyles() {
   const style = document.createElement('style');
   style.id = 'tn-auth-styles';
   style.textContent = `
-    /* Auth integrated into app header — no overlay on title */
     .header.tn-header-auth{
       display:grid!important;
       grid-template-columns:minmax(64px,auto) 1fr minmax(64px,auto);
@@ -67,6 +67,20 @@ function injectAuthStyles() {
   document.head.appendChild(style);
 }
 
+function applyDefaultProfileLogo() {
+  const el = document.querySelector('#page-profile .profile-avatar');
+  if (!el) return;
+  if (el.querySelector('img')) return;
+  el.innerHTML = '';
+  const img = document.createElement('img');
+  img.src = LOGO_URL;
+  img.alt = 'Tổ Nghề Taxi';
+  Object.assign(img.style, { width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' });
+  el.appendChild(img);
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyDefaultProfileLogo);
+else applyDefaultProfileLogo();
+
 function escapeHtml(str = '') {
   return String(str)
     .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
@@ -75,43 +89,20 @@ function escapeHtml(str = '') {
 
 export function mountAuthStatus(user) {
   injectAuthStyles();
-
-  // Remove any legacy fixed overlays
   document.querySelector('#google-auth-status')?.remove();
-
   const header = document.querySelector('.header');
   if (header) {
     header.classList.add('tn-header-auth');
-    // Ensure structure: left | center (title) | right
     let center = header.querySelector('.tn-header-center');
     if (!center) {
       center = document.createElement('div');
       center.className = 'tn-header-center';
-      const nodes = Array.from(header.childNodes);
-      nodes.forEach((n) => {
-        if (n.nodeType === 1 && (n.matches('h1,p') || n.classList?.contains('tn-header-center'))) {
-          center.appendChild(n);
-        } else if (n.nodeType === 1 && (n.id === 'google-auth-status-left' || n.id === 'google-auth-status-right')) {
-          // keep slots
-        } else if (n.nodeType === 1 && !n.id?.startsWith('google-auth')) {
-          // leave other nodes
-        }
-      });
       Array.from(header.querySelectorAll(':scope > h1, :scope > p')).forEach((el) => center.appendChild(el));
     }
-
     let left = header.querySelector('#google-auth-status-left');
-    if (!left) {
-      left = document.createElement('div');
-      left.id = 'google-auth-status-left';
-    }
+    if (!left) { left = document.createElement('div'); left.id = 'google-auth-status-left'; }
     let right = header.querySelector('#google-auth-status-right');
-    if (!right) {
-      right = document.createElement('div');
-      right.id = 'google-auth-status-right';
-    }
-
-    // Rebuild header order: left, center, right
+    if (!right) { right = document.createElement('div'); right.id = 'google-auth-status-right'; }
     if (!header.contains(center)) {
       Array.from(header.querySelectorAll(':scope > h1, :scope > p')).forEach((el) => center.appendChild(el));
     }
@@ -120,28 +111,17 @@ export function mountAuthStatus(user) {
     header.appendChild(center);
     header.appendChild(right);
   }
-
   let left = document.querySelector('#google-auth-status-left');
   let right = document.querySelector('#google-auth-status-right');
-  if (!left) {
-    left = document.createElement('div');
-    left.id = 'google-auth-status-left';
-    document.body.appendChild(left);
-  }
-  if (!right) {
-    right = document.createElement('div');
-    right.id = 'google-auth-status-right';
-    document.body.appendChild(right);
-  }
+  if (!left) { left = document.createElement('div'); left.id = 'google-auth-status-left'; document.body.appendChild(left); }
+  if (!right) { right = document.createElement('div'); right.id = 'google-auth-status-right'; document.body.appendChild(right); }
   left.replaceChildren();
   right.replaceChildren();
-
   if (user && !user.isAnonymous) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'tn-auth-btn';
     btn.title = 'Đã đăng nhập Google — chạm để mở Hồ sơ';
-
     const avatar = document.createElement('span');
     avatar.className = 'tn-auth-avatar';
     if (user.photoURL) {
@@ -151,7 +131,11 @@ export function mountAuthStatus(user) {
       img.referrerPolicy = 'no-referrer';
       avatar.appendChild(img);
     } else {
-      avatar.textContent = '🚕';
+      const _img = document.createElement('img');
+      _img.src = LOGO_URL;
+      _img.alt = 'Tổ Nghề';
+      Object.assign(_img.style, { width: '100%', height: '100%', objectFit: 'cover' });
+      avatar.appendChild(_img);
     }
     const name = document.createElement('span');
     name.textContent = String(user.displayName || user.email || 'Google').slice(0, 14);
@@ -159,7 +143,6 @@ export function mountAuthStatus(user) {
     btn.appendChild(name);
     btn.onclick = () => { if (typeof window.showPage === 'function') window.showPage('profile'); };
     left.appendChild(btn);
-
     const logoutBtn = document.createElement('button');
     logoutBtn.type = 'button';
     logoutBtn.className = 'tn-auth-logout';
@@ -186,30 +169,22 @@ export function applyGoogleProfileToUI(user, extra = {}) {
   const photoURL = extra.photoURL || user.photoURL || '';
   const company = extra.company || '';
   const plate = extra.plate || '';
-
   const profileName = document.getElementById('profileName');
   if (profileName) profileName.textContent = displayName;
-
   const inputName = document.getElementById('inputName');
   if (inputName && (!inputName.value || inputName.value === 'Tài Xế Anonymous')) {
     inputName.value = displayName;
   }
-
   const avatarEl = document.querySelector('#page-profile .profile-avatar');
   if (avatarEl) {
-    if (photoURL) {
-      avatarEl.innerHTML = '';
-      const img = document.createElement('img');
-      img.src = photoURL;
-      img.alt = displayName;
-      img.referrerPolicy = 'no-referrer';
-      Object.assign(img.style, { width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' });
-      avatarEl.appendChild(img);
-    } else if (!avatarEl.querySelector('img')) {
-      avatarEl.textContent = '🚖';
-    }
+    avatarEl.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = photoURL || LOGO_URL;
+    img.alt = displayName;
+    img.referrerPolicy = 'no-referrer';
+    Object.assign(img.style, { width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' });
+    avatarEl.appendChild(img);
   }
-
   let meta = document.getElementById('profileDriverMeta');
   if (!meta && document.querySelector('#page-profile .profile-header')) {
     meta = document.createElement('p');
@@ -227,7 +202,6 @@ export function applyGoogleProfileToUI(user, extra = {}) {
     meta.textContent = parts.join(' · ') || '';
     meta.style.display = parts.length ? 'block' : 'none';
   }
-
   try {
     window.__driverProfile = { displayName, photoURL, company, plate, uid: user.uid };
     window.dispatchEvent(new CustomEvent('google-profile-ready', {
@@ -264,7 +238,6 @@ export function openOnboarding(user, existing = {}) {
       </div>
     </div>`;
   document.body.appendChild(modal);
-
   const avatarBox = modal.querySelector('#tn-onboard-avatar');
   if (user.photoURL) {
     avatarBox.innerHTML = '';
@@ -273,13 +246,17 @@ export function openOnboarding(user, existing = {}) {
     img.alt = user.displayName || '';
     img.referrerPolicy = 'no-referrer';
     avatarBox.appendChild(img);
+  } else if (LOGO_URL) {
+    avatarBox.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = LOGO_URL;
+    img.alt = 'Tổ Nghề';
+    avatarBox.appendChild(img);
   }
-
   modal.querySelector('#tn-skip').onclick = () => {
     closeOnboarding();
     try { localStorage.setItem('tn_onboard_skipped_' + user.uid, '1'); } catch (_) {}
   };
-
   modal.querySelector('#tn-save').onclick = async () => {
     const company = modal.querySelector('#tn-company').value || 'Khác';
     const plate = (modal.querySelector('#tn-plate').value || '').trim().toUpperCase();
