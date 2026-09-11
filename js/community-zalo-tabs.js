@@ -1,5 +1,6 @@
-// Community UI cleanup: compact header, logo mark, hide bulky composer, Zalo tabs
-const LOGO_MARK = '<span class="tc-logo-mark">🚕</span>';
+// Community UI cleanup + real logo PNG
+import LOGO from './app-logo.js';
+const LOGO_MARK = '<img class="tc-logo-mark" src="'+LOGO+'" alt="Tổ Nghề">';
 
 function injectStyles() {
   if (document.getElementById('tc-zalo-patch-styles')) return;
@@ -16,7 +17,7 @@ function injectStyles() {
 #tc-community .tc-account small{font-size:8px!important;display:block;opacity:.75}
 #tc-community .tc-account-dot{display:none!important}
 #tc-community .tc-brand-row{display:flex;align-items:center;gap:8px;min-width:0}
-#tc-community .tc-logo-mark{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2a1808,#0a1f12 70%);border:1.5px solid #d4af37;color:#f0d78c;font-weight:800;line-height:1;box-shadow:0 0 10px rgba(212,175,55,.25);width:32px;height:32px;font-size:14px;flex:0 0 32px}
+#tc-community .tc-logo-mark{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#0a1f12;border:1.5px solid #d4af37;object-fit:cover;padding:0;width:32px;height:32px;flex:0 0 32px}
 #tc-community .tc-account .tc-logo-mark,#tc-community .tc-account img{width:28px!important;height:28px!important;border-radius:50%;object-fit:cover;flex:0 0 28px}
 #tc-community .tc-main-tabs{display:flex;gap:6px;margin:0 0 10px;position:sticky;top:0;z-index:6;background:rgba(10,6,3,.94);padding:6px 0 8px;backdrop-filter:blur(8px)}
 #tc-community .tc-main-tab{flex:1;border:1px solid rgba(212,175,55,.28);background:#140a04;color:#cbb888;border-radius:999px;padding:9px 6px;font-weight:800;font-size:12px;cursor:pointer}
