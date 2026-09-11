@@ -76,6 +76,7 @@ async function init(){
       closeOnboarding,
     };
     await import('./community.js');
+    await import('./community-zalo-tabs.js');
     await import('./messenger-inbox-v3.js');
     await import('./messenger-chat-layout.js');
     await import('./messenger-contacts.js');
