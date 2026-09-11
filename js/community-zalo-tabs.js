@@ -51,27 +51,47 @@ function injectStyles() {
     #tc-community .tc-contact-main small{display:block;font-size:11px;color:#a8925c;margin-top:2px}
     #tc-community .tc-contact-msg{font-size:11px;font-weight:700;color:#170c02;background:linear-gradient(145deg,#a67c1a,#d4af37);border-radius:999px;padding:6px 10px}
     #tc-community .tc-composer.hidden{display:none!important}
-    #tc-community .tc-feed-view .tc-section-title{display:flex;align-items:center;justify-content:space-between;margin:4px 0 8px;padding:0}
+    #tc-community .tc-feed-view .tc-section-title{
+      display:flex;align-items:center;justify-content:space-between;
+      margin:4px 0 8px;padding:0;
+    }
     #tc-community .tc-feed-view .tc-section-title h3{font-size:15px;margin:0;color:#efd990}
     #tc-community .tc-feed-view .tc-feed-count{font-size:11px;color:#9a8558;font-weight:600}
     #tc-community .tc-feed-view .tc-realtime{display:none!important}
-    #tc-community .tc-composer{border:1px solid rgba(212,175,55,.22);border-radius:16px;background:rgba(20,10,4,.9);padding:12px;margin-bottom:12px}
+    #tc-community .tc-composer{
+      border:1px solid rgba(212,175,55,.22);border-radius:16px;background:rgba(20,10,4,.9);
+      padding:12px;margin-bottom:12px;
+    }
     #tc-community .tc-composer-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-    #tc-community .tc-composer textarea{width:100%;min-height:72px;max-height:140px;resize:vertical;box-sizing:border-box;border:1px solid rgba(212,175,55,.2);border-radius:12px;background:#0f0804;color:#f3e7c7;padding:10px 12px;font-size:13px;line-height:1.45;outline:none}
-    #tc-community .tc-composer-options{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center}
-    #tc-community .tc-composer-options select{flex:1;min-width:110px;border:1px solid rgba(212,175,55,.25);border-radius:10px;background:#140a04;color:#e8d48b;padding:8px 10px;font-size:12px}
-    #tc-community .tc-post-btn{flex:1 1 100%;border:0;border-radius:12px;padding:12px;background:linear-gradient(145deg,#a67c1a,#d4af37);color:#170c02;font-weight:800;font-size:13px;cursor:pointer}
-    #tc-community .tc-filter-row{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+    #tc-community .tc-composer textarea{
+      width:100%;min-height:72px;max-height:140px;resize:vertical;box-sizing:border-box;
+      border:1px solid rgba(212,175,55,.2);border-radius:12px;background:#0f0804;color:#f3e7c7;
+      padding:10px 12px;font-size:13px;line-height:1.45;outline:none;
+    }
+    #tc-community .tc-composer-options{
+      display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center;
+    }
+    #tc-community .tc-composer-options select{
+      flex:1;min-width:110px;border:1px solid rgba(212,175,55,.25);border-radius:10px;
+      background:#140a04;color:#e8d48b;padding:8px 10px;font-size:12px;
+    }
+    #tc-community .tc-post-btn{
+      flex:1 1 100%;border:0;border-radius:12px;padding:12px;
+      background:linear-gradient(145deg,#a67c1a,#d4af37);color:#170c02;font-weight:800;font-size:13px;cursor:pointer;
+    }
+    #tc-community .tc-filter-row{
+      display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;
+    }
     #tc-community .tc-filter-row::-webkit-scrollbar{display:none}
-    #tc-community .tc-chip{flex:0 0 auto;border:1px solid rgba(212,175,55,.25);background:transparent;color:#bba980;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer}
+    #tc-community .tc-chip{
+      flex:0 0 auto;border:1px solid rgba(212,175,55,.25);background:transparent;color:#bba980;
+      border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;
+    }
     #tc-community .tc-chip.active{background:#d4af37;border-color:#d4af37;color:#1a0e05}
-    #tc-community .tc-post{border:1px solid rgba(212,175,55,.14);border-radius:14px;background:rgba(16,9,4,.92);padding:12px;margin-bottom:10px}
-    #tc-community .tc-post-head{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
-    #tc-community .tc-post-author strong{font-size:13px;color:#f0e0a0}
-    #tc-community .tc-post-author div{font-size:11px;color:#9a8558;margin-top:2px}
-    #tc-community .tc-post p, #tc-community .tc-post .tc-post-body{font-size:13px;line-height:1.5;color:#e9dfc8;margin:0 0 10px}
-    #tc-community .tc-post-actions{display:flex;gap:8px;flex-wrap:wrap}
-    #tc-community .tc-post-actions button{border:1px solid rgba(212,175,55,.2);background:transparent;color:#cbb888;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer}
+    #tc-community .tc-post{
+      border:1px solid rgba(212,175,55,.14);border-radius:14px;background:rgba(16,9,4,.92);
+      padding:12px;margin-bottom:10px;
+    }
   `;
   document.head.appendChild(s);
 }
@@ -99,10 +119,22 @@ function applyLogo() {
 function simplifyFeedChrome() {
   const p = panel();
   if (!p) return;
-  p.querySelectorAll('.tc-feed-view .tc-realtime').forEach((el) => el.remove());
+  p.querySelector('.tc-welcome')?.classList.add('hidden');
+  p.querySelectorAll('.tc-realtime, .tc-live, .tc-online').forEach((el) => {
+    el.style.display = 'none';
+  });
   const title = p.querySelector('.tc-feed-view .tc-section-title h3');
-  if (title && title.textContent.includes('Bảng tin')) title.textContent = 'Bảng tin';
+  if (title) title.textContent = 'Bảng tin';
   p.querySelector('.tc-companies-view')?.classList.add('hidden');
+  const headBtn = p.querySelector('.tc-composer-login');
+  if (headBtn && headBtn.textContent && headBtn.textContent.length > 28) {
+    const u = window.firebaseServices?.auth?.currentUser;
+    if (u && !u.isAnonymous) headBtn.textContent = u.displayName || 'Đăng bài';
+  }
+  const av = p.querySelector('.tc-composer .tc-avatar');
+  if (av && !av.querySelector('img') && LOGO_URL) {
+    av.innerHTML = `<img src="${LOGO_URL}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  }
 }
 
 function renderContacts() {
@@ -129,9 +161,7 @@ function renderContacts() {
   list.innerHTML = rows
     .map((d) => {
       const isMe = uid && d.uid === uid;
-      const avatar = d.photoURL
-        ? `<img src="${esc(d.photoURL)}" alt="">`
-        : `<img src="${LOGO_URL}" alt="">`;
+      const avatar = d.photoURL ? `<img src="${esc(d.photoURL)}" alt="">` : `<img src="${LOGO_URL}" alt="">`;
       const meta = [d.company || 'Khác', d.plate || ''].filter(Boolean).join(' · ');
       return `<button type="button" class="tc-contact-row" data-uid="${esc(d.uid)}" data-name="${esc(d.displayName || 'Tài xế')}" data-photo="${esc(d.photoURL || '')}" ${isMe ? 'disabled' : ''}>
       <div class="tc-contact-av">${avatar}</div>
@@ -192,9 +222,7 @@ function setZaloTab(tab) {
   }
   if (tab === 'feed') simplifyFeedChrome();
   if (tab === 'chat') {
-    try {
-      window.dispatchEvent(new CustomEvent('tc-open-chat-tab'));
-    } catch (_) {}
+    try { window.dispatchEvent(new CustomEvent('tc-open-chat-tab')); } catch (_) {}
   }
 }
 
@@ -204,10 +232,8 @@ function rebuildTabs() {
   injectStyles();
   applyLogo();
   simplifyFeedChrome();
-
   const nav = p.querySelector('.tc-main-tabs');
   if (!nav) return false;
-
   nav.innerHTML = `
     <button class="tc-main-tab active" data-tab="chat" type="button">💬 Tin nhắn</button>
     <button class="tc-main-tab" data-tab="feed" type="button">📰 Bảng tin</button>
@@ -220,7 +246,6 @@ function rebuildTabs() {
       setZaloTab(b.dataset.tab);
     };
   });
-
   let contacts = p.querySelector('.tc-contacts-view');
   if (!contacts) {
     contacts = document.createElement('section');
@@ -236,16 +261,13 @@ function rebuildTabs() {
       renderContacts();
     });
   }
-
   p.querySelector('.tc-companies-view')?.classList.add('hidden');
   p.querySelector('.tc-welcome')?.classList.add('hidden');
   setZaloTab('chat');
   return true;
 }
 
-function tryPatch() {
-  return rebuildTabs();
-}
+function tryPatch() { return rebuildTabs(); }
 
 const _open = () => {
   let n = 0;
