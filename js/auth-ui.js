@@ -8,16 +8,47 @@ function injectAuthStyles() {
   const style = document.createElement('style');
   style.id = 'tn-auth-styles';
   style.textContent = `
-    #google-auth-status-left{position:fixed;top:10px;left:10px;z-index:220;display:flex;align-items:center;gap:8px;max-width:calc(50vw - 16px)}
-    #google-auth-status-right{position:fixed;top:10px;right:10px;z-index:220;display:flex;align-items:center;gap:8px;max-width:calc(50vw - 16px)}
+    /* Auth integrated into app header — no overlay on title */
+    .header.tn-header-auth{
+      display:grid!important;
+      grid-template-columns:minmax(72px,auto) 1fr minmax(72px,auto);
+      align-items:center;
+      gap:6px;
+      text-align:center;
+      padding:8px 8px 6px!important;
+    }
+    .header.tn-header-auth .tn-header-center{min-width:0;text-align:center}
+    .header.tn-header-auth .tn-header-center h1{
+      font-size:clamp(13px,3.6vw,20px)!important;
+      letter-spacing:clamp(1px,0.3vw,2px)!important;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .header.tn-header-auth .tn-header-center p{
+      font-size:clamp(9px,2vw,12px)!important;
+      margin-top:2px!important;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    #google-auth-status-left,#google-auth-status-right{
+      position:static!important;
+      display:flex;
+      align-items:center;
+      max-width:none;
+    }
+    #google-auth-status-left{justify-content:flex-start}
+    #google-auth-status-right{justify-content:flex-end}
     #google-auth-status{display:none!important}
-    .tn-auth-btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(212,175,55,.55);border-radius:999px;background:rgba(15,8,2,.92);color:#f0e0a0;padding:6px 12px 6px 6px;font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(10px);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+    .tn-auth-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(212,175,55,.55);border-radius:999px;background:rgba(15,8,2,.92);color:#f0e0a0;padding:4px 10px 4px 4px;font-size:11px;font-weight:700;cursor:pointer;backdrop-filter:blur(10px);box-shadow:0 4px 12px rgba(0,0,0,.3);max-width:140px}
     .tn-auth-btn:hover{border-color:#e8c56a}
-    .tn-auth-avatar{width:28px;height:28px;border-radius:50%;border:1.5px solid #d4af37;background:linear-gradient(135deg,#a67c1a,#d4af37);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;overflow:hidden}
+    .tn-auth-btn span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .tn-auth-avatar{width:26px;height:26px;border-radius:50%;border:1.5px solid #d4af37;background:linear-gradient(135deg,#a67c1a,#d4af37);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;overflow:hidden}
     .tn-auth-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
-    .tn-auth-login{background:linear-gradient(145deg,#a67c1a,#d4af37,#e8c56a);color:#170c02;border-color:#c9a45a;padding:8px 14px;font-weight:800}
-    .tn-auth-login .g-icon{width:18px;height:18px;border-radius:4px;background:#fff;color:#4285F4;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;font-family:Arial,sans-serif}
-    .tn-auth-logout{border:1px solid rgba(212,175,55,.35);border-radius:999px;background:rgba(40,20,8,.85);color:#e8d48b;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer}
+    .tn-auth-login{background:linear-gradient(145deg,#a67c1a,#d4af37,#e8c56a);color:#170c02;border-color:#c9a45a;padding:6px 10px;font-weight:800;font-size:11px}
+    .tn-auth-login .g-icon{width:16px;height:16px;border-radius:4px;background:#fff;color:#4285F4;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;font-family:Arial,sans-serif}
+    .tn-auth-logout{border:1px solid rgba(212,175,55,.35);border-radius:999px;background:rgba(40,20,8,.85);color:#e8d48b;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
     #tn-onboarding-modal{position:fixed;inset:0;z-index:100050;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
     .tn-onboard-card{width:min(420px,100%);background:linear-gradient(180deg,#1a0e05 0%,#0c0703 100%);border:1px solid #c9a45a;border-radius:18px;padding:22px 18px 18px;box-shadow:0 20px 50px rgba(0,0,0,.55);color:#f0e0a0}
     .tn-onboard-card h3{margin:0 0 6px;font-size:18px;color:#e8c56a;text-align:center}
@@ -43,16 +74,58 @@ function escapeHtml(str = '') {
 export function mountAuthStatus(user) {
   injectAuthStyles();
 
-  // Remove legacy single container if present
+  // Remove any legacy fixed overlays
   document.querySelector('#google-auth-status')?.remove();
 
+  const header = document.querySelector('.header');
+  if (header) {
+    header.classList.add('tn-header-auth');
+    // Ensure structure: left | center (title) | right
+    let center = header.querySelector('.tn-header-center');
+    if (!center) {
+      center = document.createElement('div');
+      center.className = 'tn-header-center';
+      const nodes = Array.from(header.childNodes);
+      nodes.forEach((n) => {
+        if (n.nodeType === 1 && (n.matches('h1,p') || n.classList?.contains('tn-header-center'))) {
+          center.appendChild(n);
+        } else if (n.nodeType === 1 && (n.id === 'google-auth-status-left' || n.id === 'google-auth-status-right')) {
+          // keep slots
+        } else if (n.nodeType === 1 && !n.id?.startsWith('google-auth')) {
+          // leave other nodes
+        }
+      });
+      Array.from(header.querySelectorAll(':scope > h1, :scope > p')).forEach((el) => center.appendChild(el));
+    }
+
+    let left = header.querySelector('#google-auth-status-left');
+    if (!left) {
+      left = document.createElement('div');
+      left.id = 'google-auth-status-left';
+    }
+    let right = header.querySelector('#google-auth-status-right');
+    if (!right) {
+      right = document.createElement('div');
+      right.id = 'google-auth-status-right';
+    }
+
+    // Rebuild header order: left, center, right
+    if (!header.contains(center)) {
+      Array.from(header.querySelectorAll(':scope > h1, :scope > p')).forEach((el) => center.appendChild(el));
+    }
+    header.replaceChildren();
+    header.appendChild(left);
+    header.appendChild(center);
+    header.appendChild(right);
+  }
+
   let left = document.querySelector('#google-auth-status-left');
+  let right = document.querySelector('#google-auth-status-right');
   if (!left) {
     left = document.createElement('div');
     left.id = 'google-auth-status-left';
     document.body.appendChild(left);
   }
-  let right = document.querySelector('#google-auth-status-right');
   if (!right) {
     right = document.createElement('div');
     right.id = 'google-auth-status-right';
@@ -62,7 +135,6 @@ export function mountAuthStatus(user) {
   right.replaceChildren();
 
   if (user && !user.isAnonymous) {
-    // LEFT: avatar + name
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'tn-auth-btn';
@@ -80,13 +152,12 @@ export function mountAuthStatus(user) {
       avatar.textContent = '🚕';
     }
     const name = document.createElement('span');
-    name.textContent = String(user.displayName || user.email || 'Google').slice(0, 18);
+    name.textContent = String(user.displayName || user.email || 'Google').slice(0, 14);
     btn.appendChild(avatar);
     btn.appendChild(name);
     btn.onclick = () => { if (typeof window.showPage === 'function') window.showPage('profile'); };
     left.appendChild(btn);
 
-    // RIGHT: logout only
     const logoutBtn = document.createElement('button');
     logoutBtn.type = 'button';
     logoutBtn.className = 'tn-auth-logout';
@@ -94,11 +165,10 @@ export function mountAuthStatus(user) {
     logoutBtn.onclick = () => window.firebaseBridge?.logout?.().catch(console.error);
     right.appendChild(logoutBtn);
   } else {
-    // Not logged in: login button on the right (does not cover title center)
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'tn-auth-btn tn-auth-login';
-    btn.innerHTML = '<span class="g-icon">G</span><span>Đăng nhập Google</span>';
+    btn.innerHTML = '<span class="g-icon">G</span><span>Đăng nhập</span>';
     btn.onclick = () =>
       window.firebaseBridge?.googleLogin?.().catch((err) => {
         console.error('[Google Auth]', err);
