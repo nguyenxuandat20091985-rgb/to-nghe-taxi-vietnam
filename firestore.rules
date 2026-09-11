@@ -10,7 +10,7 @@ service cloud.firestore {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
 
-    // Danh bạ tài xế: chỉ lưu dữ liệu hiển thị tối thiểu, không chứa appState.
+    // Danh bạ tài xế: chỉ lưu dữ liệu hiển thị tối thiểu, không lộ appState.
     match /driver_directory/{driverId} {
       allow read: if signedIn();
       allow create, update: if signedIn()
@@ -26,7 +26,8 @@ service cloud.firestore {
     }
 
     match /posts/{postId} {
-      allow read: if true;
+      // Chỉ tài xế đã đăng nhập Google mới đọc bảng tin
+      allow read: if signedIn();
       allow create: if signedIn()
         && request.resource.data.authorId == request.auth.uid
         && request.resource.data.authorName is string
@@ -68,7 +69,7 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.authorId == request.auth.uid;
 
       match /comments/{commentId} {
-        allow read: if true;
+        allow read: if signedIn();
         allow create: if signedIn()
           && request.resource.data.authorId == request.auth.uid
           && request.resource.data.authorName is string
@@ -79,10 +80,16 @@ service cloud.firestore {
       }
     }
 
-    // Nhóm chung: mọi tài xế đã xác thực đều có thể tham gia.
+    // Nhóm chung: tài xế đã login được đọc/gửi tin; không cho xóa phòng tùy tiện.
     match /community_rooms/{roomId} {
       allow read: if signedIn();
-      allow create, update, delete: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120;
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'updatedAt', 'lastMessage', 'lastMessageAt']);
+      allow delete: if false;
 
       match /messages/{messageId} {
         allow read: if signedIn();
