@@ -9,6 +9,12 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import firebaseConfig from './firebase-config.js';
+import {
+  mountAuthStatus as mountAuthStatusUI,
+  applyGoogleProfileToUI,
+  closeOnboarding,
+  maybeShowOnboarding,
+} from './auth-ui.js';
 
 function statePayload(state) { return { incenseCount:Number(state.incenseCount||0), lastIncense:String(state.lastIncense||'Chưa có').slice(0,80), prayers:Array.isArray(state.prayers)?state.prayers.slice(0,10):[], meritPoints:Number(state.meritPoints||0), userName:String(state.userName||'').slice(0,80), joinDate:String(state.joinDate||'').slice(0,20), queDrawnDate:String(state.queDrawnDate||'').slice(0,40), likedPosts:Array.isArray(state.likedPosts)?state.likedPosts.slice(0,100):[] }; }
 function waitForAuth(auth) { return new Promise((resolve,reject)=>{ let done=false; const off=onAuthStateChanged(auth,u=>{if(done)return;done=true;off();resolve(u||null)},e=>{if(done)return;done=true;off();reject(e)}); }); }
@@ -23,24 +29,7 @@ function mountLoginButton() {
 }
 function scheduleLogin(){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountLoginButton,{once:true});else mountLoginButton();}
 function mountAuthStatus(user) {
-  let el=document.querySelector('#google-auth-status');
-  if(!el){
-    el=document.createElement('div'); el.id='google-auth-status';
-    Object.assign(el.style,{position:'fixed',top:'8px',right:'8px',zIndex:'200',display:'flex',alignItems:'center',gap:'6px',maxWidth:'calc(100vw - 16px)'});
-    document.body.appendChild(el);
-  }
-  el.replaceChildren();
-  const b=document.createElement('button'); b.type='button';
-  Object.assign(b.style,{border:'1px solid rgba(212,175,55,.55)',borderRadius:'999px',background:'rgba(15,8,2,.88)',color:'#f0e0a0',padding:'6px 9px',fontSize:'11px',fontWeight:'700',cursor:'pointer',backdropFilter:'blur(8px)'});
-  if(user){
-    b.textContent=`✓ ${String(user.displayName||user.email||'Google').slice(0,22)}`;
-    b.title='Đã đăng nhập Google — nhấn để đăng xuất';
-    b.onclick=()=>window.firebaseBridge?.logout?.().catch(console.error);
-  } else {
-    b.textContent='Đăng nhập Google';
-    b.onclick=()=>window.firebaseBridge?.googleLogin?.().catch(err=>{console.error('[Google Auth]',err);alert('Đăng nhập Google chưa thành công. Vui lòng thử lại.');});
-  }
-  el.appendChild(b);
+  mountAuthStatusUI(user);
 }
 async function init(){
   try{
@@ -57,10 +46,34 @@ async function init(){
           throw e;
         }
       },
-      async logout(){return signOut(auth)},
+      async logout(){closeOnboarding();return signOut(auth)},
       async ensureUser(){const u=auth.currentUser;if(!u||u.isAnonymous)throw new Error('GOOGLE_LOGIN_REQUIRED');return u},
       async loadUserState(){const u=await this.ensureUser(),s=await getDoc(doc(db,'users',u.uid));return s.exists()?s.data().appState||null:null},
-      async saveUserState(state){const u=await this.ensureUser();await setDoc(doc(db,'users',u.uid),{displayName:u.displayName||'',photoURL:u.photoURL||'',email:u.email||'',appState:statePayload(state),updatedAt:serverTimestamp()},{merge:true})}
+      async saveUserState(state){const u=await this.ensureUser();await setDoc(doc(db,'users',u.uid),{displayName:u.displayName||'',photoURL:u.photoURL||'',email:u.email||'',appState:statePayload(state),updatedAt:serverTimestamp()},{merge:true})},
+      async saveDriverProfile({ company, plate } = {}) {
+        const u = await this.ensureUser();
+        const payload = {
+          displayName: u.displayName || '',
+          photoURL: u.photoURL || '',
+          email: u.email || '',
+          company: String(company || 'Khác').slice(0, 80),
+          plate: String(plate || '').slice(0, 20),
+          updatedAt: serverTimestamp(),
+        };
+        await setDoc(doc(db, 'users', u.uid), payload, { merge: true });
+        try {
+          await setDoc(doc(db, 'driver_directory', u.uid), {
+            uid: u.uid,
+            displayName: payload.displayName || 'Tài xế',
+            photoURL: payload.photoURL || '',
+            company: payload.company,
+            plate: payload.plate,
+            updatedAt: serverTimestamp(),
+          }, { merge: true });
+        } catch (e) { console.warn('[Auth] driver_directory', e); }
+        return payload;
+      },
+      closeOnboarding,
     };
     await import('./community.js');
     await import('./messenger-inbox-v3.js');
@@ -73,6 +86,12 @@ async function init(){
       mountAuthStatus(u||null);
       if(u&&!u.isAnonymous){
         try{await setDoc(doc(db,'users',u.uid),{displayName:u.displayName||'',photoURL:u.photoURL||'',email:u.email||'',updatedAt:serverTimestamp()},{merge:true});}catch(e){console.error('[Firebase] user profile sync',e);}
+        await maybeShowOnboarding(db, u, getDoc, doc);
+      } else {
+        const meta = document.getElementById('profileDriverMeta');
+        if (meta) meta.style.display = 'none';
+        const avatarEl = document.querySelector('#page-profile .profile-avatar');
+        if (avatarEl && avatarEl.querySelector('img')) avatarEl.innerHTML = '🚖';
       }
       window.dispatchEvent(new CustomEvent('firebase-auth-changed',{detail:u||null}));
     });
