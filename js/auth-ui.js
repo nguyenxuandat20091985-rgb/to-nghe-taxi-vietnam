@@ -11,7 +11,7 @@ function injectAuthStyles() {
     /* Auth integrated into app header — no overlay on title */
     .header.tn-header-auth{
       display:grid!important;
-      grid-template-columns:minmax(72px,auto) 1fr minmax(72px,auto);
+      grid-template-columns:minmax(64px,auto) 1fr minmax(64px,auto);
       align-items:center;
       gap:6px;
       text-align:center;
@@ -26,11 +26,13 @@ function injectAuthStyles() {
       text-overflow:ellipsis;
     }
     .header.tn-header-auth .tn-header-center p{
-      font-size:clamp(9px,2vw,12px)!important;
+      font-size:clamp(8px,1.9vw,11px)!important;
       margin-top:2px!important;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      white-space:normal;
+      overflow:visible;
+      text-overflow:unset;
+      line-height:1.25;
+      letter-spacing:0.5px!important;
     }
     #google-auth-status-left,#google-auth-status-right{
       position:static!important;
