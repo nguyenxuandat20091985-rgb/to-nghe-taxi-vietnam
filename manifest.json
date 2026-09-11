@@ -1,6 +1,6 @@
 {
   "name": "Đền Tổ Nghề Taxi",
-  "short_name": "Đền Tổ Nghề Taxi",
+  "short_name": "Đền Tổ Nghề",
   "description": "Không gian số tri ân nghề taxi Việt Nam, cầu bình an và kết nối cộng đồng tài xế.",
   "lang": "vi-VN",
   "dir": "ltr",
@@ -16,13 +16,25 @@
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
