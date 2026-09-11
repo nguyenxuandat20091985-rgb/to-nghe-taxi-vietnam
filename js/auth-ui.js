@@ -8,7 +8,9 @@ function injectAuthStyles() {
   const style = document.createElement('style');
   style.id = 'tn-auth-styles';
   style.textContent = `
-    #google-auth-status{position:fixed;top:10px;right:10px;z-index:220;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 20px)}
+    #google-auth-status-left{position:fixed;top:10px;left:10px;z-index:220;display:flex;align-items:center;gap:8px;max-width:calc(50vw - 16px)}
+    #google-auth-status-right{position:fixed;top:10px;right:10px;z-index:220;display:flex;align-items:center;gap:8px;max-width:calc(50vw - 16px)}
+    #google-auth-status{display:none!important}
     .tn-auth-btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(212,175,55,.55);border-radius:999px;background:rgba(15,8,2,.92);color:#f0e0a0;padding:6px 12px 6px 6px;font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(10px);box-shadow:0 6px 18px rgba(0,0,0,.35)}
     .tn-auth-btn:hover{border-color:#e8c56a}
     .tn-auth-avatar{width:28px;height:28px;border-radius:50%;border:1.5px solid #d4af37;background:linear-gradient(135deg,#a67c1a,#d4af37);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;overflow:hidden}
@@ -40,18 +42,27 @@ function escapeHtml(str = '') {
 
 export function mountAuthStatus(user) {
   injectAuthStyles();
-  let el = document.querySelector('#google-auth-status');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'google-auth-status';
-    document.body.appendChild(el);
+
+  // Remove legacy single container if present
+  document.querySelector('#google-auth-status')?.remove();
+
+  let left = document.querySelector('#google-auth-status-left');
+  if (!left) {
+    left = document.createElement('div');
+    left.id = 'google-auth-status-left';
+    document.body.appendChild(left);
   }
-  el.replaceChildren();
+  let right = document.querySelector('#google-auth-status-right');
+  if (!right) {
+    right = document.createElement('div');
+    right.id = 'google-auth-status-right';
+    document.body.appendChild(right);
+  }
+  left.replaceChildren();
+  right.replaceChildren();
 
   if (user && !user.isAnonymous) {
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;align-items:center;gap:6px';
-
+    // LEFT: avatar + name
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'tn-auth-btn';
@@ -73,17 +84,17 @@ export function mountAuthStatus(user) {
     btn.appendChild(avatar);
     btn.appendChild(name);
     btn.onclick = () => { if (typeof window.showPage === 'function') window.showPage('profile'); };
+    left.appendChild(btn);
 
+    // RIGHT: logout only
     const logoutBtn = document.createElement('button');
     logoutBtn.type = 'button';
     logoutBtn.className = 'tn-auth-logout';
     logoutBtn.textContent = 'Đăng xuất';
     logoutBtn.onclick = () => window.firebaseBridge?.logout?.().catch(console.error);
-
-    wrap.appendChild(btn);
-    wrap.appendChild(logoutBtn);
-    el.appendChild(wrap);
+    right.appendChild(logoutBtn);
   } else {
+    // Not logged in: login button on the right (does not cover title center)
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'tn-auth-btn tn-auth-login';
@@ -93,7 +104,7 @@ export function mountAuthStatus(user) {
         console.error('[Google Auth]', err);
         alert('Đăng nhập Google chưa thành công. Vui lòng thử lại.');
       });
-    el.appendChild(btn);
+    right.appendChild(btn);
   }
 }
 
