@@ -1051,6 +1051,160 @@ color:rgba(232,212,139,0.9);
 line-height:1.6;
 }
 
+/* ===== AI TỔ NGHỀ ===== */
+.ai-to-nghe-hero{
+  padding:clamp(14px,3vw,20px);
+  margin-bottom:clamp(10px,2.5vw,14px);
+}
+.ai-to-nghe-heading{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.ai-to-nghe-logo{
+  width:58px;
+  height:58px;
+  flex:0 0 58px;
+  border-radius:17px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(145deg,#3a240b,#171006);
+  border:1px solid #a37b2c;
+  box-shadow:0 0 16px rgba(221,174,66,.17),inset 0 0 12px rgba(230,186,76,.08);
+}
+.ai-to-nghe-heading h3{
+  margin:0;
+  padding:0;
+  border:0;
+  font-size:clamp(19px,4.8vw,24px);
+}
+.ai-to-nghe-heading p{
+  margin-top:4px;
+  color:rgba(232,212,139,.68);
+  font-size:clamp(10px,2.5vw,13px);
+  line-height:1.45;
+}
+.ai-to-nghe-welcome{
+  margin-top:14px;
+  padding:12px 14px;
+  border:1px dashed rgba(201,168,76,.42);
+  border-radius:14px;
+  background:rgba(36,23,10,.48);
+  color:rgba(232,212,139,.78);
+  text-align:center;
+  line-height:1.55;
+  font-size:clamp(11px,2.6vw,14px);
+}
+.ai-to-nghe-section-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:14px 4px 9px;
+  color:var(--gold-light);
+  font-size:clamp(13px,3vw,16px);
+}
+.ai-to-nghe-section-title span{
+  color:rgba(232,212,139,.45);
+  font-size:10px;
+  font-weight:400;
+}
+.ai-to-nghe-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  margin-bottom:12px;
+}
+.ai-to-nghe-card{
+  min-height:112px;
+  padding:12px 11px;
+  text-align:left;
+  border:1px solid rgba(201,168,76,.24);
+  border-radius:15px;
+  background:linear-gradient(145deg,rgba(39,24,10,.96),rgba(17,10,5,.98));
+  color:var(--gold-light);
+  cursor:pointer;
+  font-family:inherit;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.ai-to-nghe-card:active{
+  transform:scale(.975);
+}
+.ai-to-nghe-card:hover{
+  border-color:rgba(212,175,55,.65);
+  box-shadow:0 5px 18px rgba(201,168,76,.10);
+}
+.ai-to-nghe-card-icon{
+  width:37px;
+  height:37px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:11px;
+  background:rgba(201,168,76,.09);
+  border:1px solid rgba(201,168,76,.22);
+  font-size:20px;
+  margin-bottom:8px;
+  font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Noto Sans',sans-serif;
+}
+.ai-to-nghe-card strong{
+  display:block;
+  font-size:clamp(12px,2.8vw,15px);
+  line-height:1.25;
+  margin-bottom:4px;
+}
+.ai-to-nghe-card small{
+  display:block;
+  color:rgba(232,212,139,.57);
+  font-size:clamp(9px,2.1vw,11px);
+  line-height:1.4;
+}
+.ai-to-nghe-chat{
+  margin-top:12px;
+  padding:12px;
+}
+.ai-to-nghe-chat-title{
+  color:var(--gold-light);
+  font-size:clamp(13px,3vw,16px);
+  font-weight:600;
+  margin-bottom:8px;
+}
+.ai-to-nghe-suggestions{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  padding:0 0 7px;
+  scrollbar-width:none;
+}
+.ai-to-nghe-suggestions::-webkit-scrollbar{display:none;}
+.ai-to-nghe-suggestions button{
+  flex:0 0 auto;
+  padding:7px 10px;
+  border:1px solid rgba(201,168,76,.25);
+  border-radius:18px;
+  background:rgba(201,168,76,.07);
+  color:rgba(232,212,139,.75);
+  font-family:inherit;
+  font-size:10px;
+  cursor:pointer;
+}
+.ai-to-nghe-suggestions button:active{
+  transform:scale(.97);
+}
+.ai-to-nghe-note{
+  padding:4px 18px 18px;
+  text-align:center;
+  color:rgba(232,212,139,.42);
+  font-size:10px;
+  line-height:1.55;
+}
+@media(max-width:360px){
+  .ai-to-nghe-grid{gap:7px;}
+  .ai-to-nghe-card{min-height:108px;padding:10px;}
+  .ai-to-nghe-card strong{font-size:12px;}
+  .ai-to-nghe-card small{font-size:9px;}
+}
+
 /* ===== AI CHAT ===== */
 .ai-chat-wrap{
 display:flex;
@@ -1648,21 +1802,141 @@ Nam mô A Di Đà Phật!</div>
 </div>
 </div>
 
-<!-- AI TƯ VẤN -->
+<!-- AI TỔ NGHỀ - CHỈ PHẦN AI, KHÔNG THAY ĐỔI CÁC MODULE KHÁC -->
 <div class="page" id="page-ai">
-<div class="glass-card">
-<h3>🤖 AI Tư Vấn Tài Xế</h3>
-<p style="font-size:clamp(10px,2.2vw,12px);color:rgba(232,212,139,0.7);margin-bottom:clamp(8px,2vw,12px);">Hỏi đáp về nghề taxi, lịch trình, bình an…</p>
-<div class="ai-chat-wrap">
-<div class="ai-messages" id="aiMessages">
-<div class="ai-msg system">Xin chào! Em là AI hỗ trợ anh em tài xế tại Đền Tổ Nghề. Anh hỏi gì cũng được 🙏</div>
+
+<div class="ai-to-nghe-hero glass-card">
+
+  <div class="ai-to-nghe-heading">
+    <div class="ai-to-nghe-logo" aria-label="Biểu tượng Tổ Nghề Taxi">
+      <svg viewBox="0 0 100 100" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 39L50 13L88 39" stroke="#E5C66E" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="35" y="28" width="30" height="13" rx="3" fill="#D9B45B"/>
+        <text x="50" y="38" text-anchor="middle" font-size="8" font-family="Arial" font-weight="700" fill="#201205">TAXI</text>
+        <path d="M23 46V69M37 46V69M63 46V69M77 46V69" stroke="#D9B45B" stroke-width="6" stroke-linecap="round"/>
+        <path d="M17 73H83" stroke="#D9B45B" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="50" cy="57" r="9" stroke="#F2D98C" stroke-width="3"/>
+        <path d="M50 48V66M41 57H59" stroke="#F2D98C" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <h3>AI TỔ NGHỀ</h3>
+      <p>Trợ lý thông minh dành riêng cho người làm nghề Taxi</p>
+    </div>
+  </div>
+
+  <div class="ai-to-nghe-welcome">
+    🙏 Xin chào người anh em.<br>
+    AI Tổ Nghề luôn sẵn sàng hỗ trợ anh trong công việc,
+    quyền lợi và cuộc sống nghề Taxi.
+  </div>
+
 </div>
-<div class="ai-input-row">
-<input type="text" id="aiInput" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter')sendAiMessage()">
-<button class="ai-send-btn" onclick="sendAiMessage()">Gửi</button>
+
+<div class="ai-to-nghe-section-title">
+  <strong>✦ AI Tổ Nghề hỗ trợ anh</strong>
+  <span>10 chuyên mục</span>
 </div>
+
+<div class="ai-to-nghe-grid">
+
+  <button class="ai-to-nghe-card" onclick="openToNgheAI('Trợ lý nghề')">
+    <span class="ai-to-nghe-card-icon">🚕</span>
+    <strong>Trợ lý nghề</strong>
+    <small>Đồng hành cùng tài xế mỗi ngày.</small>
+  </button>
+
+  <button class="ai-to-nghe-card" onclick="openToNgheAI('Hỏi đáp')">
+    <span class="ai-to-nghe-card-icon">💬</span>
+    <strong>Hỏi đáp</strong>
+    <small>Đặt câu hỏi và nhận hỗ trợ nhanh.</small>
+  </button>
+
+  <button class="ai-to-nghe-card" onclick="openToNgheAI('Cẩm nang')">
+    <span class="ai-to-nghe-card-icon">📖</span>
+    <strong>Cẩm nang</strong>
+    <small>Thông tin hữu ích cho người làm nghề.</small>
+  </button>
+
+  <button class="ai-to-nghe-card" onclick="openToNgheAI('Quyền lợi tài xế')">
+    <span class="ai-to-nghe-card-icon">🛡️</span>
+    <strong>Quyền lợi tài xế</strong>
+    <small>Tra cứu quyền lợi và hỗ trợ cần thiết.</small>
+  </button>
+
+  <button class="ai-to-nghe-card" onclick="openToNgheAI('Tin nghề')">
+    <span class="ai-to-nghe-card-icon">📰</span>
+    <strong>Tin nghề</strong>
+    <small>Cập nhật thông tin quan trọng của nghề Taxi.</small>
+  </button>
+
+  <button class="ai-to-nghe-card" onclick="openToNgheAI('Cẩm nang nghề')">
+    <span class="ai-to-nghe-card-icon">📚</span>
+    <strong>Cẩm nang nghề</strong>
+    <small>Kinh nghiệm, kỹ năng và kiến thức nghề.</small>
+  </button>
+
+  <button class="ai-to-nghe-card" onclick="openToNgheAI('Ưu đãi tài xế')">
+    <span class="ai-to-nghe-card-icon">🎁</span>
+    <strong>Ưu đãi tài xế</strong>
+    <small>Khám phá ưu đãi dành cho thành viên.</small>
+  </button>
+
+  <button class="ai-to-nghe-card" onclick="openToNgheAI('Chợ dịch vụ')">
+    <span class="ai-to-nghe-card-icon">🛒</span>
+    <strong>Chợ dịch vụ</strong>
+    <small>Tìm sản phẩm và dịch vụ phù hợp với nghề.</small>
+  </button>
+
+  <button class="ai-to-nghe-card" onclick="openToNgheAI('Cứu hộ / Gara / Lốp / Bảo dưỡng')">
+    <span class="ai-to-nghe-card-icon">🔧</span>
+    <strong>Cứu hộ / Gara / Lốp</strong>
+    <small>Hỗ trợ khi xe gặp sự cố hoặc cần bảo dưỡng.</small>
+  </button>
+
+  <button class="ai-to-nghe-card" onclick="openToNgheAI('Việc làm & cơ hội nghề nghiệp')">
+    <span class="ai-to-nghe-card-icon">🤝</span>
+    <strong>Việc làm & cơ hội</strong>
+    <small>Cơ hội việc làm và phát triển nghề nghiệp.</small>
+  </button>
+
 </div>
+
+<div class="ai-to-nghe-chat glass-card">
+
+  <div class="ai-to-nghe-chat-title">
+    <span>✦ Hỏi trực tiếp AI Tổ Nghề</span>
+  </div>
+
+  <div class="ai-to-nghe-suggestions">
+    <button type="button" onclick="openToNgheAI('Kinh nghiệm nghề')">🚕 Kinh nghiệm nghề</button>
+    <button type="button" onclick="openToNgheAI('Quyền lợi tài xế')">🛡️ Quyền lợi</button>
+    <button type="button" onclick="openToNgheAI('Xe gặp sự cố')">🔧 Xe gặp sự cố</button>
+    <button type="button" onclick="openToNgheAI('Ưu đãi tài xế')">🎁 Ưu đãi</button>
+  </div>
+
+  <div class="ai-chat-wrap">
+    <div class="ai-messages" id="aiMessages">
+      <div class="ai-msg system">
+        Xin chào người anh em! 🙏<br>
+        Em là AI Tổ Nghề. Anh chọn một chuyên mục phía trên
+        hoặc hỏi trực tiếp điều anh cần.
+      </div>
+    </div>
+
+    <div class="ai-input-row">
+      <input type="text" id="aiInput" placeholder="Anh muốn hỏi AI Tổ Nghề điều gì..." onkeydown="if(event.key==='Enter')sendAiMessage()">
+      <button class="ai-send-btn" onclick="sendAiMessage()">Gửi</button>
+    </div>
+  </div>
+
 </div>
+
+<div class="ai-to-nghe-note">
+  AI Tổ Nghề hỗ trợ thông tin và kinh nghiệm tham khảo.
+  Với vấn đề quan trọng, anh nên kiểm tra nguồn chính thức.
+</div>
+
 </div>
 
 
@@ -1710,8 +1984,16 @@ Nam mô A Di Đà Phật!</div>
 <span class="menu-label">Trừ Tà</span>
 </div>
 <div class="menu-item" onclick="showPage('ai')">
-<span class="menu-icon">🤖</span>
-<span class="menu-label">AI Tư Vấn</span>
+<span class="menu-icon" aria-hidden="true">
+<svg viewBox="0 0 100 100" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 39L50 13L88 39" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="35" y="28" width="30" height="13" rx="3" fill="currentColor"/>
+<path d="M23 46V69M37 46V69M63 46V69M77 46V69M17 73H83" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+<circle cx="50" cy="57" r="9" stroke="currentColor" stroke-width="3"/>
+<path d="M50 48V66M41 57H59" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
+</span>
+<span class="menu-label">AI Tổ Nghề</span>
 </div>
 </div>
 
@@ -2445,7 +2727,16 @@ window.showBuaMayMan = function(){
   addMerit(2);
 };
 
-// ===== AI TƯ VẤN =====
+// ===== AI TỔ NGHỀ =====
+window.openToNgheAI = function(topic){
+  const input = document.getElementById('aiInput');
+  if(!input) return;
+  input.value = 'AI Tổ Nghề hãy hỗ trợ tôi về: ' + topic;
+  input.focus();
+  const chat = document.querySelector('.ai-to-nghe-chat');
+  if(chat) chat.scrollIntoView({behavior:'smooth', block:'center'});
+};
+
 // API key is intentionally never stored in this browser. The server-side
 // endpoint keeps GROQ_API_KEY in an environment variable.
 const AI_API_URL = '/api/chat';
