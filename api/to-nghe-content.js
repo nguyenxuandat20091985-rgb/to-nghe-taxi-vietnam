@@ -62,7 +62,7 @@ export default async function handler(req,res){
     if(type==='services'){
       const q=clean(req.query?.q||'gara ô tô',100);
       const lat=Number(req.query?.lat), lon=Number(req.query?.lon);
-      return send(res,200,{items:await services(q,lat,lon)});
+      const radius=Number(req.query?.radius||3);\n      return send(res,200,{items:await services(q,lat,lon,radius)});
     }
     return send(res,400,{error:'Unsupported content type'});
   }catch(e){
