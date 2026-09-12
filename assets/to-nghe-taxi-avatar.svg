@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+  <radialGradient id="bg" cx="50%" cy="38%" r="72%"><stop offset="0" stop-color="#123f78"/><stop offset=".62" stop-color="#07172f"/><stop offset="1" stop-color="#02060d"/></radialGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff2a0"/><stop offset=".35" stop-color="#f6ca38"/><stop offset=".72" stop-color="#d49a13"/><stop offset="1" stop-color="#8a5c08"/></linearGradient>
+  <linearGradient id="car" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff06a"/><stop offset=".45" stop-color="#ffd21c"/><stop offset="1" stop-color="#d89400"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<circle cx="256" cy="256" r="246" fill="url(#bg)" stroke="url(#gold)" stroke-width="12"/>
+<circle cx="256" cy="256" r="225" fill="none" stroke="#d9ad2d" stroke-opacity=".35" stroke-width="2"/>
+<!-- lotus/halo -->
+<path d="M106 190 Q145 116 210 142 Q256 76 302 142 Q367 116 406 190 Q344 168 304 207 Q256 166 208 207 Q168 168 106 190Z" fill="url(#gold)" filter="url(#glow)"/>
+<!-- handshake, symbolic not human -->
+<path d="M181 168 L226 146 L256 166 L286 146 L331 168 L303 205 L256 190 L209 205Z" fill="#0a1020" stroke="#ffe76b" stroke-width="8" stroke-linejoin="round"/>
+<path d="M209 177 L238 195 L256 185 L274 195 L303 177" fill="none" stroke="#ffe76b" stroke-width="8" stroke-linecap="round"/>
+<!-- city -->
+<path d="M92 284V222h32v62h16v-88h34v88h18v-52h30v52h18v-74h34v74h20v-48h30v48h18v-91h34v91h17v-60h30v60h20" fill="#0b2a50" stroke="#2f79b7" stroke-width="3"/>
+<g fill="#f7cf48"><rect x="110" y="238" width="8" height="10"/><rect x="110" y="258" width="8" height="10"/><rect x="156" y="151" width="9" height="11"/><rect x="156" y="172" width="9" height="11"/><rect x="300" y="159" width="9" height="11"/><rect x="300" y="180" width="9" height="11"/><rect x="374" y="239" width="8" height="10"/><rect x="374" y="259" width="8" height="10"/></g>
+<!-- taxi -->
+<path d="M118 330 L145 276 Q151 264 168 260 L344 260 Q361 264 367 276 L394 330 Q402 347 392 364 L382 385 Q377 395 363 395 H149 Q135 395 130 385 L120 364 Q110 347 118 330Z" fill="url(#car)" stroke="#fff0a0" stroke-width="7"/>
+<path d="M160 274 Q166 266 179 264 H333 Q346 266 352 274 L369 314 H143Z" fill="#0b223e" stroke="#ffe36a" stroke-width="5"/>
+<path d="M145 330 H367" stroke="#111827" stroke-width="8"/>
+<rect x="225" y="245" width="62" height="25" rx="7" fill="url(#gold)" stroke="#fff0a0" stroke-width="4"/>
+<text x="256" y="264" text-anchor="middle" font-family="Arial,sans-serif" font-size="17" font-weight="900" fill="#111827">TAXI</text>
+<path d="M137 348h38M337 348h38" stroke="#fff8c7" stroke-width="8" stroke-linecap="round"/>
+<circle cx="166" cy="389" r="22" fill="#111827" stroke="#f5cf42" stroke-width="7"/><circle cx="346" cy="389" r="22" fill="#111827" stroke="#f5cf42" stroke-width="7"/>
+<!-- title -->
+<text x="256" y="432" text-anchor="middle" font-family="Arial,sans-serif" font-size="38" font-weight="900" letter-spacing="2" fill="#fff" stroke="#0b1425" stroke-width="3" paint-order="stroke">TỔ NGHỀ</text>
+<text x="256" y="469" text-anchor="middle" font-family="Arial,sans-serif" font-size="32" font-weight="900" letter-spacing="4" fill="#ffd52b">TAXI</text>
+</svg>
