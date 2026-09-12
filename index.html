@@ -2762,7 +2762,7 @@ function ensureToNghePanel(){
   if(p)return p;
   const chat=document.querySelector('.ai-to-nghe-chat'); if(!chat)return null;
   p=document.createElement('div'); p.id='toNgheAIPanel'; p.className='ai-to-nghe-panel';
-  p.innerHTML='<div class="ai-to-nghe-panel-head"><strong id="toNgheAIPanelTitle"></strong><button type="button" class="ai-to-nghe-close" onclick="closeToNgheAI()">Đóng</button></div><div id="toNgheAIPanelBody" class="ai-to-nghe-panel-body"></div>';
+  p.innerHTML='<div class="ai-to-nghe-panel-head"><strong id="toNgheAIPanelTitle"></strong><button type="button" class="ai-to-nghe-close" id="toNgheAIClose">✕</button></div><div id="toNgheAIPanelBody" class="ai-to-nghe-panel-body"></div>';
   chat.insertBefore(p,chat.querySelector('.ai-chat-wrap')); return p;
 }
 function escHtml(v){
@@ -2803,10 +2803,10 @@ window.findToNgheRescue=async function(query){
     box.innerHTML='<div class="ai-rescue-status">⚠️ Thiết bị không hỗ trợ GPS.</div>'; return;
   }
   box.innerHTML='<div class="ai-rescue-status">📡 Đang lấy vị trí chính xác…</div>';
-  navigator.geolocation.getCurrentPosition(async pos=>{
+  const handlePosition=async pos=>{
     const accuracy=Math.round(pos.coords.accuracy||9999);
     if(accuracy>150){
-      box.innerHTML='<div class="ai-rescue-status">⚠️ GPS chưa đủ chính xác ('+accuracy+' m). Anh hãy đứng nơi thoáng và thử lại.</div>'; return;
+      box.innerHTML='<div class="ai-rescue-status">⚠️ GPS chưa đủ chính xác ('+accuracy+' m). Anh hãy bật Vị trí chính xác (Precise location), đứng nơi thoáng rồi thử lại.</div>'; return;
     }
     const lat=pos.coords.latitude, lon=pos.coords.longitude;
     box.innerHTML='<div class="ai-rescue-status">📍 Vị trí đã xác định (±'+accuracy+' m). Tìm trong 3 km…</div>';
@@ -2828,9 +2828,10 @@ window.findToNgheRescue=async function(query){
     }catch(e){
       box.innerHTML='<div class="ai-rescue-status">⚠️ Không lấy được dữ liệu dịch vụ lúc này. Anh thử lại sau.</div>';
     }
-  },()=>{
+  };
+  navigator.geolocation.getCurrentPosition(handlePosition,()=>{
     box.innerHTML='<div class="ai-rescue-status">⚠️ Anh chưa cấp quyền vị trí. Hãy cho phép định vị để tìm dịch vụ gần mình.</div>';
-  },{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
+  },{enableHighAccuracy:true,timeout:20000,maximumAge:0});
 };
 window.findToNgheRescueRadius=async function(query,radius){
   const box=document.getElementById('toNgheRescueContent'); if(!box)return;
