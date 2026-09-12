@@ -2819,23 +2819,83 @@ window.loadToNgheNews=async function(){
     box.innerHTML=data.items?.length?data.items.map(x=>'<a class="ai-to-nghe-item" href="'+escHtml(x.link)+'" target="_blank" rel="noopener noreferrer"><strong>'+escHtml(x.title)+'</strong><small>'+escHtml(x.source||'Nguồn công khai')+' · '+escHtml(x.pubDate||'')+'</small></a>').join(''):'<div class="ai-to-nghe-loading">Chưa có tin phù hợp lúc này.</div>';
   }catch(e){box.innerHTML='<div class="ai-to-nghe-loading">Không lấy được tin lúc này. Anh thử lại sau.</div>';}
 };
-window.findToNgheServices=function(query){
+window.findToNgheServices=async function(query){
+  const box=document.getElementById('toNgheLiveContent');
+  if(!box)return;
+  if(!navigator.geolocation){
+    box.innerHTML='<div class="ai-to-nghe-loading">⚠️ Thiết bị không hỗ trợ định vị.</div>';
+    return;
+  }
+  box.innerHTML='<div class="ai-to-nghe-loading">📍 Đang lấy vị trí chính xác…</div>';
+
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const accuracy=Math.round(pos.coords.accuracy||9999);
+    if(accuracy>150){
+      box.innerHTML='<div class="ai-to-nghe-loading">⚠️ GPS chưa đủ chính xác ('+accuracy+' m). Đang thử lại, anh vui lòng đứng nơi thoáng.</div>';
+      return;
+    }
+    try{
+      const lat=pos.coords.latitude,lon=pos.coords.longitude;
+      box.innerHTML='<div class="ai-to-nghe-loading">🔎 Đang tìm dịch vụ trong phạm vi 3 km…</div>';
+      const r=await fetch('/api/to-nghe-content.js?type=services&q='+encodeURIComponent(query)+'&lat='+lat+'&lon='+lon+'&radius=3',{cache:'no-store'});
+      const data=await r.json();
+      if(!r.ok)throw new Error();
+      const items=(data.items||[]).filter(x=>Number.isFinite(Number(x.distanceKm)));
+      if(!items.length){
+        box.innerHTML='<div class="ai-to-nghe-loading">Chưa tìm thấy dịch vụ phù hợp trong 3 km.<br><br><button type="button" onclick="findToNgheServicesExpanded('+JSON.stringify(query)+')">🔎 Mở rộng đến 5 km</button></div>';
+        return;
+      }
+      box.innerHTML='<div class="ai-to-nghe-list">'+items.slice(0,5).map(x=>{
+        const map='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.lat+','+x.lon);
+        const d=Number(x.distanceKm).toFixed(1);
+        const eta=x.etaMinutes?' · 🚗 khoảng '+Math.round(x.etaMinutes)+' phút':'';
+        return '<div class="ai-to-nghe-item"><strong>'+escHtml(x.name)+'</strong><small>📍 '+d+' km'+eta+'<br>'+escHtml(x.address)+'</small><div class="ai-to-nghe-actions"><a href="tel:'+escHtml(x.phone||'')+'">📞 Gọi</a><a href="'+map+'" target="_blank" rel="noopener noreferrer">🗺️ Chỉ đường</a><a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.name+' '+x.address)+'" target="_blank" rel="noopener noreferrer">📍 Maps</a></div></div>';
+      }).join('')+'</div>';
+    }catch(e){
+      box.innerHTML='<div class="ai-to-nghe-loading">⚠️ Không lấy được dữ liệu dịch vụ lúc này. Anh thử lại sau.</div>';
+    }
+  },()=>{
+    box.innerHTML='<div class="ai-to-nghe-loading">⚠️ Anh chưa cấp quyền vị trí. Hãy cho phép định vị để tìm dịch vụ gần mình.</div>';
+  },{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
+};
+
+window.findToNgheServicesExpanded=function(query){
   const box=document.getElementById('toNgheLiveContent'); if(!box)return;
   if(!navigator.geolocation){box.innerHTML='<div class="ai-to-nghe-loading">Thiết bị không hỗ trợ định vị.</div>';return;}
-  box.innerHTML='<div class="ai-to-nghe-loading">Đang xác định vị trí và tìm dịch vụ gần anh…</div>';
+  box.innerHTML='<div class="ai-to-nghe-loading">🔎 Đang mở rộng tìm kiếm đến 5 km…</div>';
   navigator.geolocation.getCurrentPosition(async pos=>{
     try{
       const lat=pos.coords.latitude,lon=pos.coords.longitude;
-      const r=await fetch('/api/to-nghe-content.js?type=services&q='+encodeURIComponent(query)+'&lat='+lat+'&lon='+lon,{cache:'no-store'});
+      const r=await fetch('/api/to-nghe-content.js?type=services&q='+encodeURIComponent(query)+'&lat='+lat+'&lon='+lon+'&radius=5',{cache:'no-store'});
       const data=await r.json(); if(!r.ok)throw new Error();
-      box.innerHTML=data.items?.length?'<div class="ai-to-nghe-list">'+data.items.map(x=>{
+      const items=(data.items||[]).filter(x=>Number.isFinite(Number(x.distanceKm)));
+      if(!items.length){
+        box.innerHTML='<div class="ai-to-nghe-loading">Chưa tìm thấy trong 5 km.<br><br><button type="button" onclick="findToNgheServicesExpanded10('+JSON.stringify(query)+')">🔎 Mở rộng đến 10 km</button></div>';
+        return;
+      }
+      box.innerHTML='<div class="ai-to-nghe-list">'+items.slice(0,5).map(x=>{
         const map='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.lat+','+x.lon);
-        return '<div class="ai-to-nghe-item"><strong>'+escHtml(x.name)+'</strong><small>'+escHtml(x.address)+'</small><div class="ai-to-nghe-actions"><a href="'+map+'" target="_blank" rel="noopener noreferrer">🗺️ Chỉ đường</a><a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.name+' '+x.address)+'" target="_blank" rel="noopener noreferrer">📍 Xem Maps</a></div></div>';
-      }).join('')+'</div>':'<div class="ai-to-nghe-loading">Chưa tìm thấy dịch vụ gần vị trí hiện tại.</div>';
-    }catch(e){box.innerHTML='<div class="ai-to-nghe-loading">Dịch vụ tìm kiếm đang tạm thời không sẵn sàng.</div>';}
-  },()=>{box.innerHTML='<div class="ai-to-nghe-loading">Anh chưa cấp quyền vị trí. Hãy cho phép định vị rồi thử lại.</div>'},{enableHighAccuracy:false,timeout:10000,maximumAge:300000});
+        return '<div class="ai-to-nghe-item"><strong>'+escHtml(x.name)+'</strong><small>📍 '+Number(x.distanceKm).toFixed(1)+' km'+(x.etaMinutes?' · 🚗 khoảng '+Math.round(x.etaMinutes)+' phút':'')+'<br>'+escHtml(x.address)+'</small><div class="ai-to-nghe-actions"><a href="tel:'+escHtml(x.phone||'')+'">📞 Gọi</a><a href="'+map+'" target="_blank" rel="noopener noreferrer">🗺️ Chỉ đường</a></div></div>';
+      }).join('')+'</div>';
+    }catch(e){box.innerHTML='<div class="ai-to-nghe-loading">Không tìm thấy dữ liệu dịch vụ.</div>';}
+  },()=>{box.innerHTML='<div class="ai-to-nghe-loading">⚠️ Chưa cấp quyền vị trí.</div>';},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
 };
-
+window.findToNgheServicesExpanded10=function(query){
+  const box=document.getElementById('toNgheLiveContent'); if(!box)return;
+  if(!navigator.geolocation){box.innerHTML='<div class="ai-to-nghe-loading">Thiết bị không hỗ trợ định vị.</div>';return;}
+  box.innerHTML='<div class="ai-to-nghe-loading">🔎 Đang mở rộng tìm kiếm đến 10 km…</div>';
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    try{
+      const r=await fetch('/api/to-nghe-content.js?type=services&q='+encodeURIComponent(query)+'&lat='+pos.coords.latitude+'&lon='+pos.coords.longitude+'&radius=10',{cache:'no-store'});
+      const data=await r.json(); if(!r.ok)throw new Error();
+      const items=(data.items||[]).filter(x=>Number.isFinite(Number(x.distanceKm)));
+      box.innerHTML=items.length?'<div class="ai-to-nghe-list">'+items.slice(0,5).map(x=>{
+        const map='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.lat+','+x.lon);
+        return '<div class="ai-to-nghe-item"><strong>'+escHtml(x.name)+'</strong><small>📍 '+Number(x.distanceKm).toFixed(1)+' km'+(x.etaMinutes?' · 🚗 khoảng '+Math.round(x.etaMinutes)+' phút':'')+'<br>'+escHtml(x.address)+'</small><div class="ai-to-nghe-actions"><a href="tel:'+escHtml(x.phone||'')+'">📞 Gọi</a><a href="'+map+'" target="_blank" rel="noopener noreferrer">🗺️ Chỉ đường</a></div></div>';
+      }).join('')+'</div>':'<div class="ai-to-nghe-loading">Không tìm thấy dịch vụ trong 10 km. Anh có thể mở rộng tìm kiếm thủ công trên Maps.</div>';
+    }catch(e){box.innerHTML='<div class="ai-to-nghe-loading">Dịch vụ đang tạm thời không sẵn sàng.</div>';}
+  },()=>{box.innerHTML='<div class="ai-to-nghe-loading">⚠️ Chưa cấp quyền vị trí.</div>';},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
+};
 window.openToNgheAI = function(topic){
   const input = document.getElementById('aiInput');
   if(!input) return;
