@@ -26,6 +26,7 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check api/chat.js
+          node --check api/to-nghe-content.js
           node --check js/firebase-bridge.js
           node --check js/firebase-config.js
           node --check js/community.js
