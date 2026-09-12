@@ -42,7 +42,13 @@ async function services(query, lat, lon){
   const r=await fetch(url,{headers:{'User-Agent':USER_AGENT+' contact: to-nghe-taxi'}});
   if(!r.ok) throw new Error('MAP_UPSTREAM_'+r.status);
   const data=await r.json();
-  return data.map(x=>({name:x.display_name?.split(',')[0]||'Dịch vụ',address:x.display_name||'',lat:Number(x.lat),lon:Number(x.lon),type:x.type||''}));
+  return data.map(x=>{
+    const lat2=Number(x.lat), lon2=Number(x.lon);
+    const R=6371, p=Math.PI/180;
+    const a=Math.sin((lat2-lat)*p/2)**2+Math.cos(lat*p)*Math.cos(lat2*p)*Math.sin((lon2-lon)*p/2)**2;
+    const distanceKm=2*R*Math.asin(Math.sqrt(a));
+    return {name:x.display_name?.split(',')[0]||'Dịch vụ',address:x.display_name||'',lat:lat2,lon:lon2,type:x.type||'',distanceKm};
+  }).filter(x=>x.distanceKm<=10);
 }
 
 export default async function handler(req,res){
