@@ -1855,61 +1855,61 @@ Nam mô A Di Đà Phật!</div>
 
 <div class="ai-to-nghe-grid">
 
-  <button class="ai-to-nghe-card" onclick="openToNgheAI('Trợ lý nghề')">
+  <button class="ai-to-nghe-card" data-ai-topic="Trợ lý nghề">
     <span class="ai-to-nghe-card-icon">🚕</span>
     <strong>Trợ lý nghề</strong>
     <small>Đồng hành cùng tài xế mỗi ngày.</small>
   </button>
 
-  <button class="ai-to-nghe-card" onclick="openToNgheAI('Hỏi đáp')">
+  <button class="ai-to-nghe-card" data-ai-topic="Hỏi đáp">
     <span class="ai-to-nghe-card-icon">💬</span>
     <strong>Hỏi đáp</strong>
     <small>Đặt câu hỏi và nhận hỗ trợ nhanh.</small>
   </button>
 
-  <button class="ai-to-nghe-card" onclick="openToNgheAI('Cẩm nang')">
+  <button class="ai-to-nghe-card" data-ai-topic="Cẩm nang">
     <span class="ai-to-nghe-card-icon">📖</span>
     <strong>Cẩm nang</strong>
     <small>Thông tin hữu ích cho người làm nghề.</small>
   </button>
 
-  <button class="ai-to-nghe-card" onclick="openToNgheAI('Quyền lợi tài xế')">
+  <button class="ai-to-nghe-card" data-ai-topic="Quyền lợi tài xế">
     <span class="ai-to-nghe-card-icon">🛡️</span>
     <strong>Quyền lợi tài xế</strong>
     <small>Tra cứu quyền lợi và hỗ trợ cần thiết.</small>
   </button>
 
-  <button class="ai-to-nghe-card" onclick="openToNgheAI('Tin nghề')">
+  <button class="ai-to-nghe-card" data-ai-topic="Tin nghề">
     <span class="ai-to-nghe-card-icon">📰</span>
     <strong>Tin nghề</strong>
     <small>Cập nhật thông tin quan trọng của nghề Taxi.</small>
   </button>
 
-  <button class="ai-to-nghe-card" onclick="openToNgheAI('Cẩm nang nghề')">
+  <button class="ai-to-nghe-card" data-ai-topic="Cẩm nang nghề">
     <span class="ai-to-nghe-card-icon">📚</span>
     <strong>Cẩm nang nghề</strong>
     <small>Kinh nghiệm, kỹ năng và kiến thức nghề.</small>
   </button>
 
-  <button class="ai-to-nghe-card" onclick="openToNgheAI('Ưu đãi tài xế')">
+  <button class="ai-to-nghe-card" data-ai-topic="Ưu đãi tài xế">
     <span class="ai-to-nghe-card-icon">🎁</span>
     <strong>Ưu đãi tài xế</strong>
     <small>Khám phá ưu đãi dành cho thành viên.</small>
   </button>
 
-  <button class="ai-to-nghe-card" onclick="openToNgheAI('Chợ dịch vụ')">
+  <button class="ai-to-nghe-card" data-ai-topic="Chợ dịch vụ">
     <span class="ai-to-nghe-card-icon">🛒</span>
     <strong>Chợ dịch vụ</strong>
     <small>Tìm sản phẩm và dịch vụ phù hợp với nghề.</small>
   </button>
 
-  <button class="ai-to-nghe-card" onclick="openToNgheAI('Cứu hộ / Gara / Lốp / Bảo dưỡng')">
+  <button class="ai-to-nghe-card" data-ai-topic="Cứu hộ / Gara / Lốp / Bảo dưỡng">
     <span class="ai-to-nghe-card-icon">🔧</span>
     <strong>Cứu hộ / Gara / Lốp</strong>
     <small>Hỗ trợ khi xe gặp sự cố hoặc cần bảo dưỡng.</small>
   </button>
 
-  <button class="ai-to-nghe-card" onclick="openToNgheAI('Việc làm & cơ hội nghề nghiệp')">
+  <button class="ai-to-nghe-card" data-ai-topic="Việc làm & cơ hội nghề nghiệp">
     <span class="ai-to-nghe-card-icon">🤝</span>
     <strong>Việc làm & cơ hội</strong>
     <small>Cơ hội việc làm và phát triển nghề nghiệp.</small>
@@ -1924,10 +1924,10 @@ Nam mô A Di Đà Phật!</div>
   </div>
 
   <div class="ai-to-nghe-suggestions">
-    <button type="button" onclick="openToNgheAI('Kinh nghiệm nghề')">🚕 Kinh nghiệm nghề</button>
-    <button type="button" onclick="openToNgheAI('Quyền lợi tài xế')">🛡️ Quyền lợi</button>
-    <button type="button" onclick="openToNgheAI('Xe gặp sự cố')">🔧 Xe gặp sự cố</button>
-    <button type="button" onclick="openToNgheAI('Ưu đãi tài xế')">🎁 Ưu đãi</button>
+    <button type="button" data-ai-topic="Kinh nghiệm nghề">🚕 Kinh nghiệm nghề</button>
+    <button type="button" data-ai-topic="Quyền lợi tài xế">🛡️ Quyền lợi</button>
+    <button type="button" data-ai-topic="Xe gặp sự cố">🔧 Xe gặp sự cố</button>
+    <button type="button" data-ai-topic="Ưu đãi tài xế">🎁 Ưu đãi</button>
   </div>
 
   <div class="ai-chat-wrap">
@@ -2781,8 +2781,19 @@ function renderToNghePanel(topic){
       '</div><button type="button" class="ai-rescue-type ai-rescue-primary" data-rescue-query="cứu hộ ô tô">📍 TÌM DỊCH VỤ GẦN TÔI</button><div id="toNgheRescueContent"></div>';
     body.querySelectorAll('[data-rescue-query]').forEach(btn=>btn.addEventListener('click',()=>window.findToNgheRescue(btn.dataset.rescueQuery)));
   }else{
-    body.innerHTML='<div>'+escHtml(cfg.intro)+'</div>';
-    if(cfg.live==='news')body.innerHTML+='<div id="toNgheLiveContent" class="ai-to-nghe-list"><div class="ai-to-nghe-loading">Đang lấy tin mới…</div></div>';
+    const actions={
+      'Trợ lý nghề':['🚕 Hỏi AI về tình huống đang gặp','💡 Kinh nghiệm chạy xe an toàn'],
+      'Hỏi đáp':['💬 Đặt câu hỏi cho AI Tổ Nghề'],
+      'Cẩm nang':['📖 Mở chủ đề cẩm nang','🚕 Hỏi AI cách áp dụng'],
+      'Quyền lợi tài xế':['🛡️ Hỏi AI cách tra cứu quyền lợi'],
+      'Cẩm nang nghề':['📚 Hỏi AI về tình huống nghề'],
+      'Ưu đãi tài xế':['🎁 Kiểm tra ưu đãi đã xác thực'],
+      'Việc làm & cơ hội nghề nghiệp':['🤝 Hỏi AI về cơ hội nghề nghiệp']
+    }[topic]||[];
+    body.innerHTML='<div>'+escHtml(cfg.intro)+'</div>'+
+      (actions.length?'<div class="ai-to-nghe-actions">'+actions.map(x=>'<button type="button" data-ai-prompt="'+escHtml(x.replace(/^[^ ]+ /,'') )+'">'+escHtml(x)+'</button>').join('')+'</div>':'')+
+      (cfg.live==='news'?'<div id="toNgheLiveContent" class="ai-to-nghe-list"><div class="ai-to-nghe-loading">Đang lấy tin mới…</div></div>':'');
+    body.querySelectorAll('[data-ai-prompt]').forEach(btn=>btn.addEventListener('click',()=>window.askToNghePrompt(btn.getAttribute('data-ai-prompt'))));
   }
   p.classList.add('show'); if(cfg.live==='news')loadToNgheNews();
 }
@@ -2858,83 +2869,7 @@ window.loadToNgheNews=async function(){
     box.innerHTML=data.items?.length?data.items.map(x=>'<a class="ai-to-nghe-item" href="'+escHtml(x.link)+'" target="_blank" rel="noopener noreferrer"><strong>'+escHtml(x.title)+'</strong><small>'+escHtml(x.source||'Nguồn công khai')+' · '+escHtml(x.pubDate||'')+'</small></a>').join(''):'<div class="ai-to-nghe-loading">Chưa có tin phù hợp lúc này.</div>';
   }catch(e){box.innerHTML='<div class="ai-to-nghe-loading">Không lấy được tin lúc này. Anh thử lại sau.</div>';}
 };
-window.findToNgheServices=async function(query){
-  const box=document.getElementById('toNgheLiveContent');
-  if(!box)return;
-  if(!navigator.geolocation){
-    box.innerHTML='<div class="ai-to-nghe-loading">⚠️ Thiết bị không hỗ trợ định vị.</div>';
-    return;
-  }
-  box.innerHTML='<div class="ai-to-nghe-loading">📍 Đang lấy vị trí chính xác…</div>';
 
-  navigator.geolocation.getCurrentPosition(async pos=>{
-    const accuracy=Math.round(pos.coords.accuracy||9999);
-    if(accuracy>150){
-      box.innerHTML='<div class="ai-to-nghe-loading">⚠️ GPS chưa đủ chính xác ('+accuracy+' m). Đang thử lại, anh vui lòng đứng nơi thoáng.</div>';
-      return;
-    }
-    try{
-      const lat=pos.coords.latitude,lon=pos.coords.longitude;
-      box.innerHTML='<div class="ai-to-nghe-loading">🔎 Đang tìm dịch vụ trong phạm vi 3 km…</div>';
-      const r=await fetch('/api/to-nghe-content.js?type=services&q='+encodeURIComponent(query)+'&lat='+lat+'&lon='+lon+'&radius=3',{cache:'no-store'});
-      const data=await r.json();
-      if(!r.ok)throw new Error();
-      const items=(data.items||[]).filter(x=>Number.isFinite(Number(x.distanceKm)));
-      if(!items.length){
-        box.innerHTML='<div class="ai-to-nghe-loading">Chưa tìm thấy dịch vụ phù hợp trong 3 km.<br><br><button type="button" onclick="findToNgheServicesExpanded('+JSON.stringify(query)+')">🔎 Mở rộng đến 5 km</button></div>';
-        return;
-      }
-      box.innerHTML='<div class="ai-to-nghe-list">'+items.slice(0,5).map(x=>{
-        const map='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.lat+','+x.lon);
-        const d=Number(x.distanceKm).toFixed(1);
-        const eta=x.etaMinutes?' · 🚗 khoảng '+Math.round(x.etaMinutes)+' phút':'';
-        return '<div class="ai-to-nghe-item"><strong>'+escHtml(x.name)+'</strong><small>📍 '+d+' km'+eta+'<br>'+escHtml(x.address)+'</small><div class="ai-to-nghe-actions"><a href="tel:'+escHtml(x.phone||'')+'">📞 Gọi</a><a href="'+map+'" target="_blank" rel="noopener noreferrer">🗺️ Chỉ đường</a><a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.name+' '+x.address)+'" target="_blank" rel="noopener noreferrer">📍 Maps</a></div></div>';
-      }).join('')+'</div>';
-    }catch(e){
-      box.innerHTML='<div class="ai-to-nghe-loading">⚠️ Không lấy được dữ liệu dịch vụ lúc này. Anh thử lại sau.</div>';
-    }
-  },()=>{
-    box.innerHTML='<div class="ai-to-nghe-loading">⚠️ Anh chưa cấp quyền vị trí. Hãy cho phép định vị để tìm dịch vụ gần mình.</div>';
-  },{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
-};
-
-window.findToNgheServicesExpanded=function(query){
-  const box=document.getElementById('toNgheLiveContent'); if(!box)return;
-  if(!navigator.geolocation){box.innerHTML='<div class="ai-to-nghe-loading">Thiết bị không hỗ trợ định vị.</div>';return;}
-  box.innerHTML='<div class="ai-to-nghe-loading">🔎 Đang mở rộng tìm kiếm đến 5 km…</div>';
-  navigator.geolocation.getCurrentPosition(async pos=>{
-    try{
-      const lat=pos.coords.latitude,lon=pos.coords.longitude;
-      const r=await fetch('/api/to-nghe-content.js?type=services&q='+encodeURIComponent(query)+'&lat='+lat+'&lon='+lon+'&radius=5',{cache:'no-store'});
-      const data=await r.json(); if(!r.ok)throw new Error();
-      const items=(data.items||[]).filter(x=>Number.isFinite(Number(x.distanceKm)));
-      if(!items.length){
-        box.innerHTML='<div class="ai-to-nghe-loading">Chưa tìm thấy trong 5 km.<br><br><button type="button" onclick="findToNgheServicesExpanded10('+JSON.stringify(query)+')">🔎 Mở rộng đến 10 km</button></div>';
-        return;
-      }
-      box.innerHTML='<div class="ai-to-nghe-list">'+items.slice(0,5).map(x=>{
-        const map='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.lat+','+x.lon);
-        return '<div class="ai-to-nghe-item"><strong>'+escHtml(x.name)+'</strong><small>📍 '+Number(x.distanceKm).toFixed(1)+' km'+(x.etaMinutes?' · 🚗 khoảng '+Math.round(x.etaMinutes)+' phút':'')+'<br>'+escHtml(x.address)+'</small><div class="ai-to-nghe-actions"><a href="tel:'+escHtml(x.phone||'')+'">📞 Gọi</a><a href="'+map+'" target="_blank" rel="noopener noreferrer">🗺️ Chỉ đường</a></div></div>';
-      }).join('')+'</div>';
-    }catch(e){box.innerHTML='<div class="ai-to-nghe-loading">Không tìm thấy dữ liệu dịch vụ.</div>';}
-  },()=>{box.innerHTML='<div class="ai-to-nghe-loading">⚠️ Chưa cấp quyền vị trí.</div>';},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
-};
-window.findToNgheServicesExpanded10=function(query){
-  const box=document.getElementById('toNgheLiveContent'); if(!box)return;
-  if(!navigator.geolocation){box.innerHTML='<div class="ai-to-nghe-loading">Thiết bị không hỗ trợ định vị.</div>';return;}
-  box.innerHTML='<div class="ai-to-nghe-loading">🔎 Đang mở rộng tìm kiếm đến 10 km…</div>';
-  navigator.geolocation.getCurrentPosition(async pos=>{
-    try{
-      const r=await fetch('/api/to-nghe-content.js?type=services&q='+encodeURIComponent(query)+'&lat='+pos.coords.latitude+'&lon='+pos.coords.longitude+'&radius=10',{cache:'no-store'});
-      const data=await r.json(); if(!r.ok)throw new Error();
-      const items=(data.items||[]).filter(x=>Number.isFinite(Number(x.distanceKm)));
-      box.innerHTML=items.length?'<div class="ai-to-nghe-list">'+items.slice(0,5).map(x=>{
-        const map='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.lat+','+x.lon);
-        return '<div class="ai-to-nghe-item"><strong>'+escHtml(x.name)+'</strong><small>📍 '+Number(x.distanceKm).toFixed(1)+' km'+(x.etaMinutes?' · 🚗 khoảng '+Math.round(x.etaMinutes)+' phút':'')+'<br>'+escHtml(x.address)+'</small><div class="ai-to-nghe-actions"><a href="tel:'+escHtml(x.phone||'')+'">📞 Gọi</a><a href="'+map+'" target="_blank" rel="noopener noreferrer">🗺️ Chỉ đường</a></div></div>';
-      }).join('')+'</div>':'<div class="ai-to-nghe-loading">Không tìm thấy dịch vụ trong 10 km. Anh có thể mở rộng tìm kiếm thủ công trên Maps.</div>';
-    }catch(e){box.innerHTML='<div class="ai-to-nghe-loading">Dịch vụ đang tạm thời không sẵn sàng.</div>';}
-  },()=>{box.innerHTML='<div class="ai-to-nghe-loading">⚠️ Chưa cấp quyền vị trí.</div>';},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
-};
 window.openToNgheAI = function(topic){
   const input = document.getElementById('aiInput');
   if(!input) return;
@@ -3019,6 +2954,12 @@ function initHomeSparks(){
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+document.querySelectorAll('#page-ai [data-ai-topic]').forEach(btn=>{
+  btn.addEventListener('click',()=>window.openToNgheAI(btn.getAttribute('data-ai-topic')));
+});
+const aiClose=document.getElementById('toNgheAIClose');
+if(aiClose) aiClose.addEventListener('click',window.closeToNgheAI);
+
 // Remove the legacy client-side API key saved by older versions.
 try{ localStorage.removeItem('denToNghe_groqKey'); }catch(e){}
 // Gán ngày tham gia lần đầu nếu chưa có
