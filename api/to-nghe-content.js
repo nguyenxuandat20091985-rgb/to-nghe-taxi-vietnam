@@ -35,7 +35,7 @@ async function news(query){
   return parseRss(await r.text());
 }
 
-async function services(query, lat, lon){
+async function services(query, lat, lon, radiusKm=3){
   if(!Number.isFinite(lat)||!Number.isFinite(lon)) return [];
   const q=encodeURIComponent(query);
   const url='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&accept-language=vi&q='+q+'&lat='+lat+'&lon='+lon;
@@ -48,7 +48,7 @@ async function services(query, lat, lon){
     const a=Math.sin((lat2-lat)*p/2)**2+Math.cos(lat*p)*Math.cos(lat2*p)*Math.sin((lon2-lon)*p/2)**2;
     const distanceKm=2*R*Math.asin(Math.sqrt(a));
     return {name:x.display_name?.split(',')[0]||'Dịch vụ',address:x.display_name||'',lat:lat2,lon:lon2,type:x.type||'',distanceKm};
-  }).filter(x=>x.distanceKm<=10);
+  }).filter(x=>x.distanceKm<=Math.min(Math.max(Number(radiusKm)||3,1),10)).sort((a,b)=>a.distanceKm-b.distanceKm).slice(0,8);
 }
 
 export default async function handler(req,res){
