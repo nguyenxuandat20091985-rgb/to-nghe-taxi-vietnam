@@ -2837,10 +2837,10 @@ function renderToNghePanel(topic){
     html+='<div class="ai-to-nghe-actions">'+cfg.actions.map(x=>'<a href="'+escHtml(x[1])+'" target="_blank" rel="noopener noreferrer">'+escHtml(x[0])+'</a>').join('')+'</div>';
   }
   if(cfg.prompts){
-    html+='<div class="ai-to-nghe-actions">'+cfg.prompts.map(x=>'<button type="button" onclick="askToNghePrompt('+JSON.stringify(x)+')">🤖 '+escHtml(x)+'</button>').join('')+'</div>';
+    html+='<div class="ai-to-nghe-actions">'+cfg.prompts.map(x=>'<button type="button" onclick=\'askToNghePrompt('+JSON.stringify(x)+')\'>🤖 '+escHtml(x)+'</button>').join('')+'</div>';
   }
   if(cfg.live==='news') html+='<div id="toNgheLiveContent" class="ai-to-nghe-list"><div class="ai-to-nghe-loading">Đang lấy tin mới…</div></div>';
-  if(cfg.live==='services') html+='<div id="toNgheLiveContent"><div class="ai-to-nghe-actions"><button type="button" onclick="findToNgheServices('+JSON.stringify(cfg.serviceQuery)+')">📍 Tìm quanh tôi</button><button type="button" onclick="findToNgheServices(\'lốp ô tô\')">🛞 Lốp</button><button type="button" onclick="findToNgheServices(\'bảo dưỡng ô tô\')">🔧 Bảo dưỡng</button><button type="button" onclick="findToNgheServices(\'cứu hộ ô tô\')">🚨 Cứu hộ</button></div><div class="ai-to-nghe-location">Anh bấm “Tìm quanh tôi”, trình duyệt sẽ hỏi quyền vị trí. Vị trí chỉ được dùng để tìm dịch vụ và không lưu vào hồ sơ.</div></div>';
+  if(cfg.live==='services') html+='<div id="toNgheLiveContent"><div class="ai-to-nghe-actions"><button type="button" onclick=\'findToNgheServices('+JSON.stringify(cfg.serviceQuery)+')\'>📍 Tìm quanh tôi</button><button type="button" onclick="findToNgheServices(\'lốp ô tô\')">🛞 Lốp</button><button type="button" onclick="findToNgheServices(\'bảo dưỡng ô tô\')">🔧 Bảo dưỡng</button><button type="button" onclick="findToNgheServices(\'cứu hộ ô tô\')">🚨 Cứu hộ</button></div><div class="ai-to-nghe-location">Anh bấm “Tìm quanh tôi”, trình duyệt sẽ hỏi quyền vị trí. Vị trí chỉ được dùng để tìm dịch vụ và không lưu vào hồ sơ.</div></div>';
   body.innerHTML=html;
   p.classList.add('show');
   if(cfg.live==='news')loadToNgheNews();
