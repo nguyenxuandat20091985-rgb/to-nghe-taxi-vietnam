@@ -1,4 +1,4 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v15-smooth-chat';
+const CACHE_NAME = 'den-to-nghe-taxi-v16-ai-to-nghe';
 const APP_SHELL = [
   './',
   './index.html',
