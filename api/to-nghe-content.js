@@ -29,10 +29,29 @@ function parseRss(xml){
 }
 
 async function news(query){
-  const url=RSS_BASE+'?q='+encodeURIComponent(query+' taxi tài xế Việt Nam')+'&hl=vi&gl=VN&ceid=VN:vi';
-  const r=await fetch(url,{headers:{'User-Agent':USER_AGENT}});
-  if(!r.ok) throw new Error('NEWS_UPSTREAM_'+r.status);
-  return parseRss(await r.text());
+  const sources=[
+    {name:'VOV Giao thông',domain:'vovgiaothong.vn'},
+    {name:'Báo Điện tử Chính phủ',domain:'baochinhphu.vn'},
+    {name:'Cục Đường bộ Việt Nam',domain:'drvn.gov.vn'}
+  ];
+  const results=await Promise.allSettled(sources.map(async source=>{
+    const q=query+' taxi tài xế Việt Nam site:'+source.domain;
+    const url=RSS_BASE+'?q='+encodeURIComponent(q)+'&hl=vi&gl=VN&ceid=VN:vi';
+    const r=await fetch(url,{headers:{'User-Agent':USER_AGENT}});
+    if(!r.ok) throw new Error('NEWS_UPSTREAM_'+r.status);
+    return parseRss(await r.text()).map(item=>Object.assign({},item,{source:source.name}));
+  }));
+  const items=[];
+  for(const result of results){
+    if(result.status==='fulfilled') items.push(...result.value);
+  }
+  const seen=new Set();
+  return items.sort((a,b)=>new Date(b.pubDate||0)-new Date(a.pubDate||0)).filter(item=>{
+    const key=item.link||item.title;
+    if(!key||seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0,12);
 }
 
 async function services(query, lat, lon, radiusKm=3){
