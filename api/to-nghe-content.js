@@ -46,12 +46,21 @@ async function news(query){
     if(result.status==='fulfilled') items.push(...result.value);
   }
   const seen=new Set();
-  return items.sort((a,b)=>new Date(b.pubDate||0)-new Date(a.pubDate||0)).filter(item=>{
+  const cutoff=Date.now()-180*24*60*60*1000;
+  return items.sort((a,b)=>{
+    const sourceRank={"VOV Giao thông":0,"Báo Điện tử Chính phủ":1,"Cục Đường bộ Việt Nam":2};
+    const rankA=sourceRank[a.source]??9, rankB=sourceRank[b.source]??9;
+    const dateA=new Date(a.pubDate||0).getTime(), dateB=new Date(b.pubDate||0).getTime();
+    if(dateA<cutoff && dateB>=cutoff) return 1;
+    if(dateB<cutoff && dateA>=cutoff) return -1;
+    if(rankA!==rankB) return rankA-rankB;
+    return dateB-dateA;
+  }).filter(item=>{
     const key=item.link||item.title;
     if(!key||seen.has(key)) return false;
     seen.add(key);
     return true;
-  }).slice(0,12);
+  }).filter(item=>new Date(item.pubDate||0).getTime()>=cutoff).slice(0,12);
 }
 
 async function services(query, lat, lon, radiusKm=3){
