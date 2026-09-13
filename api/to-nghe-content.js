@@ -51,7 +51,7 @@ async function services(query, lat, lon, radiusKm=3){
   }).filter(x=>x.distanceKm<=Math.min(Math.max(Number(radiusKm)||3,1),10)).sort((a,b)=>a.distanceKm-b.distanceKm).slice(0,8);
 }
 
-export default async function handler(req,res){
+async function handler(req,res){
   if(req.method!=='GET') return send(res,405,{error:'Method not allowed'});
   const type=clean(req.query?.type,30);
   try{
@@ -69,3 +69,6 @@ export default async function handler(req,res){
     return send(res,502,{error:'Content service unavailable'});
   }
 }
+
+
+module.exports = handler;
