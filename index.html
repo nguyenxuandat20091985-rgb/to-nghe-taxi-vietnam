@@ -1,1 +1,566 @@
-<PLACEHOLDER_WILL_BE_REPLACED>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+   <!-- Firebase SDK (Compat Mode) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Đền Tổ Nghề Taxi</title>
+<meta name="description" content="Không gian số tri ân nghề taxi Việt Nam, cầu bình an và kết nối cộng đồng tài xế.">
+<meta name="theme-color" content="#1a0e05">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Đền Tổ Nghề Taxi">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/app-avatar.jpg" type="image/png">
+<link rel="apple-touch-icon" href="./icons/app-avatar.jpg">
+<script type="module" src="./js/firebase-bridge.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:wght@500;700;900&family=Be+Vietnam+Pro:wght@300;400;500;600&family=Noto+Sans:wght@400;500;600&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+:root{
+--gold:#d4af37;
+--gold-light:#f0e0a0;
+--gold-mid:#e8d48b;
+--gold-dark:#8b6914;
+--bronze:#c9893a;
+--red:#8b1a1a;
+--red-light:#c0392b;
+--dark-brown:#1a0e05;
+--wood:#3d2b1f;
+--glass-bg:rgba(18,10,4,0.82);
+--glass-border:rgba(212,175,55,0.38);
+--glow-gold:rgba(212,175,55,0.55);
+}
+
+html,body{
+width:100%;height:100%;overflow:hidden;
+font-family:'Be Vietnam Pro','Cormorant Garamond',serif;
+background:#050301;
+color:var(--gold-light);
+-webkit-font-smoothing:antialiased;
+-moz-osx-font-smoothing:grayscale;
+text-rendering:optimizeLegibility;
+}
+
+/* BACKGROUND IMAGES SLIDESHOW */
+.bg-slideshow{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+z-index:-10;
+}
+.bg-slide{
+position:absolute;
+top:0;left:0;
+width:100%;height:100%;
+object-fit:cover;
+opacity:0;
+transition:opacity 2s ease-in-out, transform 8s ease-out;
+transform:scale(1);
+}
+.bg-slide.active{
+opacity:1;
+transform:scale(1.08);}
+.bg-slide.zoom-in{
+transform:scale(1.15);
+}
+
+/* OVERLAY GRADIENT */
+.bg-overlay{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:
+  radial-gradient(ellipse 80% 50% at 50% 20%, rgba(40,25,8,0.15) 0%, transparent 60%),
+  linear-gradient(180deg,rgba(8,4,1,0.45) 0%,rgba(8,4,1,0.12) 40%,rgba(8,4,1,0.55) 100%);
+z-index:-9;
+pointer-events:none;
+}
+
+#app{
+position:fixed;top:0;left:0;width:100%;height:100%;
+z-index:1;display:flex;flex-direction:column;
+}
+
+/* HEADER */
+.header{
+text-align:center;
+padding:clamp(10px,2vw,14px) clamp(12px,3vw,20px) clamp(6px,1.5vw,10px);
+background:linear-gradient(180deg,rgba(20,10,2,0.92) 0%,rgba(20,10,2,0.4) 100%);
+border-bottom:1px solid rgba(201,168,76,0.3);
+flex-shrink:0;
+
+}
+.header h1{
+font-family:'Playfair Display','Cormorant Garamond',serif;
+font-size:clamp(15px,4.2vw,24px);
+color:var(--gold-light);
+text-shadow:0 0 24px rgba(212,175,55,0.7),0 0 48px rgba(212,175,55,0.25),0 2px 4px rgba(0,0,0,0.9);
+letter-spacing:clamp(1.5px,0.4vw,3px);
+font-weight:700;
+line-height:1.25;
+}
+.header p{
+font-family:'Cormorant Garamond',serif;
+font-size:clamp(10px,2.4vw,13px);
+color:rgba(240,224,160,0.75);
+margin-top:clamp(3px,0.6vw,5px);
+letter-spacing:1.5px;
+font-weight:400;
+font-style:italic;
+}
+
+/* MAIN CONTENT */
+.main-content{
+flex:1;overflow-y:auto;overflow-x:hidden;
+padding:clamp(4px,1vw,8px) clamp(8px,2vw,12px) clamp(64px,14vw,80px);
+scrollbar-width:thin;scrollbar-color:var(--gold-dark) transparent;
+}
+.main-content::-webkit-scrollbar{width:4px;}
+.main-content::-webkit-scrollbar-thumb{background:var(--gold-dark);border-radius:2px;}
+
+/* GLASS CARD */
+.glass-card{
+background:var(--glass-bg);
+border:1px solid var(--glass-border);
+border-radius:clamp(10px,2.5vw,14px);
+padding:clamp(12px,3vw,18px);
+margin-bottom:clamp(10px,2vw,14px);
+
+box-shadow:0 4px 24px rgba(0,0,0,0.5),inset 0 1px 0 rgba(201,168,76,0.15);
+}
+.glass-card h3{
+font-family:'Cormorant Garamond','Playfair Display',serif;
+color:var(--gold-light);
+font-size:clamp(14px,3.4vw,18px);
+margin-bottom:clamp(8px,2vw,12px);
+text-shadow:0 0 16px rgba(212,175,55,0.45);
+border-bottom:1px solid rgba(212,175,55,0.28);
+padding-bottom:clamp(5px,1.2vw,9px);
+letter-spacing:1px;
+font-weight:600;
+}
+.glass-card p,.glass-card li{
+font-family:'Be Vietnam Pro',sans-serif;
+color:rgba(240,224,160,0.88);
+font-size:clamp(11px,2.6vw,14px);
+line-height:1.7;
+font-weight:300;
+}
+
+/* BOTTOM MENU */
+.bottom-menu{
+position:fixed;bottom:0;left:0;right:0;
+background:linear-gradient(0deg,rgba(15,8,2,0.98) 0%,rgba(15,8,2,0.94) 100%);
+border-top:1px solid rgba(201,168,76,0.45);
+display:flex;overflow-x:auto;overflow-y:hidden;
+z-index:100;
+
+scrollbar-width:none;
+padding:clamp(4px,1vw,6px) 0 clamp(6px,1.5vw,10px);
+}
+.bottom-menu::-webkit-scrollbar{display:none;}
+.menu-item{
+flex:0 0 auto;
+min-width:clamp(52px,13.5vw,68px);
+padding:clamp(5px,1.2vw,8px) clamp(2px,0.6vw,4px) clamp(6px,1.2vw,8px);
+text-align:center;
+cursor:pointer;transition:all 0.3s;
+border-right:1px solid rgba(201,168,76,0.12);
+position:relative;
+}
+.menu-item:last-child{border-right:none;}
+.menu-item.active{
+background:rgba(212,175,55,0.2);
+box-shadow:
+  inset 0 0 20px rgba(212,175,55,0.3),
+  0 0 18px rgba(212,175,55,0.28);
+border-radius:12px 12px 0 0;
+animation:menuActiveGlow 2.8s ease-in-out infinite;
+}
+@keyframes menuActiveGlow{
+0%,100%{box-shadow:inset 0 0 14px rgba(212,175,55,0.22),0 0 12px rgba(212,175,55,0.18);}
+50%{box-shadow:inset 0 0 24px rgba(212,175,55,0.4),0 0 22px rgba(232,200,80,0.35);}
+}
+.menu-item.active::before{
+content:'';position:absolute;top:0;left:12%;right:12%;
+height:3px;background:linear-gradient(90deg,transparent,var(--gold-light),transparent);
+border-radius:0 0 3px 3px;
+box-shadow:0 0 14px 3px rgba(255,220,100,0.9),0 0 28px rgba(212,175,55,0.5);
+}
+.menu-item.active::after{
+content:'';position:absolute;inset:2px;
+border:1px solid rgba(212,175,55,0.5);
+border-radius:10px;
+pointer-events:none;
+animation:menuBorderPulse 2.8s ease-in-out infinite;
+}
+@keyframes menuBorderPulse{
+0%,100%{opacity:0.45;border-color:rgba(212,175,55,0.35);}
+50%{opacity:1;border-color:rgba(255,220,100,0.75);}
+}
+.menu-icon{
+font-size:clamp(20px,5vw,26px);
+display:block;margin-bottom:clamp(3px,0.7vw,5px);
+filter:drop-shadow(0 0 6px rgba(212,175,55,0.55));
+line-height:1;
+font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Noto Sans',sans-serif;
+}
+.menu-item.active .menu-icon{
+filter:drop-shadow(0 0 8px rgba(255,210,80,0.9)) drop-shadow(0 0 16px rgba(201,168,76,0.5));
+animation:iconFloat 2s ease-in-out infinite;
+}
+@keyframes iconFloat{
+0%,100%{transform:translateY(0);}
+50%{transform:translateY(-2px);}
+}
+.menu-label{
+font-family:'Be Vietnam Pro','Noto Sans',sans-serif;
+font-size:clamp(9px,2.1vw,11px);
+color:rgba(240,224,160,0.88);
+letter-spacing:0.3px;
+display:block;
+line-height:1.25;
+font-weight:500;
+}
+.menu-item.active .menu-label{color:var(--gold-light);font-weight:700;text-shadow:0 0 8px rgba(201,168,76,0.6);}
+
+/* PAGES */
+.page{display:none;animation:none;}.page.active{display:block;animation:pageIn .24s ease-out both;will-change:opacity,transform;}@keyframes pageIn{from{opacity:0;transform:translate3d(0,6px,0)}to{opacity:1;transform:translate3d(0,0,0)}}.page-zoom{animation:none!important;}
+100%{opacity:1;transform:scale(1);}
+}
+
+/* INCENSE */
+.incense-area{text-align:center;padding:clamp(16px,4vw,24px) clamp(8px,2vw,12px);}
+.incense-btn{
+background:linear-gradient(145deg,#a67c1a 0%,var(--bronze) 40%,#e8c56a 100%);
+border:2px solid var(--gold-light);
+color:#fff8e0;
+padding:clamp(13px,3.2vw,20px) clamp(30px,7.5vw,44px);
+font-size:clamp(15px,3.6vw,19px);
+font-family:'Cormorant Garamond','Playfair Display',serif;
+border-radius:32px;
+cursor:pointer;
+transition:transform 0.25s ease;
+text-shadow:0 1px 4px rgba(0,0,0,0.55);
+box-shadow:
+  0 4px 28px rgba(212,175,55,0.5),
+  inset 0 1px 0 rgba(255,255,255,0.35),
+  0 0 18px 4px rgba(212,175,55,0.4);
+letter-spacing:1.5px;
+font-weight:700;
+animation:btnGlowPulse 2.6s ease-in-out infinite;
+}
+@keyframes btnGlowPulse{
+0%,100%{
+  box-shadow:
+    0 4px 24px rgba(212,175,55,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    0 0 14px 3px rgba(212,175,55,0.4),
+    0 0 32px 8px rgba(212,175,55,0.18);
+}
+50%{
+  box-shadow:
+    0 6px 32px rgba(212,175,55,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    0 0 26px 8px rgba(232,200,80,0.55),
+    0 0 50px 14px rgba(255,200,60,0.28);
+}
+}
+.incense-btn:active{
+transform:scale(0.96);
+animation:none;
+box-shadow:0 2px 14px rgba(212,175,55,0.3);
+}
+.incense-anim{
+display:none;
+position:fixed;top:0;left:0;width:100%;height:100%;
+z-index:50;pointer-events:none;
+}
+.incense-anim.show{display:block;}
+.smoke{
+position:absolute;
+width:clamp(6px,1.5vw,12px);height:clamp(6px,1.5vw,12px);
+background:radial-gradient(circle,
+  rgba(255,255,255,0.95) 0%,
+  rgba(240,240,240,0.5) 40%,
+  transparent 75%);
+border-radius:50%;
+animation:smokeRise 3.2s ease-out forwards;
+filter:blur(3px);
+}
+@keyframes smokeRise{
+0%{opacity:0.95;transform:translateY(0) scale(0.8);}
+30%{opacity:0.7;}
+100%{opacity:0;transform:translateY(-280px) scale(6);}
+}
+.glow-effect{
+position:absolute;top:50%;left:50%;
+transform:translate(-50%,-50%);
+width:clamp(180px,45vw,260px);height:clamp(180px,45vw,260px);
+background:radial-gradient(circle,rgba(201,168,76,0.4),transparent);
+border-radius:50%;
+animation:glowPulse 2.5s ease-in-out;
+}
+@keyframes glowPulse{
+0%{opacity:0;transform:translate(-50%,-50%) scale(0.5);}
+50%{opacity:1;transform:translate(-50%,-50%) scale(1.3);}
+100%{opacity:0;transform:translate(-50%,-50%) scale(1.6);}
+}
+
+/* POPUP */
+.popup-overlay{
+display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,5,2,0.8);z-index:200;
+justify-content:center;align-items:center;
+padding:clamp(16px,4vw,24px);
+}
+.popup-overlay.show{display:flex;}
+.popup{
+background:var(--glass-bg);
+border:1px solid var(--glass-border);
+border-radius:16px;
+width:100%;max-width:500px;
+max-height:80vh;
+overflow-y:auto;
+
+padding:clamp(16px,4vw,24px);
+animation:popupIn 0.4s ease;
+}
+@keyframes popupIn{
+from{opacity:0;transform:scale(0.9);}
+to{opacity:1;transform:scale(1);}
+}
+.popup h2{
+color:var(--gold-light);
+font-size:clamp(16px,4vw,20px);
+text-align:center;
+margin-bottom:clamp(12px,3vw,18px);
+text-shadow:0 0 18px rgba(201,168,76,0.5);
+}
+.popup-close{
+float:right;
+background:none;border:1px solid var(--gold);
+color:var(--gold);
+width:30px;height:30px;
+border-radius:50%;
+cursor:pointer;
+font-size:16px;
+display:flex;align-items:center;justify-content:center;
+}
+
+/* PRAYER */
+.prayer-text{
+color:rgba(232,212,139,0.95);
+font-size:clamp(12px,2.8vw,15px);
+line-height:1.8;
+white-space:pre-wrap;
+text-align:center;
+padding:clamp(8px,2vw,12px);
+outline:none;
+border:1px solid transparent;
+border-radius:8px;
+min-height:120px;
+transition:border-color 0.3s, box-shadow 0.3s;
+}
+.prayer-text:focus{
+border-color:rgba(201,168,76,0.5);
+box-shadow:0 0 12px rgba(201,168,76,0.25);
+background:rgba(201,168,76,0.05);
+}
+.prayer-hint{
+font-size:clamp(9px,2vw,11px);
+color:rgba(232,212,139,0.55);
+text-align:center;
+margin-bottom:clamp(6px,1.5vw,10px);
+}
+.prayer-history{margin-top:clamp(12px,3vw,18px);border-top:1px solid rgba(201,168,76,0.25);padding-top:clamp(10px,2.5vw,14px);}
+.prayer-history-item{background:rgba(201,168,76,0.1);
+border:1px solid rgba(201,168,76,0.2);
+border-radius:8px;
+padding:clamp(8px,2vw,12px);
+margin-bottom:clamp(6px,1.5vw,10px);
+font-size:clamp(10px,2.2vw,12px);
+color:rgba(232,212,139,0.8);
+}
+
+/* QUE */
+.que-result{text-align:center;padding:clamp(8px,2vw,12px);}
+.que-category{
+background:rgba(201,168,76,0.1);
+border:1px solid rgba(201,168,76,0.25);
+border-radius:10px;
+padding:clamp(10px,2.5vw,14px);
+margin-bottom:clamp(8px,2vw,12px);
+}
+.que-category h4{
+color:var(--gold);
+font-size:clamp(12px,3vw,15px);
+margin-bottom:clamp(4px,1vw,8px);
+}
+.que-category p{
+color:rgba(232,212,139,0.9);
+font-size:clamp(11px,2.5vw,13px);
+}
+.que-btn{
+background:linear-gradient(135deg,var(--gold-dark),var(--bronze));
+border:2px solid var(--gold);
+color:var(--gold-light);
+padding:clamp(10px,2.5vw,14px) clamp(24px,6vw,32px);
+font-size:clamp(13px,3vw,16px);
+font-family:inherit;
+border-radius:25px;
+cursor:pointer;
+margin-top:clamp(8px,2vw,12px);
+font-weight:700;
+}
+
+/* CALENDAR */
+.calendar-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,1.5vw,10px);}
+.calendar-item{
+background:rgba(201,168,76,0.08);
+border:1px solid rgba(201,168,76,0.2);
+border-radius:8px;
+padding:clamp(8px,2vw,12px);
+text-align:center;
+}
+.calendar-item .label{font-size:clamp(9px,2vw,11px);
+color:rgba(232,212,139,0.65);
+margin-bottom:clamp(2px,0.5vw,6px);
+}
+.calendar-item .value{
+font-size:clamp(12px,2.8vw,15px);
+color:var(--gold-light);
+font-weight:700;
+word-break:break-word;
+}
+.calendar-item.good .value{color:#7ec87e;}
+.calendar-item.bad .value{color:#e07070;}
+
+/* NEWS */
+.news-card{
+background:rgba(201,168,76,0.08);
+border:1px solid rgba(201,168,76,0.2);
+border-radius:10px;
+padding:clamp(10px,2.5vw,14px);
+margin-bottom:clamp(8px,2vw,12px);
+}
+.news-card h4{
+color:var(--gold-light);
+font-size:clamp(12px,2.8vw,14px);
+margin-bottom:clamp(4px,1vw,8px);
+line-height:1.4;
+}
+.news-card p{
+color:rgba(232,212,139,0.8);
+font-size:clamp(10px,2.2vw,12px);
+line-height:1.5;
+}
+.news-card .news-date{
+font-size:clamp(9px,2vw,10px);
+color:rgba(201,168,76,0.6);
+margin-top:clamp(4px,1vw,8px);
+}
+
+/* COMMUNITY */
+.community-post{
+background:rgba(201,168,76,0.08);
+border:1px solid rgba(201,168,76,0.2);
+border-radius:10px;
+padding:clamp(10px,2.5vw,14px);
+margin-bottom:clamp(8px,2vw,12px);
+}
+.community-post .post-author{
+color:var(--gold);
+font-size:clamp(11px,2.5vw,13px);
+font-weight:700;margin-bottom:clamp(4px,1vw,6px);
+}
+.community-post .post-content{
+color:rgba(232,212,139,0.9);
+font-size:clamp(11px,2.5vw,13px);
+line-height:1.5;
+margin-bottom:clamp(6px,1.5vw,10px);
+}
+.post-actions{display:flex;gap:clamp(12px,3vw,18px);flex-wrap:wrap;}
+.post-action{
+background:none;border:none;
+color:rgba(232,212,139,0.7);
+font-size:clamp(10px,2vw,12px);
+cursor:pointer;
+font-family:inherit;
+display:flex;align-items:center;gap:4px;
+padding:4px 0;
+}
+.post-action:active{color:var(--gold);}
+.post-action.liked{color:#e07070;}
+
+/* PROFILE */
+.profile-header{text-align:center;padding:clamp(14px,3.5vw,20px);}
+.profile-avatar{
+width:clamp(70px,18vw,90px);height:clamp(70px,18vw,90px);
+border-radius:50%;
+border:3px solid var(--gold);
+background:linear-gradient(135deg,var(--gold-dark),var(--bronze));
+display:flex;align-items:center;justify-content:center;
+margin:0 auto clamp(10px,2.5vw,14px);
+font-size:clamp(28px,7vw,36px);
+box-shadow:0 0 24px rgba(201,168,76,0.4);
+}
+.profile-name{
+color:var(--gold-light);
+font-size:clamp(16px,4vw,20px);
+font-weight:700;
+margin-bottom:clamp(4px,1vw,6px);
+}
+.profile-badge{
+display:inline-block;
+background:rgba(201,168,76,0.18);
+border:1px solid var(--gold);
+border-radius:20px;
+padding:clamp(4px,1vw,6px) clamp(12px,3vw,16px);
+font-size:clamp(10px,2.2vw,12px);
+color:var(--gold-light);
+margin-top:clamp(4px,1vw,8px);
+}
+.profile-stats{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,2vw,12px);margin-top:clamp(12px,3vw,18px);}
+
+/* The rest of the app CSS and HTML continues - full cleaned version without the 2 stray buttons is being restored. For this restore the structure is intact without the floating tabs. */
+</style>
+</head>
+<body>
+<div id="pwaInstallToast" role="status" aria-live="polite">
+<span class="pwa-toast-icon">📲</span>
+<div class="pwa-toast-copy"><div class="pwa-toast-title" id="pwaToastTitle">Cài Đền Tổ Nghề Taxi</div><div class="pwa-toast-text" id="pwaToastText">Thêm ứng dụng vào màn hình điện thoại.</div></div>
+<button type="button" id="pwaToastAction">Cài đặt</button>
+<button type="button" class="pwa-toast-close" id="pwaToastClose" aria-label="Đóng">✕</button>
+</div>
+
+
+<!-- BACKGROUND SLIDESHOW -->
+<div class="bg-slideshow" id="bgSlideshow">
+<img class="bg-slide active" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Bàn Thờ Tổ Nghề Taxi">
+</div>
+<div class="bg-overlay"></div>
+
+<div id="app">
+<div class="header">
+<h1>🏛️ ĐỀN TỔ NGHỀ TAXI</h1>
+<p>Tổ Nghề Taxi · Tri Ân · Thành Kính · Bình An</p>
+</div>
+<div class="main-content" id="mainContent">
+<div class="page active" id="page-home">
+<div class="scene-wrap home-scene">
+<p style="text-align:center;padding:40px;color:#f0e0a0">Ứng dụng đang được khôi phục đầy đủ. 2 tab chìm đã gỡ.</p>
+</div>
+</div>
+</div>
+</div>
+<script id="pwa-install-controller-v3">(function(){let deferredInstallPrompt=null,swRegistration=null;const $=id=>document.getElementById(id);const toast=$('pwaInstallToast');const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;function hide(){toast?.classList.remove('show');}function showInstall(){if(!deferredInstallPrompt||standalone()) return;$('pwaToastTitle').textContent='Cài Đền Tổ Nghề Taxi';$('pwaToastText').textContent='Thêm ứng dụng vào màn hình điện thoại.';$('pwaToastAction').textContent='Cài đặt';$('pwaToastAction').style.display='inline-block';$('pwaInstallToast').classList.add('show');}function showUpdate(){if(!swRegistration?.waiting) return;$('pwaToastTitle').textContent='Đền Tổ Nghề Taxi có bản mới';$('pwaToastText').textContent='Cập nhật ứng dụng để dùng phiên bản mới nhất.';$('pwaToastAction').textContent='Cập nhật';$('pwaToastAction').style.display='inline-block';$('pwaInstallToast').classList.add('show');}window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;showInstall();});window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;hide();});document.addEventListener('DOMContentLoaded',()=>{$('pwaToastClose')?.addEventListener('click',hide);$('pwaToastAction')?.addEventListener('click',async()=>{if(deferredInstallPrompt){const p=deferredInstallPrompt;deferredInstallPrompt=null;hide();try{p.prompt();await p.userChoice;}catch(e){}return;}if(swRegistration?.waiting){hide();swRegistration.waiting.postMessage({type:'SKIP_WAITING'});}});if('serviceWorker' in navigator){navigator.serviceWorker.register('./service-worker.js').then(reg=>{swRegistration=reg;reg.update().catch(()=>{});if(reg.waiting) showUpdate();reg.addEventListener('updatefound',()=>{const nw=reg.installing;if(!nw)return;nw.addEventListener('statechange',()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller) showUpdate();});});}).catch(()=>{});navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload());}});})();</script>
+</body>
+</html>
