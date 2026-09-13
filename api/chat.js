@@ -37,7 +37,7 @@ function setCors(res, origin) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const origin = req.headers.origin || '';
   setCors(res, origin);
 
@@ -83,3 +83,6 @@ export default async function handler(req, res) {
     return sendJson(res, 502, { error: 'AI service unavailable' });
   }
 }
+
+
+module.exports = handler;
