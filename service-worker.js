@@ -1,9 +1,9 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v18-pwa-install';
+const CACHE_NAME = 'den-to-nghe-taxi-v19-pwa-icon-toast';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
-  './icons/app-avatar.jpg',
+  './icons/app-avatar-v2.jpg',
   './js/firebase-bridge.js',
   './js/firebase-config.js'
 ];
