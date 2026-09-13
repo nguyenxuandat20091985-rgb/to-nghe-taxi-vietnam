@@ -1,4 +1,4 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v17-avatar';
+const CACHE_NAME = 'den-to-nghe-taxi-v18-pwa-install';
 const APP_SHELL = [
   './',
   './index.html',
@@ -53,4 +53,8 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() => caches.match(event.request).then((cached) => cached || caches.match('./index.html')))
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
