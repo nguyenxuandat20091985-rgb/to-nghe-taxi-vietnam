@@ -1903,12 +1903,6 @@ Nam mô A Di Đà Phật!</div>
     <small>Tìm sản phẩm và dịch vụ phù hợp với nghề.</small>
   </button>
 
-  <button class="ai-to-nghe-card" data-ai-topic="Cứu hộ / Gara / Lốp / Bảo dưỡng">
-    <span class="ai-to-nghe-card-icon">🔧</span>
-    <strong>Cứu hộ / Gara / Lốp</strong>
-    <small>Hỗ trợ khi xe gặp sự cố hoặc cần bảo dưỡng.</small>
-  </button>
-
   <button class="ai-to-nghe-card" data-ai-topic="Việc làm & cơ hội nghề nghiệp">
     <span class="ai-to-nghe-card-icon">🤝</span>
     <strong>Việc làm & cơ hội</strong>
@@ -2747,7 +2741,6 @@ const TO_NGHE_KNOWLEDGE = {
   'Tin nghề': {intro:'Tin nghề cập nhật từ nguồn công khai.',live:'news'},
   'Cẩm nang nghề': {intro:'Kinh nghiệm xử lý tình huống thực tế.'},
   'Chợ dịch vụ': {intro:'Tìm dịch vụ thật quanh vị trí hiện tại.',rescue:true},
-  'Cứu hộ / Gara / Lốp / Bảo dưỡng': {intro:'Tìm cứu hộ, Gara, lốp và bảo dưỡng gần vị trí hiện tại.',rescue:true},
   'Việc làm & cơ hội nghề nghiệp': {intro:'Tìm kiếm cơ hội nghề nghiệp.'}
 };
 
@@ -2767,16 +2760,8 @@ function renderToNghePanel(topic){
   const p=ensureToNghePanel(),cfg=TO_NGHE_KNOWLEDGE[topic]||TO_NGHE_KNOWLEDGE['Trợ lý nghề']; if(!p)return;
   document.getElementById('toNgheAIPanelTitle').textContent='✦ '+topic;
   const body=document.getElementById('toNgheAIPanelBody');
-  if(cfg.rescue){
-    body.innerHTML='<div class="ai-rescue-status">'+escHtml(cfg.intro)+'</div><div class="ai-rescue-types">'+
-      '<button class="ai-rescue-type" type="button" data-rescue-query="cứu hộ ô tô">🚨 Cứu hộ ô tô</button>'+
-      '<button class="ai-rescue-type" type="button" data-rescue-query="gara ô tô">🔧 Gara ô tô</button>'+
-      '<button class="ai-rescue-type" type="button" data-rescue-query="lốp ô tô">🛞 Lốp ô tô</button>'+
-      '<button class="ai-rescue-type" type="button" data-rescue-query="bảo dưỡng ô tô">🧰 Bảo dưỡng ô tô</button>'+
-      '</div><button type="button" class="ai-rescue-type ai-rescue-primary" data-rescue-query="cứu hộ ô tô">📍 TÌM DỊCH VỤ GẦN TÔI</button><div id="toNgheRescueContent"></div>';
-    body.querySelectorAll('[data-rescue-query]').forEach(btn=>btn.addEventListener('click',()=>window.findToNgheRescue(btn.dataset.rescueQuery)));
-  }else{
-    const actions={
+  {
+    const actions={   const actions={
       'Trợ lý nghề':['🚕 Hỏi AI về tình huống đang gặp','💡 Kinh nghiệm chạy xe an toàn'],
       'Quyền lợi tài xế':['🛡️ Hỏi AI cách tra cứu quyền lợi'],
       'Cẩm nang nghề':['📚 Hỏi AI về tình huống nghề'],
