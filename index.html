@@ -3045,31 +3045,40 @@ const old=window.renderToNghePanel;window.renderToNghePanel=function(topic){if(t
 <script id="service-market-v1-js">(function(){
 function smEsc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 const cats=[['gara ô tô','🔧 Gara'],['lốp ô tô','🛞 Lốp'],['cứu hộ ô tô','🚨 Cứu hộ'],['bảo dưỡng ô tô','🧰 Bảo dưỡng'],['rửa xe ô tô','🧽 Rửa xe'],['phụ tùng ô tô','⚙️ Phụ tùng']];
+const shop=[['Dầu nhớt & phụ gia','🛢️','Dầu máy, phụ gia, dung dịch chăm sóc xe'],['Lốp & ắc quy','🛞','Lốp xe, ắc quy và vật tư tiêu hao'],['Phụ tùng taxi','⚙️','Phụ tùng, đèn, gạt mưa và đồ thay thế'],['Đồ nghề tài xế','🧰','Thiết bị, phụ kiện và đồ dùng đi xe'],['Thiết bị định vị','📍','Thiết bị hỗ trợ quản lý và an toàn'],['Chăm sóc xe','✨','Nước rửa xe, khăn, máy hút bụi và phụ kiện']];
+function shopView(body){
+ body.innerHTML='<div class="service-market"><div class="service-market-status">🛒 <b>CHỢ</b><br>Đồ dùng, phụ tùng và vật tư dành riêng cho tài xế.</div><div class="service-market-grid">'+shop.map(x=>'<button type="button" class="service-market-btn" data-shop-cat="'+smEsc(x[0])+'">'+x[1]+' '+x[0]+'</button>').join('')+'</div><div id="shopResults"></div><div class="service-market-note">Danh mục này không tự tạo giá hoặc tồn kho giả. Khi kết nối nhà cung cấp/đối tác chính thức, sản phẩm và giá thật sẽ được đưa vào đây.</div></div>';
+ body.querySelectorAll('[data-shop-cat]').forEach(b=>b.addEventListener('click',()=>{
+   const q=b.dataset.shopCat;const box=body.querySelector('#shopResults');
+   box.innerHTML='<div class="service-market-item"><strong>'+smEsc(q)+'</strong><small>🔌 Khu vực kết nối nhà cung cấp đang được chuẩn bị. Chưa hiển thị sản phẩm/giá chưa được xác thực.</small></div>';
+ }));
+}
 async function smFind(q,box){
  if(!navigator.geolocation){box.innerHTML='<div class="service-market-status">⚠️ Thiết bị không hỗ trợ định vị.</div>';return}
  box.innerHTML='<div class="service-market-status">📡 Đang xác định vị trí…</div>';
  navigator.geolocation.getCurrentPosition(async p=>{
-  try{
-   const lat=p.coords.latitude,lon=p.coords.longitude;
-   const r=await fetch('/api/to-nghe-content.js?type=services&q='+encodeURIComponent(q)+'&lat='+lat+'&lon='+lon+'&radius=10',{cache:'no-store'});
-   const d=await r.json();if(!r.ok)throw 0;
+  try{const lat=p.coords.latitude,lon=p.coords.longitude;
+   const r=await fetch('/api/to-nghe-content.js?type=services&q='+encodeURIComponent(q)+'&lat='+lat+'&lon='+lon+'&radius=10',{cache:'no-store'}),d=await r.json();if(!r.ok)throw 0;
    const items=(d.items||[]).filter(x=>Number.isFinite(Number(x.distanceKm))).sort((a,b)=>a.distanceKm-b.distanceKm);
    if(!items.length){box.innerHTML='<div class="service-market-status">⚠️ Chưa tìm thấy dịch vụ phù hợp trong bán kính 10 km.</div>';return}
    box.innerHTML=items.slice(0,8).map(x=>{const map='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.lat+','+x.lon);return '<div class="service-market-item"><strong>'+smEsc(x.name)+'</strong><small>📍 '+Number(x.distanceKm).toFixed(1)+' km · '+smEsc(x.address)+'</small><div class="service-market-actions"><a href="'+map+'" target="_blank" rel="noopener noreferrer">🗺️ Chỉ đường</a></div></div>'}).join('');
   }catch(e){box.innerHTML='<div class="service-market-status">⚠️ Không lấy được dữ liệu dịch vụ. Anh thử lại sau.</div>'}
  },()=>{box.innerHTML='<div class="service-market-status">⚠️ Anh chưa cấp quyền vị trí. Hãy cho phép định vị để tìm dịch vụ gần mình.</div>'},{enableHighAccuracy:true,timeout:15000,maximumAge:60000})
 }
-window.renderToNgheServiceMarket=function(body){
- body.innerHTML='<div class="service-market"><div class="service-market-status">Chọn nhu cầu để tìm dịch vụ thật quanh vị trí hiện tại.</div><div class="service-market-grid">'+cats.map(x=>'<button type="button" class="service-market-btn" data-sm-q="'+smEsc(x[0])+'">'+x[1]+'</button>').join('')+'</div><div id="serviceMarketResults"></div><div class="service-market-note">Dữ liệu địa điểm từ nguồn bản đồ công khai. Đây chưa phải danh sách đối tác trả phí và hệ thống không tự nhận hoa hồng.</div></div>';
- const box=body.querySelector('#serviceMarketResults');
- body.querySelectorAll('[data-sm-q]').forEach(b=>b.addEventListener('click',()=>smFind(b.dataset.smQ,box)));
+function serviceView(body){
+ body.innerHTML='<div class="service-market"><div class="service-market-status">📍 Chọn nhu cầu để tìm dịch vụ thật quanh vị trí hiện tại.</div><div class="service-market-grid">'+cats.map(x=>'<button type="button" class="service-market-btn" data-sm-q="'+smEsc(x[0])+'">'+x[1]+'</button>').join('')+'</div><div id="serviceMarketResults"></div><div class="service-market-note">Dữ liệu địa điểm từ nguồn bản đồ công khai. Chưa phải danh sách đối tác trả phí và không tự nhận hoa hồng.</div></div>';
+ const box=body.querySelector('#serviceMarketResults');body.querySelectorAll('[data-sm-q]').forEach(b=>b.addEventListener('click',()=>smFind(b.dataset.smQ,box)));
 }
+window.renderToNgheServiceMarket=function(body){
+ body.innerHTML='<div class="service-market"><div class="service-market-grid"><button type="button" class="service-market-btn" id="smShop">🛒 CHỢ</button><button type="button" class="service-market-btn" id="smServices">📍 DỊCH VỤ</button></div><div id="smMain"></div></div>';
+ const main=body.querySelector('#smMain');body.querySelector('#smShop').onclick=()=>shopView(main);body.querySelector('#smServices').onclick=()=>serviceView(main);shopView(main);
+};
 const oldRender=window.renderToNghePanel;
 window.renderToNghePanel=function(topic){
  if(topic==='Chợ dịch vụ'){
   const p=window.ensureToNghePanel?.();if(!p)return;
   const t=document.getElementById('toNgheAIPanelTitle'),b=document.getElementById('toNgheAIPanelBody');
-  if(t)t.textContent='✦ Chợ dịch vụ';
+  if(t)t.textContent='✦ Chợ & Dịch vụ';
   if(b)window.renderToNgheServiceMarket(b);
   p.classList.add('show');return;
  }
