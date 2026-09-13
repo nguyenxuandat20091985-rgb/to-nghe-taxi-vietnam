@@ -1549,18 +1549,15 @@ padding-bottom:clamp(64px,14vw,80px) !important;
 
 </style>
 
-<style id="pwa-install-ui-v1">
+
+<style id="pwa-install-ui-v2">
 #pwaInstallBar{position:fixed;top:62px;left:10px;right:10px;z-index:1000;display:none;align-items:center;gap:8px;padding:9px 10px;border:1px solid rgba(212,175,55,.65);border-radius:12px;background:rgba(18,10,4,.96);box-shadow:0 6px 28px rgba(0,0,0,.55);backdrop-filter:blur(8px)}
-#pwaInstallBar.show{display:flex}
-#pwaInstallBar .pwa-install-text{flex:1;color:#f0e0a0;font-size:12px;line-height:1.35}
+#pwaInstallBar.show{display:flex}.pwa-install-text{flex:1;color:#f0e0a0;font-size:12px;line-height:1.35}
 #pwaInstallBar button{border:1px solid #d4af37;background:linear-gradient(135deg,#8b6914,#c9893a);color:#fff8e0;border-radius:9px;padding:8px 10px;font-weight:700;font-size:12px}
 #pwaInstallBar .pwa-close{background:transparent;border-color:rgba(212,175,55,.35);padding:7px 9px}
-@media(min-width:700px){#pwaInstallBar{left:auto;right:16px;max-width:390px}}
-</style>
-</head>
-<body>
-<div id="pwaInstallBar" role="status" aria-live="polite">
-  <div class="pwa-install-text" id="pwaInstallText">📲 Ứng dụng Đền Tổ Nghề Taxi đã có bản mới.</div>
+</style></head>
+<body><div id="pwaInstallBar" role="status" aria-live="polite"><div class="pwa-install-text" id="pwaInstallText">📲 Cài ứng dụng Đền Tổ Nghề Taxi</div><button type="button" id="pwaInstallBtn">Cài ứng dụng</button><button type="button" class="pwa-close" id="pwaCloseBtn" aria-label="Đóng">✕</button></div>
+
   <button type="button" id="pwaInstallBtn">Cập nhật</button>
   <button type="button" class="pwa-close" id="pwaCloseBtn" aria-label="Đóng">✕</button>
 </div>
@@ -3002,63 +2999,37 @@ if('serviceWorker' in navigator && (location.protocol === 'https:' || location.h
 </script>
 <!-- community.js được load bởi firebase-bridge.js (ES module) sau khi Firebase sẵn sàng -->
 
-<script id="pwa-install-controller-v1">
-(function(){
-  let deferredInstallPrompt=null;
-  let swRegistration=null;
-  const bar=()=>document.getElementById('pwaInstallBar');
-  const btn=()=>document.getElementById('pwaInstallBtn');
-  const txt=()=>document.getElementById('pwaInstallText');
-  const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
-  function show(mode){
-    const b=bar(); if(!b) return;
-    b.classList.add('show');
-    if(mode==='install'){txt().textContent='📲 Cài ứng dụng Đền Tổ Nghề Taxi vào màn hình điện thoại';btn().textContent='Cài ứng dụng';}
-    else if(mode==='update'){txt().textContent='🔄 Đã có phiên bản Đền Tổ Nghề Taxi mới';btn().textContent='Cập nhật';}
+
+<script id="pwa-install-controller-v2">(function(){
+let deferredInstallPrompt=null,swRegistration=null;
+const el=id=>document.getElementById(id), bar=()=>el('pwaInstallBar');
+const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const hide=()=>{const b=bar();if(b)b.classList.remove('show');};
+function showInstall(){if(standalone()||!deferredInstallPrompt)return;const b=bar();if(b)b.classList.add('show');}
+function showUpdate(){if(standalone()||!swRegistration?.waiting)return;const b=bar();if(b){el('pwaInstallText').textContent='🔄 Đã có phiên bản mới';el('pwaInstallBtn').textContent='Cập nhật';b.classList.add('show');}}
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;showInstall();});
+addEventListener('appinstalled',()=>{deferredInstallPrompt=null;hide();});
+document.addEventListener('DOMContentLoaded',()=>{
+  const close=el('pwaCloseBtn'),btn=el('pwaInstallBtn');
+  close?.addEventListener('click',hide);
+  btn?.addEventListener('click',async()=>{
+    if(deferredInstallPrompt){const p=deferredInstallPrompt;hide();deferredInstallPrompt=null;try{p.prompt();await p.userChoice;}catch(e){}return;}
+    if(swRegistration?.waiting){hide();swRegistration.waiting.postMessage({type:'SKIP_WAITING'});return;}
+    hide();
+  });
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./service-worker.js').then(reg=>{
+      swRegistration=reg;reg.update().catch(()=>{});
+      if(reg.waiting)showUpdate();
+      reg.addEventListener('updatefound',()=>{
+        const nw=reg.installing;if(!nw)return;
+        nw.addEventListener('statechange',()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller)showUpdate();});
+      });
+    }).catch(()=>{});
   }
-  function hide(){const b=bar();if(b)b.classList.remove('show');}
-  window.addEventListener('beforeinstallprompt',function(e){
-    e.preventDefault(); deferredInstallPrompt=e; show('install');
-  });
-  window.addEventListener('appinstalled',function(){deferredInstallPrompt=null;hide();});
-  document.addEventListener('DOMContentLoaded',function(){
-    document.getElementById('pwaCloseBtn')?.addEventListener('click',hide);
-    btn()?.addEventListener('click',async function(){
-      if(deferredInstallPrompt){
-        deferredInstallPrompt.prompt();
-        try{await deferredInstallPrompt.userChoice;}catch(e){}
-        deferredInstallPrompt=null;hide();return;
-      }
-      if(swRegistration && swRegistration.waiting){
-        swRegistration.waiting.postMessage({type:'SKIP_WAITING'});return;
-      }
-      if(/iphone|ipad|ipod/i.test(navigator.userAgent)){
-        alert('Trên iPhone/iPad: bấm Chia sẻ → Thêm vào Màn hình chính.');
-      }else{
-        alert('Nếu trình duyệt không hiện hộp cài đặt, mở menu ⋮ của Chrome rồi chọn “Cài đặt ứng dụng” hoặc “Thêm vào màn hình chính”.');
-      }
-    });
-    setTimeout(function(){ if(!deferredInstallPrompt && !isStandalone() && !swRegistration?.waiting) show('install'); }, 2500);
-    if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
-      navigator.serviceWorker.register('./service-worker.js').then(function(reg){
-        swRegistration=reg;
-        // Force an update check whenever the installed app is opened.
-        reg.update().catch(function(){});
-        if(reg.waiting) show('update');
-        reg.addEventListener('updatefound',function(){
-          const nw=reg.installing;
-          if(!nw)return;
-          nw.addEventListener('statechange',function(){
-            if(nw.state==='installed' && navigator.serviceWorker.controller) show('update');
-          });
-        });
-      }).catch(function(){});
-      navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload();});
-    }
-  });
-})();
-</script>
-</body>
+  navigator.serviceWorker?.addEventListener('controllerchange',()=>location.reload());
+});
+})();</script></body>
 </html>
 
 <style id="tn-performance-v1">
