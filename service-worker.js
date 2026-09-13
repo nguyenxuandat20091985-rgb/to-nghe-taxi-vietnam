@@ -1,10 +1,9 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v16-ai-to-nghe';
+const CACHE_NAME = 'den-to-nghe-taxi-v17-avatar';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
+  './icons/app-avatar.jpg',
   './js/firebase-bridge.js',
   './js/firebase-config.js'
 ];
@@ -32,7 +31,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Fallback apple-touch / favicon to official icon-192
+  // Fallback browser/launcher icons to the current Taxi Guild avatar
   const path = url.pathname;
   if (path.endsWith('/icons/apple-touch-icon.png') ||
       path.endsWith('/apple-touch-icon.png') ||
@@ -40,7 +39,7 @@ self.addEventListener('fetch', (event) => {
       path.endsWith('/favicon.ico') ||
       path.endsWith('/icons/icon-192-maskable.png')) {
     event.respondWith(
-      caches.match('./icons/icon-192.png').then((c) => c || fetch('./icons/icon-192.png'))
+      caches.match('./icons/app-avatar.jpg').then((c) => c || fetch('./icons/app-avatar.jpg'))
     );
     return;
   }
