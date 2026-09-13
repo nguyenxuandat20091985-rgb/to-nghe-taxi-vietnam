@@ -1550,13 +1550,23 @@ padding-bottom:clamp(64px,14vw,80px) !important;
 </style>
 
 
-<style id="pwa-install-ui-v2">
-#pwaInstallBar{position:fixed;top:62px;left:10px;right:10px;z-index:1000;display:none;align-items:center;gap:8px;padding:9px 10px;border:1px solid rgba(212,175,55,.65);border-radius:12px;background:rgba(18,10,4,.96);box-shadow:0 6px 28px rgba(0,0,0,.55);backdrop-filter:blur(8px)}
-#pwaInstallBar.show{display:flex}.pwa-install-text{flex:1;color:#f0e0a0;font-size:12px;line-height:1.35}
-#pwaInstallBar button{border:1px solid #d4af37;background:linear-gradient(135deg,#8b6914,#c9893a);color:#fff8e0;border-radius:9px;padding:8px 10px;font-weight:700;font-size:12px}
-#pwaInstallBar .pwa-close{background:transparent;border-color:rgba(212,175,55,.35);padding:7px 9px}
+<style id="pwa-install-toast-v3">
+#pwaInstallToast{position:fixed;left:12px;right:12px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:1001;display:none;align-items:center;gap:10px;padding:10px 11px;border:1px solid rgba(212,175,55,.55);border-radius:14px;background:rgba(22,12,5,.97);box-shadow:0 8px 30px rgba(0,0,0,.55);backdrop-filter:blur(10px)}
+#pwaInstallToast.show{display:flex;animation:pwaToastIn .22s ease-out}
+#pwaInstallToast .pwa-toast-icon{font-size:24px;line-height:1;flex:0 0 auto}
+#pwaInstallToast .pwa-toast-copy{flex:1;min-width:0}
+#pwaInstallToast .pwa-toast-title{color:#f0e0a0;font-size:12px;font-weight:700;line-height:1.3}
+#pwaInstallToast .pwa-toast-text{color:rgba(240,224,160,.68);font-size:10px;line-height:1.35;margin-top:2px}
+#pwaInstallToast button{border:1px solid #d4af37;background:linear-gradient(135deg,#8b6914,#c9893a);color:#fff8e0;border-radius:10px;padding:8px 10px;font-weight:700;font-size:11px;white-space:nowrap}
+#pwaInstallToast .pwa-toast-close{background:transparent;border-color:rgba(212,175,55,.25);padding:7px 8px}
+@keyframes pwaToastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 </style></head>
-<body><div id="pwaInstallBar" role="status" aria-live="polite"><div class="pwa-install-text" id="pwaInstallText">📲 Cài ứng dụng Đền Tổ Nghề Taxi</div><button type="button" id="pwaInstallBtn">Cài ứng dụng</button><button type="button" class="pwa-close" id="pwaCloseBtn" aria-label="Đóng">✕</button></div>
+<body><div id="pwaInstallToast" role="status" aria-live="polite">
+<span class="pwa-toast-icon">📲</span>
+<div class="pwa-toast-copy"><div class="pwa-toast-title" id="pwaToastTitle">Cài Đền Tổ Nghề Taxi</div><div class="pwa-toast-text" id="pwaToastText">Thêm ứng dụng vào màn hình điện thoại.</div></div>
+<button type="button" id="pwaToastAction">Cài đặt</button>
+<button type="button" class="pwa-toast-close" id="pwaToastClose" aria-label="Đóng">✕</button>
+</div><button type="button" id="pwaInstallBtn">Cài ứng dụng</button><button type="button" class="pwa-close" id="pwaCloseBtn" aria-label="Đóng">✕</button></div>
 
   <button type="button" id="pwaInstallBtn">Cập nhật</button>
   <button type="button" class="pwa-close" id="pwaCloseBtn" aria-label="Đóng">✕</button>
@@ -3000,34 +3010,56 @@ if('serviceWorker' in navigator && (location.protocol === 'https:' || location.h
 <!-- community.js được load bởi firebase-bridge.js (ES module) sau khi Firebase sẵn sàng -->
 
 
-<script id="pwa-install-controller-v2">(function(){
+<script id="pwa-install-controller-v3">(function(){
 let deferredInstallPrompt=null,swRegistration=null;
-const el=id=>document.getElementById(id), bar=()=>el('pwaInstallBar');
+const $=id=>document.getElementById(id);
+const toast=$('pwaInstallToast');
 const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-const hide=()=>{const b=bar();if(b)b.classList.remove('show');};
-function showInstall(){if(standalone()||!deferredInstallPrompt)return;const b=bar();if(b)b.classList.add('show');}
-function showUpdate(){if(standalone()||!swRegistration?.waiting)return;const b=bar();if(b){el('pwaInstallText').textContent='🔄 Đã có phiên bản mới';el('pwaInstallBtn').textContent='Cập nhật';b.classList.add('show');}}
-addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;showInstall();});
-addEventListener('appinstalled',()=>{deferredInstallPrompt=null;hide();});
+function hide(){toast?.classList.remove('show');}
+function showInstall(){
+  if(!deferredInstallPrompt||standalone()) return;
+  $('pwaToastTitle').textContent='Cài Đền Tổ Nghề Taxi';
+  $('pwaToastText').textContent='Thêm ứng dụng vào màn hình điện thoại.';
+  $('pwaToastAction').textContent='Cài đặt';
+  $('pwaToastAction').style.display='inline-block';
+  $('pwaInstallToast').classList.add('show');
+}
+function showUpdate(){
+  if(!swRegistration?.waiting) return;
+  $('pwaToastTitle').textContent='Đền Tổ Nghề Taxi có bản mới';
+  $('pwaToastText').textContent='Cập nhật ứng dụng để dùng phiên bản mới nhất.';
+  $('pwaToastAction').textContent='Cập nhật';
+  $('pwaToastAction').style.display='inline-block';
+  $('pwaInstallToast').classList.add('show');
+}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;showInstall();});
+window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;hide();});
 document.addEventListener('DOMContentLoaded',()=>{
-  const close=el('pwaCloseBtn'),btn=el('pwaInstallBtn');
-  close?.addEventListener('click',hide);
-  btn?.addEventListener('click',async()=>{
-    if(deferredInstallPrompt){const p=deferredInstallPrompt;hide();deferredInstallPrompt=null;try{p.prompt();await p.userChoice;}catch(e){}return;}
-    if(swRegistration?.waiting){hide();swRegistration.waiting.postMessage({type:'SKIP_WAITING'});return;}
-    hide();
+  $('pwaToastClose')?.addEventListener('click',hide);
+  $('pwaToastAction')?.addEventListener('click',async()=>{
+    if(deferredInstallPrompt){
+      const p=deferredInstallPrompt;deferredInstallPrompt=null;hide();
+      try{p.prompt();await p.userChoice;}catch(e){}
+      return;
+    }
+    if(swRegistration?.waiting){
+      hide();swRegistration.waiting.postMessage({type:'SKIP_WAITING'});
+    }
   });
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('./service-worker.js').then(reg=>{
-      swRegistration=reg;reg.update().catch(()=>{});
-      if(reg.waiting)showUpdate();
+      swRegistration=reg;
+      reg.update().catch(()=>{});
+      if(reg.waiting) showUpdate();
       reg.addEventListener('updatefound',()=>{
         const nw=reg.installing;if(!nw)return;
-        nw.addEventListener('statechange',()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller)showUpdate();});
+        nw.addEventListener('statechange',()=>{
+          if(nw.state==='installed'&&navigator.serviceWorker.controller) showUpdate();
+        });
       });
     }).catch(()=>{});
+    navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload());
   }
-  navigator.serviceWorker?.addEventListener('controllerchange',()=>location.reload());
 });
 })();</script></body>
 </html>
