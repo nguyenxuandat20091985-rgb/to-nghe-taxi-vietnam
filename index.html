@@ -3039,6 +3039,7 @@ if('serviceWorker' in navigator && (location.protocol === 'https:' || location.h
         alert('Nếu trình duyệt không hiện hộp cài đặt, mở menu ⋮ của Chrome rồi chọn “Cài đặt ứng dụng” hoặc “Thêm vào màn hình chính”.');
       }
     });
+    setTimeout(function(){ if(!deferredInstallPrompt && !isStandalone()) show('install'); }, 2500);
     if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
       navigator.serviceWorker.register('./service-worker.js').then(function(reg){
         swRegistration=reg;
