@@ -1,4 +1,4 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v19-pwa-icon-toast';
+const CACHE_NAME = 'den-to-nghe-taxi-v20-avatar';
 const APP_SHELL = [
   './',
   './index.html',
