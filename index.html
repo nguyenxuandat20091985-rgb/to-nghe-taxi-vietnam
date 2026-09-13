@@ -2743,12 +2743,9 @@ window.showBuaMayMan = function(){
 // ===== AI TỔ NGHỀ =====
 const TO_NGHE_KNOWLEDGE = {
   'Trợ lý nghề': {intro:'Trợ lý AI trung tâm dành cho tài xế.'},
-  'Hỏi đáp': {intro:'Đặt câu hỏi tự nhiên về nghề Taxi.'},
-  'Cẩm nang': {intro:'Kiến thức nhanh dành cho tài xế.'},
   'Quyền lợi tài xế': {intro:'Thông tin tham khảo từ nguồn chính thức.'},
   'Tin nghề': {intro:'Tin nghề cập nhật từ nguồn công khai.',live:'news'},
   'Cẩm nang nghề': {intro:'Kinh nghiệm xử lý tình huống thực tế.'},
-  'Ưu đãi tài xế': {intro:'Chỉ hiển thị ưu đãi được xác thực.'},
   'Chợ dịch vụ': {intro:'Tìm dịch vụ thật quanh vị trí hiện tại.',rescue:true},
   'Cứu hộ / Gara / Lốp / Bảo dưỡng': {intro:'Tìm cứu hộ, Gara, lốp và bảo dưỡng gần vị trí hiện tại.',rescue:true},
   'Việc làm & cơ hội nghề nghiệp': {intro:'Tìm kiếm cơ hội nghề nghiệp.'}
@@ -2781,12 +2778,10 @@ function renderToNghePanel(topic){
   }else{
     const actions={
       'Trợ lý nghề':['🚕 Hỏi AI về tình huống đang gặp','💡 Kinh nghiệm chạy xe an toàn'],
-      'Hỏi đáp':['💬 Đặt câu hỏi cho AI Tổ Nghề'],
-      'Cẩm nang':['📖 Mở chủ đề cẩm nang','🚕 Hỏi AI cách áp dụng'],
       'Quyền lợi tài xế':['🛡️ Hỏi AI cách tra cứu quyền lợi'],
       'Cẩm nang nghề':['📚 Hỏi AI về tình huống nghề'],
-      'Ưu đãi tài xế':['🎁 Kiểm tra ưu đãi đã xác thực'],
-      'Việc làm & cơ hội nghề nghiệp':['🤝 Hỏi AI về cơ hội nghề nghiệp']
+      'Việc làm & cơ hội nghề nghiệp':['🤝 Tìm việc lái xe / giao hàng / logistics','📍 Lọc cơ hội theo khu vực']
+    }[topic]||[];
     }[topic]||[];
     body.innerHTML='<div>'+escHtml(cfg.intro)+'</div>'+
       (actions.length?'<div class="ai-to-nghe-actions">'+actions.map(x=>'<button type="button" data-ai-prompt="'+escHtml(x.replace(/^[^ ]+ /,'') )+'">'+escHtml(x)+'</button>').join('')+'</div>':'')+
