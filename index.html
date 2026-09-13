@@ -2797,11 +2797,8 @@ window.findToNgheRescue=async function(query){
   box.innerHTML='<div class="ai-rescue-status">📡 Đang lấy vị trí chính xác…</div>';
   const handlePosition=async pos=>{
     const accuracy=Math.round(pos.coords.accuracy||9999);
-    if(accuracy>150){
-      box.innerHTML='<div class="ai-rescue-status">⚠️ GPS chưa đủ chính xác ('+accuracy+' m). Anh hãy bật Vị trí chính xác (Precise location), đứng nơi thoáng rồi thử lại.</div>'; return;
-    }
     const lat=pos.coords.latitude, lon=pos.coords.longitude;
-    box.innerHTML='<div class="ai-rescue-status">📍 Vị trí đã xác định (±'+accuracy+' m). Tìm trong 3 km…</div>';
+    box.innerHTML='<div class="ai-rescue-status">📍 Đã nhận vị trí (độ chính xác khoảng ±'+accuracy+' m). Đang tìm dịch vụ trong 3 km…</div>';
     try{
       const url='/api/to-nghe-content.js?type=services&q='+encodeURIComponent(query)+'&lat='+lat+'&lon='+lon+'&radius=3';
       const r=await fetch(url,{cache:'no-store'});
