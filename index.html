@@ -2774,7 +2774,7 @@ function ensureToNghePanel(){
   if(p)return p;
   const chat=document.querySelector('.ai-to-nghe-chat'); if(!chat)return null;
   p=document.createElement('div'); p.id='toNgheAIPanel'; p.className='ai-to-nghe-panel';
-  p.innerHTML='<div class="ai-to-nghe-panel-head"><strong id="toNgheAIPanelTitle"></strong><button type="button" class="ai-to-nghe-close" id="toNgheAIClose">✕</button></div><div id="toNgheAIPanelBody" class="ai-to-nghe-panel-body"></div>';
+  p.innerHTML='<div class="ai-to-nghe-panel-head"><strong id="toNgheAIPanelTitle"></strong></div><div id="toNgheAIPanelBody" class="ai-to-nghe-panel-body"></div>';
   chat.insertBefore(p,chat.querySelector('.ai-chat-wrap')); return p;
 }
 function escHtml(v){
