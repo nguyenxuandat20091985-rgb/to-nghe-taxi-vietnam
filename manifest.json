@@ -10,11 +10,20 @@
   "orientation": "portrait",
   "background_color": "#050301",
   "theme_color": "#1a0e05",
-  "categories": ["lifestyle", "social"],
+  "categories": [
+    "lifestyle",
+    "social"
+  ],
   "icons": [
     {
       "src": "icons/app-avatar.jpg",
       "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/app-avatar.jpg",
+      "sizes": "512x512",
       "type": "image/jpeg",
       "purpose": "any maskable"
     }
