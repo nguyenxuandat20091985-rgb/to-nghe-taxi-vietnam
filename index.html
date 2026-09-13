@@ -3039,6 +3039,42 @@ const esc=window.escHtml||function(v){return String(v??'').replace(/[&<>"']/g,m=
 async function loadJobs(box){const q=(box.querySelector('#jobsQuery')?.value||'tài xế').trim(),area=(box.querySelector('#jobsArea')?.value||'toàn quốc').trim(),type=box.querySelector('#jobsType')?.value||'all',list=box.querySelector('#jobsList');if(!list)return;list.innerHTML='<div class="jobs-loading">🔎 Đang tìm cơ hội phù hợp…</div>';try{const r=await fetch('/api/jobs.js?q='+encodeURIComponent(q)+'&area='+encodeURIComponent(area)+'&type='+encodeURIComponent(type),{cache:'no-store'}),data=await r.json();if(!r.ok)throw 0;if(!data.items?.length){list.innerHTML='<div class="jobs-loading">Chưa tìm thấy tin phù hợp. Anh thử đổi từ khóa/khu vực.</div>';return}list.innerHTML=data.items.map(x=>'<a class="job-card" href="'+esc(x.link)+'" target="_blank" rel="noopener noreferrer"><strong>'+esc(x.title)+'</strong><small>🏢 '+esc(x.source)+'</small><small>📍 '+esc(x.area||area)+'</small>'+(x.pubDate?'<small>🕒 '+esc(x.pubDate)+'</small>':'')+'</a>').join('')}catch(e){list.innerHTML='<div class="jobs-loading">⚠️ Nguồn việc đang tạm thời không sẵn sàng. Anh thử lại sau.</div>'}}
 window.renderToNgheJobs=function(body){body.innerHTML='<div class="jobs-box"><div class="jobs-providers"><span class="jobs-provider">Glints · ưu tiên</span><span class="jobs-provider">TopCV · đối tác</span><span class="jobs-provider">Vieclam24h · bổ sung</span></div><div class="jobs-toolbar"><input id="jobsQuery" value="tài xế" placeholder="Ví dụ: tài xế, shipper, logistics"><input id="jobsArea" value="toàn quốc" placeholder="Khu vực"><select id="jobsType"><option value="all">Tất cả</option><option value="driver">Tài xế</option><option value="shipper">Shipper</option><option value="logistics">Logistics</option><option value="dispatcher">Điều phối</option></select></div><button type="button" class="ai-rescue-type ai-rescue-primary" id="jobsSearchBtn">🔎 TÌM VIỆC</button><div id="jobsList"><div class="jobs-loading">Đang tải cơ hội việc làm…</div></div><div class="jobs-note">Nguồn hiển thị được ghi rõ. Hệ thống không tự nhận hoa hồng khi chưa có thỏa thuận đối tác. Khi có API/partner chính thức, provider adapter có thể chuyển sang nguồn trực tiếp.</div></div>';body.querySelector('#jobsSearchBtn')?.addEventListener('click',()=>loadJobs(body));loadJobs(body)};
 const old=window.renderToNghePanel;window.renderToNghePanel=function(topic){if(topic==='Việc làm & cơ hội nghề nghiệp'){const p=window.ensureToNghePanel?.();if(!p)return;const title=document.getElementById('toNgheAIPanelTitle'),body=document.getElementById('toNgheAIPanelBody');if(title)title.textContent='✦ Việc làm & cơ hội';if(body)window.renderToNgheJobs(body);p.classList.add('show');return}return old?.apply(this,arguments)};
+})();</script><style id="service-market-v1">
+.service-market{margin-top:8px}.service-market-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.service-market-btn{padding:11px 8px;border:1px solid rgba(212,175,55,.3);border-radius:10px;background:rgba(212,175,55,.08);color:#f0e0a0;font-weight:700}.service-market-btn:active{transform:scale(.98)}.service-market-status{padding:12px;text-align:center;color:rgba(240,224,160,.72);line-height:1.5}.service-market-item{padding:12px;margin:8px 0;border:1px solid rgba(212,175,55,.22);border-radius:11px;background:rgba(201,168,76,.07)}.service-market-item strong{display:block;line-height:1.4}.service-market-item small{display:block;margin-top:4px;color:rgba(240,224,160,.7);line-height:1.4}.service-market-actions{display:flex;gap:7px;margin-top:9px}.service-market-actions a,.service-market-actions button{flex:1;text-align:center;text-decoration:none;padding:8px;border-radius:8px;border:1px solid rgba(212,175,55,.25);background:rgba(212,175,55,.1);color:#f0e0a0}.service-market-note{font-size:10px;color:rgba(240,224,160,.58);line-height:1.45;margin-top:9px}
+</style>
+<script id="service-market-v1-js">(function(){
+function smEsc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+const cats=[['gara ô tô','🔧 Gara'],['lốp ô tô','🛞 Lốp'],['cứu hộ ô tô','🚨 Cứu hộ'],['bảo dưỡng ô tô','🧰 Bảo dưỡng'],['rửa xe ô tô','🧽 Rửa xe'],['phụ tùng ô tô','⚙️ Phụ tùng']];
+async function smFind(q,box){
+ if(!navigator.geolocation){box.innerHTML='<div class="service-market-status">⚠️ Thiết bị không hỗ trợ định vị.</div>';return}
+ box.innerHTML='<div class="service-market-status">📡 Đang xác định vị trí…</div>';
+ navigator.geolocation.getCurrentPosition(async p=>{
+  try{
+   const lat=p.coords.latitude,lon=p.coords.longitude;
+   const r=await fetch('/api/to-nghe-content.js?type=services&q='+encodeURIComponent(q)+'&lat='+lat+'&lon='+lon+'&radius=10',{cache:'no-store'});
+   const d=await r.json();if(!r.ok)throw 0;
+   const items=(d.items||[]).filter(x=>Number.isFinite(Number(x.distanceKm))).sort((a,b)=>a.distanceKm-b.distanceKm);
+   if(!items.length){box.innerHTML='<div class="service-market-status">⚠️ Chưa tìm thấy dịch vụ phù hợp trong bán kính 10 km.</div>';return}
+   box.innerHTML=items.slice(0,8).map(x=>{const map='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.lat+','+x.lon);return '<div class="service-market-item"><strong>'+smEsc(x.name)+'</strong><small>📍 '+Number(x.distanceKm).toFixed(1)+' km · '+smEsc(x.address)+'</small><div class="service-market-actions"><a href="'+map+'" target="_blank" rel="noopener noreferrer">🗺️ Chỉ đường</a></div></div>'}).join('');
+  }catch(e){box.innerHTML='<div class="service-market-status">⚠️ Không lấy được dữ liệu dịch vụ. Anh thử lại sau.</div>'}
+ },()=>{box.innerHTML='<div class="service-market-status">⚠️ Anh chưa cấp quyền vị trí. Hãy cho phép định vị để tìm dịch vụ gần mình.</div>'},{enableHighAccuracy:true,timeout:15000,maximumAge:60000})
+}
+window.renderToNgheServiceMarket=function(body){
+ body.innerHTML='<div class="service-market"><div class="service-market-status">Chọn nhu cầu để tìm dịch vụ thật quanh vị trí hiện tại.</div><div class="service-market-grid">'+cats.map(x=>'<button type="button" class="service-market-btn" data-sm-q="'+smEsc(x[0])+'">'+x[1]+'</button>').join('')+'</div><div id="serviceMarketResults"></div><div class="service-market-note">Dữ liệu địa điểm từ nguồn bản đồ công khai. Đây chưa phải danh sách đối tác trả phí và hệ thống không tự nhận hoa hồng.</div></div>';
+ const box=body.querySelector('#serviceMarketResults');
+ body.querySelectorAll('[data-sm-q]').forEach(b=>b.addEventListener('click',()=>smFind(b.dataset.smQ,box)));
+}
+const oldRender=window.renderToNghePanel;
+window.renderToNghePanel=function(topic){
+ if(topic==='Chợ dịch vụ'){
+  const p=window.ensureToNghePanel?.();if(!p)return;
+  const t=document.getElementById('toNgheAIPanelTitle'),b=document.getElementById('toNgheAIPanelBody');
+  if(t)t.textContent='✦ Chợ dịch vụ';
+  if(b)window.renderToNgheServiceMarket(b);
+  p.classList.add('show');return;
+ }
+ return oldRender?.apply(this,arguments);
+};
 })();</script></body>
 </html>
 
