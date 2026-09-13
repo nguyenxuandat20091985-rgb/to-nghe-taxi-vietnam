@@ -3011,7 +3011,6 @@ if('serviceWorker' in navigator && (location.protocol === 'https:' || location.h
   const txt=()=>document.getElementById('pwaInstallText');
   const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
   function show(mode){
-    if(isStandalone()) return;
     const b=bar(); if(!b) return;
     b.classList.add('show');
     if(mode==='install'){txt().textContent='📲 Cài ứng dụng Đền Tổ Nghề Taxi vào màn hình điện thoại';btn().textContent='Cài ứng dụng';}
@@ -3039,15 +3038,19 @@ if('serviceWorker' in navigator && (location.protocol === 'https:' || location.h
         alert('Nếu trình duyệt không hiện hộp cài đặt, mở menu ⋮ của Chrome rồi chọn “Cài đặt ứng dụng” hoặc “Thêm vào màn hình chính”.');
       }
     });
-    setTimeout(function(){ if(!deferredInstallPrompt && !isStandalone()) show('install'); }, 2500);
+    setTimeout(function(){ if(!deferredInstallPrompt && !isStandalone() && !swRegistration?.waiting) show('install'); }, 2500);
     if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
       navigator.serviceWorker.register('./service-worker.js').then(function(reg){
         swRegistration=reg;
+        // Force an update check whenever the installed app is opened.
+        reg.update().catch(function(){});
         if(reg.waiting) show('update');
         reg.addEventListener('updatefound',function(){
           const nw=reg.installing;
           if(!nw)return;
-          nw.addEventListener('statechange',function(){if(nw.state==='installed' && navigator.serviceWorker.controller) show('update');});
+          nw.addEventListener('statechange',function(){
+            if(nw.state==='installed' && navigator.serviceWorker.controller) show('update');
+          });
         });
       }).catch(function(){});
       navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload();});
