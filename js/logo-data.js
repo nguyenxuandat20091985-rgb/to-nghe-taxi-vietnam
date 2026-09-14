@@ -1,3 +1,6 @@
-// Avatar chính thức của Tổ Nghề Taxi — không sử dụng ảnh người.
-export const LOGO_URL = new URL('../assets/to-nghe-taxi-avatar.jpg', import.meta.url).href;
-export const LOGO_URL_SM = LOGO_URL;
+// Avatar chính thức của Tổ Nghề Taxi — dùng chung logo nhúng ổn định trong repo.
+// Không trỏ tới assets/to-nghe-taxi-avatar.jpg vì file đó không tồn tại trên nhánh triển khai.
+import LOGO from './app-logo.js';
+
+export const LOGO_URL = LOGO;
+export const LOGO_URL_SM = LOGO;
