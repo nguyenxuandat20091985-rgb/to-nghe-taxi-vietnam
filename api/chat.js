@@ -1,4 +1,5 @@
 const DEFAULT_ALLOWED_ORIGINS = [
+  'https://to-nghe-taxi.vercel.app',
   'https://to-nghe-taxi-vietnam.vercel.app',
   'https://to-nghe-taxi-vietnam.firebaseapp.com',
   'https://to-nghe-taxi.web.app',
