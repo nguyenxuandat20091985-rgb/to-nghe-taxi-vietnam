@@ -8,6 +8,9 @@ if (window.location.hostname.endsWith('.github.io')) {
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+// === App Check Import ===
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js';
+
 import firebaseConfig from './firebase-config.js';
 import {
   mountAuthStatus as mountAuthStatusUI,
@@ -35,7 +38,15 @@ function mountAuthStatus(user) {
 }
 async function init(){
   try{
-    const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+    const app=initializeApp(firebaseConfig);
+    
+    // === App Check Initialization ===
+    const appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider('PASTE_SITE_KEY_VÀO_ĐÂY'),
+      isTokenAutoRefreshEnabled: true
+    });
+
+    const auth=getAuth(app),db=getFirestore(app);
     await setPersistence(auth,browserLocalPersistence);
     window.firebaseServices={app,auth,db};
     window.firebaseBridge={
