@@ -42,7 +42,7 @@ async function init(){
     
     // === App Check Initialization ===
     const appCheck = initializeAppCheck(app, {
-      provider: new ReCaptchaEnterpriseProvider('PASTE_SITE_KEY_VÀO_ĐÂY'),
+      provider: new ReCaptchaEnterpriseProvider('6Lchn7wtAAAAAAmVllVXpXOAWdUvT5ewTTAeBRMG'),
       isTokenAutoRefreshEnabled: true
     });
 
