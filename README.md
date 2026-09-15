@@ -5,8 +5,8 @@
 ## Trạng thái hiện tại
 
 - Frontend chính: `index.html`, kiến trúc single-file, HTML/CSS/Vanilla JS.
-- Firebase Authentication: Anonymous Auth.
-- Firebase Firestore: lưu/đồng bộ `users/{uid}` theo tài khoản ẩn danh.
+- Firebase Authentication: Google Sign-In bắt buộc cho khu vực cần xác thực; không sử dụng Anonymous Auth.
+- Firebase Firestore: lưu/đồng bộ `users/{uid}` theo tài khoản Google đã xác thực.
 - PWA: `manifest.json` + `service-worker.js`, có cache app-shell và fallback offline.
 - AI: frontend gọi `/api/chat`; khóa `GROQ_API_KEY` chỉ nằm ở serverless proxy, không nằm trong trình duyệt hay Git.
 - Firebase Hosting: đã có cấu hình production trong `firebase.json`.
@@ -34,10 +34,11 @@ Mở `http://localhost:8080`. PWA/service worker cần HTTPS hoặc localhost.
 
 Project mặc định: `to-nghe-taxi`.
 
-1. Firebase Console → Authentication → Sign-in method → bật **Anonymous**.
-2. Tạo Firestore Database.
+1. Firebase Console → Authentication → Sign-in method → bật **Google**.
+2. Tạo/kiểm tra Firestore Database.
 3. Kiểm tra `js/firebase-config.js` đúng project.
-4. Đăng nhập Firebase CLI và triển khai rules/hosting:
+4. Firebase Console → App Check → Web app `to-nghe-web` → reCAPTCHA Enterprise → bật Enforcement sau khi smoke test.
+5. Đăng nhập Firebase CLI và triển khai rules/hosting:
 
 ```bash
 firebase login
@@ -66,7 +67,7 @@ Service worker cache app-shell gồm `index.html`, manifest và icon. Request GE
 
 ## Bảo mật Firestore
 
-`firestore.rules` chỉ cho phép tài khoản đã xác thực đọc/ghi tài liệu `users/{uid}` của chính mình; mọi đường dẫn khác mặc định bị từ chối. Không lưu API key hoặc dữ liệu bí mật vào Firestore.
+`firestore.rules` chỉ cho phép tài khoản Google đã xác thực đọc/ghi tài liệu `users/{uid}` của chính mình; mọi đường dẫn khác mặc định bị từ chối. App Check Enforcement là lớp bảo vệ bổ sung ở backend; Rules vẫn kiểm tra quyền và dữ liệu. Không lưu API key hoặc dữ liệu bí mật vào Firestore.
 
 ## Cấu trúc chính
 
@@ -127,3 +128,27 @@ docs/
 Nội dung quẻ, lời chúc và tiện ích tâm linh mang tính tinh thần/giải trí, không thay thế tư vấn y tế, pháp lý, tài chính hoặc an toàn giao thông chuyên môn.
 
 © 2026 TỔ NGHỀ TAXI VIỆT NAM
+
+
+## App Check — localhost / Debug Token
+
+Production sử dụng reCAPTCHA Enterprise. Debug mode chỉ được bật khi hostname là `localhost` hoặc `127.0.0.1` trong `js/firebase-bridge.js`.
+
+Chạy local:
+
+```bash
+python3 -m http.server 8080
+```
+
+Mở `http://localhost:8080`, mở DevTools Console và tìm dòng `AppCheck debug token`. Copy token thật vào Firebase Console → App Check → Apps → `to-nghe-web` → Manage debug tokens. Không commit token vào GitHub và không dùng debug token cho production.
+
+## Firestore security smoke test
+
+- Google login bắt buộc; anonymous phải bị từ chối.
+- Tạo post/comment/message với `serverTimestamp()`.
+- Author chỉ sửa post trong 30 phút; sau đó phải bị từ chối.
+- Like/unlike chỉ được thay đổi UID hiện tại và counter tương ứng.
+- Comment counter chỉ tăng 1 trong cùng transaction.
+- Direct chat chỉ đọc được bởi 2 participant UIDs.
+- Community room/message chỉ cho signed-in users.
+- Các field ngoài allow-list phải bị Firestore Rules từ chối.
