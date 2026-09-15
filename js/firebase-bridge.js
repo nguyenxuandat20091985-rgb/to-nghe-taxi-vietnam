@@ -41,6 +41,15 @@ async function init(){
     const app=initializeApp(firebaseConfig);
     
     // === App Check Initialization ===
+    // Local development only: Firebase App Check debug mode.
+    // This is intentionally enabled ONLY on localhost/127.0.0.1.
+    // Production domains always use reCAPTCHA Enterprise attestation.
+    const isLocalAppCheckDebug = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    if (isLocalAppCheckDebug) {
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+      console.info('[App Check] Local debug mode enabled. Copy the generated debug token from DevTools and register it in Firebase Console → App Check → Manage debug tokens.');
+    }
+
     const appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaEnterpriseProvider('6Lchn7wtAAAAAAmVllVXpXOAWdUvT5ewTTAeBRMG'),
       isTokenAutoRefreshEnabled: true
