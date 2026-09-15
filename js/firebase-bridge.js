@@ -46,8 +46,50 @@ async function init(){
     // Production domains always use reCAPTCHA Enterprise attestation.
     const isLocalAppCheckDebug = ['localhost', '127.0.0.1'].includes(window.location.hostname);
     if (isLocalAppCheckDebug) {
+      // Firebase SDK prints the generated debug token to the console. On mobile
+      // browsers DevTools may be unavailable, so temporarily mirror that UUID
+      // into a native prompt. This hook exists ONLY on localhost and restores
+      // the original console methods after the token is captured.
       self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-      console.info('[App Check] Local debug mode enabled. Copy the generated debug token from DevTools and register it in Firebase Console → App Check → Manage debug tokens.');
+
+      const debugTokenPattern = /[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
+      const consoleMethods = ['log', 'info', 'warn', 'error'];
+      const originalConsoleMethods = {};
+      let debugTokenCaptured = false;
+
+      const restoreDebugConsoleHooks = () => {
+        consoleMethods.forEach((method) => {
+          if (originalConsoleMethods[method]) console[method] = originalConsoleMethods[method];
+        });
+      };
+
+      consoleMethods.forEach((method) => {
+        originalConsoleMethods[method] = console[method].bind(console);
+        console[method] = (...args) => {
+          originalConsoleMethods[method](...args);
+          if (debugTokenCaptured) return;
+
+          const message = args.map((value) => {
+            try { return typeof value === 'string' ? value : JSON.stringify(value); }
+            catch (_) { return String(value); }
+          }).join(' ');
+
+          const match = message.match(debugTokenPattern);
+          if (match) {
+            debugTokenCaptured = true;
+            restoreDebugConsoleHooks();
+            setTimeout(() => {
+              const token = match[0];
+              window.prompt(
+                'App Check Debug Token\\n\\nHãy COPY mã này rồi dán vào Firebase Console → Manage debug tokens:',
+                token
+              );
+            }, 0);
+          }
+        };
+      });
+
+      console.info('[App Check] Local debug mode enabled. Firebase will show the generated debug token here and in a mobile copy prompt.');
     }
 
     const appCheck = initializeAppCheck(app, {
