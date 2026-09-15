@@ -305,9 +305,11 @@ service cloud.firestore {
 
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly([
-          'participantIds', 'participantProfiles',
+          'participantIds', 'participantProfiles', 'createdAt',
           'lastMessage', 'lastMessageAt', 'lastSenderId'
         ])
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.createdAt == now()
         && request.resource.data.participantIds is list
         && request.resource.data.participantIds.size() == 2
         && request.resource.data.participantIds[0] != request.resource.data.participantIds[1]
