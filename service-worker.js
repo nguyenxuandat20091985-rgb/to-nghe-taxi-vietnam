@@ -1,4 +1,4 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v21-avatar';
+const CACHE_NAME = 'den-to-nghe-taxi-v24-clean';
 const APP_SHELL = [
   './',
   './index.html',
@@ -9,10 +9,9 @@ const APP_SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
-      // Keep the new worker in 'waiting' so the installed app can show an explicit update action.
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
   );
 });
 
@@ -31,7 +30,6 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Fallback browser/launcher icons to the current Taxi Guild avatar
   const path = url.pathname;
   if (path.endsWith('/icons/apple-touch-icon.png') ||
       path.endsWith('/apple-touch-icon.png') ||
