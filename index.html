@@ -9,20 +9,34 @@
 <link rel="apple-touch-icon" href="./icons/app-avatar.png">
 <link rel="manifest" href="./manifest.json">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{background:#050301;color:#f0e0a0;font-family:'Be Vietnam Pro',system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
-  .box{max-width:420px}
-  h1{font-size:1.5rem;margin-bottom:12px;color:#d4af37}
-  p{line-height:1.6;opacity:.9;margin-bottom:8px}
-  .note{font-size:.85rem;opacity:.7;margin-top:20px}
+  body { background: #050301; color: #f0e0a0; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+  .loader { max-width: 320px; }
+  h1 { color: #d4af37; font-size: 1.4rem; margin-bottom: 12px; }
+  p { opacity: 0.85; line-height: 1.5; }
 </style>
 </head>
 <body>
-  <div class="box">
+  <div class="loader">
     <h1>Đền Tổ Nghề Taxi</h1>
-    <p>Site đang được khôi phục nội dung đầy đủ.</p>
-    <p>Em (Grok) đang hoàn thiện. Anh vui lòng đợi vài phút hoặc refresh sau khi nhận thông báo.</p>
-    <p class="note">PWA icon đã được đồng bộ sang app-avatar.png.<br>Service Worker đã đúng.</p>
+    <p>Đang tải nội dung đầy đủ...</p>
   </div>
+  <script>
+  (async function() {
+    try {
+      const url = 'https://raw.githubusercontent.com/nguyenxuandat20091985-rgb/to-nghe-taxi-vietnam/c061045a57c0884f0b3cf32b249c4e5ed4d4b9e9/index.html';
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('Fetch failed ' + res.status);
+      let html = await res.text();
+      // Fix the two icon references
+      html = html.replace(/\.\/icons\/app-avatar\.jpg/g, './icons/app-avatar.png');
+      // Write the full app
+      document.open();
+      document.write(html);
+      document.close();
+    } catch (e) {
+      document.querySelector('.loader').innerHTML = '<h1>Đền Tổ Nghề Taxi</h1><p>Lỗi tải nội dung. Vui lòng thử lại sau.</p><p style="font-size:0.8rem;opacity:0.6">' + e.message + '</p>';
+    }
+  })();
+  </script>
 </body>
 </html>
