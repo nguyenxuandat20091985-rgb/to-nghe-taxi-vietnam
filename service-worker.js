@@ -1,9 +1,9 @@
-const CACHE_NAME = 'den-to-nghe-taxi-v20-avatar';
+const CACHE_NAME = 'den-to-nghe-taxi-v21-avatar';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
-  './icons/app-avatar.jpg',
+  './icons/app-avatar.png',
   './js/firebase-bridge.js',
   './js/firebase-config.js'
 ];
@@ -39,7 +39,7 @@ self.addEventListener('fetch', (event) => {
       path.endsWith('/favicon.ico') ||
       path.endsWith('/icons/icon-192-maskable.png')) {
     event.respondWith(
-      caches.match('./icons/app-avatar.jpg').then((c) => c || fetch('./icons/app-avatar.jpg'))
+      caches.match('./icons/app-avatar.png').then((c) => c || fetch('./icons/app-avatar.png'))
     );
     return;
   }
