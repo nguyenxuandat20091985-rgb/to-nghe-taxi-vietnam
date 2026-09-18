@@ -51,10 +51,6 @@ function injectAuthStyles() {
     .tn-auth-login{background:linear-gradient(145deg,#a67c1a,#d4af37,#e8c56a);color:#170c02;border-color:#c9a45a;padding:6px 10px;font-weight:800;font-size:11px}
     .tn-auth-login .g-icon{width:16px;height:16px;border-radius:4px;background:#fff;color:#4285F4;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;font-family:Arial,sans-serif}
     .tn-auth-logout{border:1px solid rgba(212,175,55,.35);border-radius:999px;background:rgba(40,20,8,.85);color:#e8d48b;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
-    .tn-auth-switch{border:1px solid rgba(212,175,55,.45);border-radius:999px;background:rgba(30,18,6,.9);color:#f0e0a0;padding:6px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
-    .tn-auth-right-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-    .tn-switch-profile-btn{display:block;width:100%;margin-top:10px;border:1px solid rgba(212,175,55,.5);border-radius:12px;background:linear-gradient(145deg,#2a1808,#1a0e05);color:#f0e0a0;padding:11px 14px;font-size:13px;font-weight:700;cursor:pointer;text-align:center}
-    .tn-switch-profile-btn:active{opacity:.85}
     #tn-onboarding-modal{position:fixed;inset:0;z-index:100050;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
     .tn-onboard-card{width:min(420px,100%);background:linear-gradient(180deg,#1a0e05 0%,#0c0703 100%);border:1px solid #c9a45a;border-radius:18px;padding:22px 18px 18px;box-shadow:0 20px 50px rgba(0,0,0,.55);color:#f0e0a0}
     .tn-onboard-card h3{margin:0 0 6px;font-size:18px;color:#e8c56a;text-align:center}
@@ -188,47 +184,12 @@ export function mountAuthStatus(user) {
     btn.appendChild(name);
     btn.onclick = () => { if (typeof window.showPage === 'function') window.showPage('profile'); };
     left.appendChild(btn);
-    const wrap = document.createElement('div');
-    wrap.className = 'tn-auth-right-wrap';
-    const switchBtn = document.createElement('button');
-    switchBtn.type = 'button';
-    switchBtn.className = 'tn-auth-switch';
-    switchBtn.textContent = 'Đổi TK';
-    switchBtn.title = 'Đổi tài khoản Google';
-    switchBtn.onclick = () => {
-      if (!confirm('Anh muốn đăng nhập bằng tài khoản Google khác?')) return;
-      window.firebaseBridge?.switchGoogleAccount?.().catch((err) => {
-        console.error('[Switch Google]', err);
-        alert('Đổi tài khoản chưa thành công. Vui lòng thử lại.');
-      });
-    };
     const logoutBtn = document.createElement('button');
     logoutBtn.type = 'button';
     logoutBtn.className = 'tn-auth-logout';
     logoutBtn.textContent = 'Đăng xuất';
     logoutBtn.onclick = () => window.firebaseBridge?.logout?.().catch(console.error);
-    wrap.appendChild(switchBtn);
-    wrap.appendChild(logoutBtn);
-    right.appendChild(wrap);
-    try {
-      const profilePage = document.getElementById('page-profile');
-      if (profilePage && !document.getElementById('tn-switch-account-btn')) {
-        const host = profilePage.querySelector('.glass-card') || profilePage;
-        const pbtn = document.createElement('button');
-        pbtn.type = 'button';
-        pbtn.id = 'tn-switch-account-btn';
-        pbtn.className = 'tn-switch-profile-btn';
-        pbtn.textContent = '🔄 Đổi tài khoản Google';
-        pbtn.onclick = () => {
-          if (!confirm('Anh muốn đăng nhập bằng tài khoản Google khác?')) return;
-          window.firebaseBridge?.switchGoogleAccount?.().catch((err) => {
-            console.error('[Switch Google]', err);
-            alert('Đổi tài khoản chưa thành công. Vui lòng thử lại.');
-          });
-        };
-        host.appendChild(pbtn);
-      }
-    } catch (e) { console.warn('[Auth] inject switch btn', e); }
+    right.appendChild(logoutBtn);
   } else {
     const btn = document.createElement('button');
     btn.type = 'button';
