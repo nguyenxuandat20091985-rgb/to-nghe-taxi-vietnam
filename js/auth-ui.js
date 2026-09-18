@@ -63,14 +63,22 @@ function injectAuthStyles() {
     .tn-onboard-save{background:linear-gradient(145deg,#a67c1a,#d4af37);color:#170c02;border-color:#c9a45a}
     .tn-onboard-avatar{width:64px;height:64px;border-radius:50%;margin:0 auto 12px;border:2px solid #d4af37;overflow:hidden;background:#2a1808;display:flex;align-items:center;justify-content:center;font-size:28px}
     .tn-onboard-avatar img{width:100%;height:100%;object-fit:cover}
-    #tn-login-gate{position:fixed;inset:0;z-index:100040;background:radial-gradient(ellipse at center,#1a0e05 0%,#050301 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+    #tn-login-gate{position:fixed;inset:0;z-index:100040;background:radial-gradient(circle at 50% 22%,rgba(212,175,55,.16),transparent 30%),linear-gradient(180deg,#090502 0%,#1a0d04 52%,#070301 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 18px;text-align:center;overflow:auto}
     #tn-login-gate.tn-gate-hidden{display:none!important}
-    .tn-gate-logo{width:120px;height:120px;border-radius:50%;margin-bottom:18px;overflow:hidden;border:3px solid #d4af37;box-shadow:0 0 40px rgba(212,175,55,.4)}
+    .tn-gate-card{width:min(430px,100%);box-sizing:border-box;padding:30px 22px 24px;border:1px solid rgba(212,175,55,.62);border-radius:26px;background:linear-gradient(180deg,rgba(32,17,7,.96),rgba(11,6,2,.98));box-shadow:0 22px 70px rgba(0,0,0,.72),0 0 38px rgba(212,175,55,.1);position:relative;overflow:hidden}
+    .tn-gate-card:before,.tn-gate-card:after{content:'';position:absolute;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.65),transparent)}
+    .tn-gate-card:before{top:12px}.tn-gate-card:after{bottom:12px}
+    .tn-gate-mark{font-size:12px;letter-spacing:3px;color:rgba(232,197,106,.7);margin-bottom:16px}
+    .tn-gate-logo{width:92px;height:92px;border-radius:50%;border:2px solid #d4af37;overflow:hidden;margin:0 auto 16px;background:#2a1808;box-shadow:0 0 30px rgba(212,175,55,.3),0 0 0 6px rgba(212,175,55,.06)}
     .tn-gate-logo img{width:100%;height:100%;object-fit:cover}
-    .tn-gate-title{font-size:1.5rem;color:#d4af37;margin:0 0 10px;font-weight:700}
-    .tn-gate-sub{font-size:.95rem;color:rgba(240,224,160,.8);line-height:1.5;margin:0 0 22px;max-width:320px}
-    .tn-gate-login-btn{display:inline-flex;align-items:center;gap:10px;border:none;border-radius:999px;background:linear-gradient(145deg,#a67c1a,#d4af37,#e8c56a);color:#170c02;padding:14px 28px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(212,175,55,.35)}
-    .tn-gate-login-btn .g-icon{width:22px;height:22px;border-radius:4px;background:#fff;color:#4285F4;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;font-family:Arial,sans-serif}
+    .tn-gate-title{font-family:'Playfair Display','Cormorant Garamond',serif;font-size:clamp(25px,7vw,34px);color:#f0d58a;margin:0 0 7px;text-shadow:0 0 24px rgba(212,175,55,.38);letter-spacing:1px}
+    .tn-gate-sub{font-size:clamp(12px,3.1vw,14px);color:rgba(240,224,160,.72);margin:0 auto 24px;line-height:1.55;max-width:330px}
+    .tn-gate-login-btn{width:min(330px,100%);display:inline-flex;align-items:center;justify-content:center;gap:11px;background:linear-gradient(145deg,#b88924,#d4af37 55%,#f0cf70);color:#160b02;border:1px solid #f1d37b;border-radius:15px;padding:13px 20px;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 8px 26px rgba(212,175,55,.24),inset 0 1px rgba(255,255,255,.35);transition:transform .18s,box-shadow .18s}
+    .tn-gate-login-btn:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(212,175,55,.34)}.tn-gate-login-btn:active{transform:scale(.98)}
+    .tn-gate-login-btn .g-icon{width:25px;height:25px;border-radius:6px;background:#fff;color:#4285F4;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;font-family:Arial,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+    .tn-gate-hint{margin:17px auto 0;font-size:11px;color:rgba(232,212,139,.48);max-width:300px;line-height:1.45}
+    .tn-gate-footer{margin-top:18px;font-size:10px;letter-spacing:.7px;color:rgba(232,212,139,.35)}
+    .tn-gate-error{margin:14px auto 0;padding:10px 13px;border-radius:10px;background:rgba(139,26,26,.3);border:1px solid rgba(192,57,43,.5);color:#f5c6c6;font-size:12px;max-width:320px;display:none}.tn-gate-error.show{display:block}
     body.tn-gate-active .header,
     body.tn-gate-active .menu,
     body.tn-gate-active .page{visibility:hidden!important;pointer-events:none!important}
@@ -96,16 +104,16 @@ export function showLoginGate() {
   gate.setAttribute('aria-modal', 'true');
   gate.setAttribute('aria-label', 'Đăng nhập để vào Đền Tổ Nghề Taxi');
   gate.innerHTML = `
-    <div class="tn-gate-logo" id="tn-gate-logo">
-      <img src="${LOGO_URL}" alt="Tổ Nghề Taxi" referrerpolicy="no-referrer" />
+    <div class="tn-gate-card">
+      <div class="tn-gate-mark">✦ TỔ NGHỀ TAXI VIỆT NAM ✦</div>
+      <div class="tn-gate-logo" id="tn-gate-logo"><img src="${LOGO_URL}" alt="Tổ Nghề Taxi" referrerpolicy="no-referrer" /></div>
+      <h1 class="tn-gate-title">Đền Tổ Nghề Taxi</h1>
+      <p class="tn-gate-sub">Tưởng nhớ cội nguồn • Tri ân • Thành kính • Bình an</p>
+      <button type="button" class="tn-gate-login-btn" id="tn-gate-login-btn"><span class="g-icon">G</span><span>Đăng nhập bằng Google</span></button>
+      <p class="tn-gate-hint">Sử dụng tài khoản Google để vào ứng dụng và lưu hồ sơ tài xế.</p>
+      <div class="tn-gate-error" id="tn-gate-error"></div>
+      <div class="tn-gate-footer">Lái xe an toàn • Vạn dặm bình an • Phục vụ tận tâm</div>
     </div>
-    <h1 class="tn-gate-title">Đền Tổ Nghề Taxi</h1>
-    <p class="tn-gate-sub">Vui lòng đăng nhập bằng Google để vào ứng dụng.<br>Tài khoản dùng để lưu hồ sơ và kết nối cộng đồng tài xế.</p>
-    <button type="button" class="tn-gate-login-btn" id="tn-gate-login-btn">
-      <span class="g-icon">G</span>
-      <span>Đăng nhập bằng Google</span>
-    </button>
-    <p style="margin-top:16px;font-size:12px;color:rgba(240,224,160,.55)">Chỉ dùng tài khoản Google. Không cần mật khẩu riêng.</p>
   `;
   document.body.appendChild(gate);
   document.getElementById('tn-gate-login-btn')?.addEventListener('click', async () => {
