@@ -71,7 +71,7 @@ html,body{margin:0;padding:0;background:#050301;color:#f0e0a0;font-family:system
     return oldRender&&oldRender.apply(this,arguments);
   };
 })();
-`; + '</' + 'script>';
+` + '</' + 'script>';
       html = html.replace('</body>', marketBridge + '</body>');
       html = html.replace(/\.\/icons\/app-avatar\.jpg/g, './icons/app-avatar.png');
       try { localStorage.setItem(CACHE_KEY, html); } catch (e) {}
