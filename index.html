@@ -31,7 +31,7 @@ html,body{margin:0;padding:0;background:#050301;color:#f0e0a0;font-family:system
 </div>
 <script>
 (async function () {
-  const CACHE_KEY = 'to-nghe-full-html-v27-market';
+  const CACHE_KEY = 'to-nghe-full-html-v28-market-direct';
   const SOURCE = 'https://raw.githubusercontent.com/nguyenxuandat20091985-rgb/to-nghe-taxi-vietnam/c061045a57c0884f0b3cf32b249c4e5ed4d4b9e9/index.html';
 
   function fail(msg) {
@@ -58,15 +58,20 @@ html,body{margin:0;padding:0;background:#050301;color:#f0e0a0;font-family:system
       // Replace the old embedded service-market view with the real my-ai-bot market.
       var marketBridge = `<script id="market-hub-bridge-v2">
 (function(){
+  var MARKET_URL="https://nguyenxuandat20091985-rgb.github.io/my-ai-bot/market.html";
+  var oldOpen=window.openToNgheAI;
+  window.openToNgheAI=function(topic){
+    if(topic==="Chợ dịch vụ"){
+      window.location.href=MARKET_URL;
+      return;
+    }
+    return oldOpen&&oldOpen.apply(this,arguments);
+  };
   var oldRender=window.renderToNghePanel;
   window.renderToNghePanel=function(topic){
     if(topic==="Chợ dịch vụ"){
-      var p=window.ensureToNghePanel&&window.ensureToNghePanel();
-      if(!p)return;
-      var t=document.getElementById("toNgheAIPanelTitle"),b=document.getElementById("toNgheAIPanelBody");
-      if(t)t.textContent="✦ Chợ dịch vụ";
-      if(b)b.innerHTML='<div style="padding:0;background:#fff;border-radius:12px;overflow:hidden;border:1px solid rgba(212,175,55,.35)"><iframe src="https://nguyenxuandat20091985-rgb.github.io/my-ai-bot/market.html" title="Chợ dịch vụ" style="display:block;width:100%;height:calc(100vh - 190px);min-height:560px;border:0;background:#f6f7f9" loading="eager"></iframe></div>';
-      p.classList.add("show");return;
+      window.location.href=MARKET_URL;
+      return;
     }
     return oldRender&&oldRender.apply(this,arguments);
   };
