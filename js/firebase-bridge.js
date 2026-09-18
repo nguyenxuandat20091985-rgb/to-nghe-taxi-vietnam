@@ -110,6 +110,23 @@ async function init(){
           throw e;
         }
       },
+      /** Đăng xuất rồi đăng nhập lại — buộc Google hiện màn chọn tài khoản */
+      async switchGoogleAccount(){
+        closeOnboarding();
+        try { await signOut(auth); } catch (e) { console.warn('[Auth] signOut before switch', e); }
+        const provider=new GoogleAuthProvider();
+        provider.setCustomParameters({prompt:'select_account'});
+        try{
+          const r=await signInWithPopup(auth,provider);
+          return r.user;
+        }catch(e){
+          if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/internal-error'].includes(e?.code)){
+            await signInWithRedirect(auth,provider);
+            return null;
+          }
+          throw e;
+        }
+      },
       async logout(){closeOnboarding();return signOut(auth)},
       async ensureUser(){const u=auth.currentUser;if(!u||u.isAnonymous)throw new Error('GOOGLE_LOGIN_REQUIRED');return u},
       async loadUserState(){const u=await this.ensureUser(),s=await getDoc(doc(db,'users',u.uid));return s.exists()?s.data().appState||null:null},
